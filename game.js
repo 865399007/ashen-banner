@@ -118,12 +118,26 @@ class Battle extends Phaser.Scene{
  begin(){this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
  this.actors=[{id:0,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?6:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?6:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
  this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].skin=6;this.actors[0].stride=0;this.trail=[{x:360,y:300},{x:480,y:300}];this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if([4,8].includes(this.wave))this.spawn(false,true);this.hud()}
- clearField(){for(const prop of this.occluders)prop.image.setAlpha(1);this.showEnemyHealth(null);this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){for(const prop of this.occluders)prop.image.setAlpha(1);this.showEnemyHealth(null);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){let side=Math.floor(Math.random()*4),x=side<2?side*960:Math.random()*960,y=side<2?Math.random()*600:(side-2)*600;let type=Math.floor(Math.random()*3),hp=boss?1200:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
  const enemy={s:this.add.image(x,y,'man'+(3+type)).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin:3+type,stride:Math.random(),hp,max:hp,boss,elite,speed:boss?42:31+type*8+this.wave*2};
- this.enemies.push(enemy);if(boss||elite)this.showEnemyHealth(enemy);
+ this.enemies.push(enemy);if(boss||elite){
+   enemy.footBar=this.add.graphics().setDepth(1000);
+   this.showEnemyHealth(enemy);
+ }
+ }
+ positionFootBar(enemy){
+   const sprite=enemy.s;
+   enemy.footBar.setPosition(sprite.x,sprite.y+sprite.displayHeight*(1-sprite.originY)+2);
  }
  showEnemyHealth(enemy){
+   if(enemy?.footBar){
+     const width=enemy.boss?54:34;
+     const remaining=Phaser.Math.Clamp(enemy.hp/enemy.max,0,1);
+     enemy.footBar.clear().fillStyle(0x231818).fillRect(-width/2,0,width,6)
+       .fillStyle(0xe65345).fillRect(1-width/2,1,(width-2)*remaining,4);
+     this.positionFootBar(enemy);
+   }
    const bar=$('enemy-health');bar.hidden=!enemy||enemy.hp<=0;
    if(bar.hidden)return;
    bar.querySelector('span').textContent=enemy.boss?'敌军统帅':'敌军精英';
@@ -259,7 +273,7 @@ class Battle extends Phaser.Scene{
  let allies=this.army.filter(u=>u.id===a.id).length;
  const critical=Math.random()<.05;
  const damage=(critical?1.5:1)*(a.hero?17:troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
- if(e.hp<=0){this.kills++;let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
+ if(e.hp<=0){e.footBar?.destroy();this.kills++;let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=10;this.end(true);return}
  if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;
@@ -277,10 +291,10 @@ class Battle extends Phaser.Scene{
  const oldX=h.x,oldY=h.y;
  if(x||y){let v=dt*this.speed;h.x=Phaser.Math.Clamp(h.x+this.dir[0]*v,15,945);h.y=Phaser.Math.Clamp(h.y+this.dir[1]*v,33,590)}
  resolveFootprint(this,h,oldX,oldY);
- if(!this.actors[0].hit)this.animateWalk(this.actors[0],h.x-oldX,h.y-oldY,52);
+ if(!this.actors[0].hit)this.animateWalk(this.actors[0],h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);this.recordTrail();
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)}
- for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
+ for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
  for(let [i,a] of this.actors.entries()){let target=null,d=Infinity;for(let e of this.enemies){let v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  if(i)this.follow(a,i-1,target,x||y,dt);
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<troops[a.id][3]&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}

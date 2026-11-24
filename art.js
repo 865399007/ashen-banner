@@ -305,11 +305,10 @@ function miniature(c,p,id,phase=0,q=0){
 }
 function makeArt(scene){
   paintTexture(scene,'field-dressing',32,30,c=>{
-    oval(c,16,25,12,3,'rgba(75,47,27,.32)');
-    const bag=new Path2D('M4 13 Q4 9 9 9 L24 8 Q28 8 28 13 L29 21 Q29 25 25 25 L8 26 Q4 26 4 22 Z');
-    c.fillStyle='#a95041';c.fill(bag);c.strokeStyle='#613e30';c.lineWidth=2;c.stroke(bag);
-    c.stroke(new Path2D('M11 9 L11 7 Q11 3 16 3 Q21 3 21 8'));
-    c.fillStyle='#ffedc3';c.fillRect(14,11,4,12);c.fillRect(10,15,12,4);
+    oval(c,16,26,9,2,'rgba(75,47,27,.32)');
+    const cross=new Path2D('M12 3 H20 V11 H28 V19 H20 V27 H12 V19 H4 V11 H12 Z');
+    c.fillStyle='#68df76';c.fill(cross);
+    c.strokeStyle='#205c39';c.lineWidth=2;c.stroke(cross);
   });
   paintTexture(scene,'silver-coin',32,26,c=>{
     oval(c,14,20,12,3,'rgba(90,66,39,.32)');

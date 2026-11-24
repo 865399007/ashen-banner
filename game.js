@@ -269,7 +269,12 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:fx,rotation:facing+.45,alpha:0,duration:180,onComplete:()=>fx.destroy()});
    }
  }
- attack(a,e){this.sfx.swing(a.id);this.weaponEffect(a,e);
+ attack(a,e){
+ if(a.hero){
+   a.swingTime=.21;
+   a.s.setFlipX(e.s.x<a.s.x).setTexture('commanderSwing0');
+ }
+ this.sfx.swing(a.id);this.weaponEffect(a,e);
  let allies=this.army.filter(u=>u.id===a.id).length;
  const critical=Math.random()<.05;
  const damage=(critical?1.5:1)*(a.hero?17:troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
@@ -280,7 +285,7 @@ class Battle extends Phaser.Scene{
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});
  if(Math.random()<.03){
-   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'field-dressing').setScale(.65);
+   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'field-dressing').setScale(.52);
    this.drops.push({s:pack,heal:15});
  }
  this.hud()}}
@@ -291,7 +296,13 @@ class Battle extends Phaser.Scene{
  const oldX=h.x,oldY=h.y;
  if(x||y){let v=dt*this.speed;h.x=Phaser.Math.Clamp(h.x+this.dir[0]*v,15,945);h.y=Phaser.Math.Clamp(h.y+this.dir[1]*v,33,590)}
  resolveFootprint(this,h,oldX,oldY);
- if(!this.actors[0].hit)this.animateWalk(this.actors[0],h.x-oldX,h.y-oldY,40);
+ const commander=this.actors[0];
+ if(commander.swingTime>0){
+   commander.swingTime=Math.max(0,commander.swingTime-dt);
+   const frame=Math.min(commanderSwingAngles.length-1,Math.floor((.21-commander.swingTime)/.03));
+   h.setTexture('commanderSwing'+frame);
+ }
+ if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);this.recordTrail();
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)}
  for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}

@@ -155,7 +155,8 @@ function meadow(c,p,cover) {
   if(cover){const fade=c.createLinearGradient(0,560,505,130);fade.addColorStop(0,'#263224e8');fade.addColorStop(.8,'#24302242');fade.addColorStop(1,'#24302200');c.fillStyle=fade;c.fillRect(0,0,960,600)}
 }
 const WALK_FRAMES=12;
-function bannerCommander(c,phase){
+const commanderSwingAngles=[-.8,-.52,.15,.98,1.38,1.08,.7];
+function bannerCommander(c,phase,swing=null){
   // Draw in portrait coordinates; the feet remain the animation pivot.
   c.save();c.scale(.21875,.21875);
   const step=Math.sin(phase);
@@ -188,6 +189,15 @@ function bannerCommander(c,phase){
   const hem=34+step*6;
   shape('M79 110 Q99 111 105 123 L94 215 Q66 214 '+hem+' 205 Q48 174 55 139 Z','#97483c','#622d29');
   shape('M94 107 Q99 115 108 119 L98 169 L92 209 Q96 155 88 146 Z','#78382f','#4c2724');
+  c.save();
+  c.translate(78,121);
+  c.rotate(swing===null?.72:swing);
+  shape('M-7 0 Q0 -9 9 -4 L31 11 L43 8 L47 18 L29 24 L1 15 Z','#674634','#483326');
+  shape('M38 7 L36 -50 L41 -68 L46 -51 L45 7 Z','#92a4a7','#c8d2cc');
+  shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
+  shape('M29 5 L52 5 L53 10 L30 11 Z','#bd904e');
+  shape('M37 11 Q41 7 47 12 L46 22 Q40 26 35 20 Z','#684834','#493126');
+  c.restore();
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z','#cfb998','#b49a7e');
   shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z','#af947a','#927862');
   shape('M52 122 Q57 99 80 89 Q101 84 117 106 L124 119 Q113 127 98 123 L84 118 Q61 128 52 125 Z','#dfc7a8','#c8ae8e');
@@ -305,10 +315,15 @@ function miniature(c,p,id,phase=0,q=0){
 }
 function makeArt(scene){
   paintTexture(scene,'field-dressing',32,30,c=>{
-    oval(c,16,26,9,2,'rgba(75,47,27,.32)');
-    const cross=new Path2D('M12 3 H20 V11 H28 V19 H20 V27 H12 V19 H4 V11 H12 Z');
-    c.fillStyle='#68df76';c.fill(cross);
-    c.strokeStyle='#205c39';c.lineWidth=2;c.stroke(cross);
+    oval(c,17,26,9,2.5,'rgba(65,47,30,.3)');
+    const face=new Path2D('M11 2 H19 V10 H27 V18 H19 V26 H11 V18 H3 V10 H11 Z');
+    const edge=new Path2D('M19 2 l3 3 v5 h-3 Z M27 10 l3 3 v8 h-8 l-3 -3 h8 Z M19 18 l3 3 v8 h-8 l-3 -3 h8 Z M3 18 h8 v3 H6 Z');
+    c.fillStyle='#205c39';c.fill(edge);
+    const green=c.createLinearGradient(8,4,21,25);
+    green.addColorStop(0,'#a8ed91');green.addColorStop(1,'#41a956');
+    c.fillStyle=green;c.fill(face);
+    c.strokeStyle='#c5f4a8';c.lineWidth=1.5;
+    c.stroke(new Path2D('M4 11 H12 V3 H18'));
   });
   paintTexture(scene,'silver-coin',32,26,c=>{
     oval(c,14,20,12,3,'rgba(90,66,39,.32)');
@@ -327,6 +342,11 @@ function makeArt(scene){
     haze.addColorStop(.62,'rgba(233,208,172,.76)');
     haze.addColorStop(1,'rgba(168,139,111,.18)');
     c.fillStyle=haze;c.fill(new Path2D('M2 18 Q9 19 14 14 Q12 9 18 8 Q20 2 26 4 Q32 4 33 10 Q39 7 41 13 Q45 13 46 17 Q42 21 34 19 Q28 23 23 19 Q18 22 15 18 Q8 22 2 18Z'));
+  });
+  commanderSwingAngles.forEach((angle,frame)=>{
+    paintTexture(scene,'commanderSwing'+frame,112,112,c=>{
+      c.scale(2,2);bannerCommander(c,0,angle);
+    });
   });
   for(let id=0;id<=7;id++){
     const tiers=id<3||id===7?4:1;

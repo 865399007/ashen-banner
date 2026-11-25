@@ -1,3 +1,4 @@
+const healDropInterval=()=>Phaser.Math.Between(18,36);
 function mercenaryPortrait(scene,unit){
  const source=scene.textures.get('man'+troopSkin(unit.id,unit.q)).getSourceImage();
  const canvas=document.createElement('canvas');
@@ -161,7 +162,7 @@ class Battle extends Phaser.Scene{
    }
  }
  startRun(){if(!this.camp.stageOpen(this.stageKey))return;this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
- begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=Phaser.Math.Between(6,12);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
  this.healCommander(15+6*this.bag[bandage]);
@@ -574,7 +575,7 @@ class Battle extends Phaser.Scene{
    const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'linen-cross').setScale(.22).setDepth(y+2);
    this.drops.push({s:pack,heal:15,collectAfter:this.elapsed+.45});
    this.healDropsRemaining--;
-   this.killsUntilHeal=Phaser.Math.Between(6,12);
+   this.killsUntilHeal=healDropInterval();
  }
  this.hud()}}
  update(_,ms){if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;

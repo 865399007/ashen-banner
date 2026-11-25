@@ -122,7 +122,8 @@ class Battle extends Phaser.Scene{
    this.resetStick();
    surface.addEventListener('pointerdown',e=>{
      if(this.mode!=='fight'||finger!==null||e.button!==0)return;
-     e.preventDefault();finger=e.pointerId;originX=e.clientX;originY=e.clientY;
+     if(e.pointerType==='mouse')e.preventDefault();
+     finger=e.pointerId;originX=e.clientX;originY=e.clientY;
      const rect=surface.getBoundingClientRect();
      pad.hidden=false;
      const radius=pad.offsetWidth/2;
@@ -485,4 +486,4 @@ class Battle extends Phaser.Scene{
    this.button(m,'再次出征',()=>this.startRun());
  }
 }
-const game = new Phaser.Game({type:Phaser.CANVAS,loader:{imageLoadType:'HTMLImageElement'},parent:'game',width:960,height:600,pixelArt:false,audio:{noAudio:true},scene:Battle});
+const game = new Phaser.Game({type:Phaser.CANVAS,input:{touch:false},loader:{imageLoadType:'HTMLImageElement'},parent:'game',width:960,height:600,pixelArt:false,audio:{noAudio:true},scene:Battle});

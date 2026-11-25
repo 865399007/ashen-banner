@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -31,7 +31,7 @@ function roll(r,p){
  let n=offers.filter(o=>o?.lock&&!o.merc).length;
  for(let i=0;i<4;i++){if(offers[i]?.lock)continue;
    const merc=r.wave<=2?Math.random()<(2-m)/(4-m-n):Math.random()<.35;
-   const id=merc?Math.floor(Math.random()*troops.length):pick(goods);
+   const id=merc?recruitOffer(troops.map((_,id)=>id),p.army):pick(goods);
    const q=merc?tier(r.wave,p.luck):items[id][1];
    offers[i]={merc,id,q,price:refitPrice(merc,id,q,r.wave),lock:false};if(merc)m++;else n++;
  }

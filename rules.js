@@ -96,4 +96,10 @@ function villageEnemy(wave){
   const patrol=villagePatrols.reduce((current,row)=>wave>=row[0]?row:current,villagePatrols[0]);
   return pick(patrol[1]);
 }
-if(typeof module!=='undefined'&&module.exports)module.exports={villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+function recruitOffer(pool,army){
+   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse'];
+   const weights=pool.map(id=>army.some(a=>a.id===id)?4:army.some(a=>classes[a.id]===classes[id])?1.35:1);
+   let r=Math.random()*weights.reduce((a,b)=>a+b,0);
+   return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
+ }
+if(typeof module!=='undefined'&&module.exports)module.exports={recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

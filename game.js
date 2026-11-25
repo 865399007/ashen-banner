@@ -717,17 +717,11 @@ class Battle extends Phaser.Scene{
    }
    return pick(pool)??-1;
  }
- recruitOffer(pool){
-   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse'];
-   const weights=pool.map(id=>this.army.some(a=>a.id===id)?2:this.army.some(a=>classes[a.id]===classes[id])?1.35:1);
-   let r=Math.random()*weights.reduce((a,b)=>a+b,0);
-   return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
- }
  applyItem(id){if(this.bag[id]>=itemCap(id))return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;}
  roll(){const pool=troops.map((_,id)=>id).filter(id=>this.camp.troopOpen(id));let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=this.wave<=2?(merc<2&&(gear>=2||Math.random()<(2-merc)/(4-merc-gear))):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35;
- let q=tier(this.wave,this.luck),id=isMerc?this.recruitOffer(pool):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=pick(pool)}
+ let q=tier(this.wave,this.luck),id=isMerc?recruitOffer(pool,this.army):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=recruitOffer(pool,this.army)}
  if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:refitPrice(isMerc,id,q,this.wave),lock:false}}
- if(this.wave<=5&&!merc){let o=this.offers.find(o=>!o.lock);if(o)Object.assign(o,{merc:true,id:0,price:refitPrice(true,0,o.q,this.wave)})}}
+ if(this.wave<=5&&!merc){let o=this.offers.find(o=>o&&!o.lock);if(o){const id=recruitOffer(pool,this.army);Object.assign(o,{merc:true,id,price:refitPrice(true,id,o.q,this.wave)})}}}
  showCommanderStats(panel){
    const c=this.commander,percent=value=>statNumber(value*100)+'%';
    const damage=c.baseDamage*(1+this.soulBonus('power'))*this.damage*c.passives.reduce((v,p)=>v*(p.damageMultiplier?.(this)??1),1);

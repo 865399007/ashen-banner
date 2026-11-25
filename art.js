@@ -295,6 +295,18 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
     }
   }
   c.save();c.translate(20,21);c.rotate(step*.10);c.translate(-20,-21);
+  const lightEdge=q===3?({
+    0:'M23 19 L33 6',
+    1:'M28 7 L31.5 1.5',
+    2:'M25.5 9 Q36.5 17 26.6 28',
+    7:'M31 12 Q30 15 34 15 Q33 19 28 20'
+  })[id]:null;
+  if(lightEdge){
+    c.save();
+    c.shadowColor='#ffbd42';c.shadowBlur=6;
+    stroke(lightEdge,'rgba(255,192,72,.7)',4.8);
+    c.restore();
+  }
   if(q>0){
     if(id===0){
       const blade='M23 21 L29 10 L34 5 L32 12 L26 23 Z';
@@ -385,6 +397,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
     paint('M27 11 Q23 12 21 9 Q19 15 23 18 L27 16 Z',['','#859d9b','#958ba7','#d4a368'][q]);
     if(q>=2)stroke('M29 18 Q32 18 34 15',q===3?'#ffe0a0':'#e0cfe5',1.6);
   }
+  if(lightEdge)stroke(lightEdge,'#fff1ac',1.25);
   c.restore();
   if(weapon!==2){
     paint('M9 17 Q11.3 16.7 12.5 19 L10.3 23.1 L6.4 22 Z','#ceae89');

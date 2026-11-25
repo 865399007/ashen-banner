@@ -99,7 +99,7 @@ class GreyCamp {
       },!d.challenge&&(!d.victories||d.medals<1));
     }
     if(section==='军械库'){
-      for(const [i,t] of troops.entries())row(t[0]+(!this.troopOpen(i)?' · 未签约':''),'伤害 '+t[1]+'　间隔 '+t[2]+' 秒　射程 '+t[3]);
+      for(const [i,t] of troops.entries())row(t[0]+(!this.troopOpen(i)?' · 未招募':''),'伤害 '+t[1]+'　间隔 '+t[2]+' 秒　射程 '+t[3]);
       row('军魂附体','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得蓝色军魂，射程增加 25%，并叠加对应兵种加成。'+soulTypes.map((t,i)=>troops[i][0]+'：'+t.label+' +'+t.values.join(' / ')+'%').join('；'));
       row('剑士羁绊','2 人攻速 +8%，4 人提高至 +16%，6 人累计攻击 4 次后全队剑士追加斩击。');
       row('长枪羁绊','2 人刺击距离 +10%，4 人多贯穿一名敌军，6 人可击退正在冲锋的骑兵。');

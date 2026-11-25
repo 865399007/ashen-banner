@@ -110,6 +110,5 @@ class GreyCamp {
       row('编制与合成','同种佣兵按 2 / 4 / 6 人触发羁绊。两名同阶同名佣兵可手动合成，最高 Ⅳ 阶。');
     }
     if(this.saveWarning)row('存档提示','浏览器存储不可用，本次进度仅在当前页面生效。');
-    game.button(m,'出征 →',()=>game.startRun()).className='primary';
   }
 }

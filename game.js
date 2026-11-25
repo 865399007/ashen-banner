@@ -106,12 +106,7 @@ class Battle extends Phaser.Scene{
  $('experience').style.width=100*this.xp/this.need()+'%';
  for(const [id,value] of Object.entries({level:'Lv. '+this.level,money:this.gold}))$(id).textContent=value;
  $('life').style.width=100*this.hp/this.maxHP+'%';
- $('roster').innerHTML=Array.from({length:6},(_,i)=>{
-   const unit=this.army[i];
-   if(!unit)return '<span aria-label="空位"></span>';
-   const name=troops[unit.id][0]+roman[unit.q];
-   return '<span class="unit" data-tier="'+unit.q+'" title="'+name+'" aria-label="'+name+'">'+['剑','枪','弓','斧'][unit.id]+roman[unit.q]+'</span>';
- }).join('');
+
 }
  panel(title,desc){this.resetStick();$('cover').hidden=true;let m=$('modal');m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
@@ -359,7 +354,13 @@ class Battle extends Phaser.Scene{
    const group=document.createElement('section'),heading=document.createElement('strong'),grid=document.createElement('div');
    heading.textContent=label;grid.className='refit-slots';
    if(label==='技能槽'){
-     for(const slot of $('roster').children)grid.append(slot.cloneNode(true));
+     grid.setAttribute('aria-label','佣兵武器槽');
+     grid.innerHTML=Array.from({length:6},(_,i)=>{
+   const unit=this.army[i];
+   if(!unit)return '<span aria-label="空位"></span>';
+   const name=troops[unit.id][0]+roman[unit.q];
+   return '<span class="unit" data-tier="'+unit.q+'" title="'+name+'" aria-label="'+name+'">'+['剑','枪','弓','斧'][unit.id]+roman[unit.q]+'</span>';
+ }).join('');
    }else{
      this.bag.forEach((count,id)=>{
        if(!count)return;

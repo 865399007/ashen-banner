@@ -1,6 +1,6 @@
 function appendCommanderStats(panel,name,rows){
  const section=document.createElement('section'),title=document.createElement('h3'),list=document.createElement('dl');
- section.className='commander-stats';title.textContent=name+' · 主角属性';
+ section.className='commander-stats';title.textContent=name;
  for(const [label,value] of rows){
    const cell=document.createElement('div'),term=document.createElement('dt'),amount=document.createElement('dd');
    term.textContent=label;amount.textContent=value;cell.append(term,amount);list.append(cell);

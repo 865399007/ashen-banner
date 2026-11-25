@@ -30,12 +30,9 @@ class Battle extends Phaser.Scene{
  };
  $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
  this.syncStages();
- for(const [name,key] of [['训练场','training'],['指挥帐篷','command'],['铁匠铺','forge'],['军需帐篷','supply'],['军械库','armory']]){
-   const button=this.button($('camp-buildings'),name,()=>this.camp.open(this,name));
-   const image=document.createElement('img');image.alt='';image.src='assets/camp/'+key+'.webp?v=c74e363';
-   button.prepend(image);
+ for(const button of $('camp-buildings').querySelectorAll('[data-building]')){
+   button.onclick=()=>this.camp.open(this,button.dataset.building);
  }
- $('camp-buildings').append($('coop-entry'));
  makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{

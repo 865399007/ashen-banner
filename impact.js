@@ -120,9 +120,10 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
     victim.hitBase=sprite.scaleX;
     victim.normalTexture=sprite.texture.key;
   }
-  victim.hit={age:0,dx:Math.cos(angle),dy:Math.sin(angle),last:0,force:hero?3:victim.boss?4:10};
+  const amplitude=victim.boss ? 0.15 : victim.elite ? 0.18 : 0.23;
+  victim.hit={amplitude,age:0,dx:Math.cos(angle),dy:Math.sin(angle),last:0,force:hero?3:victim.boss?4:10};
   sprite.setTexture('hit-'+victim.normalTexture);
-  sprite.setScale(victim.hitBase*1.23,victim.hitBase*.77);
+  sprite.setScale(victim.hitBase*(1+amplitude),victim.hitBase*(1-amplitude));
 }
 
 function advanceImpact(victim,dt){
@@ -137,7 +138,7 @@ function advanceImpact(victim,dt){
   sprite.y=Phaser.Math.Clamp(sprite.y+hit.dy*(displacement-hit.last),24,592);
   if(victim.hero||victim.elite||victim.boss)resolveFootprint(sprite.scene,sprite,fromX,fromY);
   hit.last=displacement;
-  const squeeze=.23*Math.cos(t*Math.PI*2)*(1-t);
+  const squeeze=hit.amplitude*Math.cos(t*Math.PI*2)*(1-t);
   sprite.setScale(victim.hitBase*(1+squeeze),victim.hitBase*(1-squeeze));
   if(hit.age>=.095)sprite.setTexture(victim.normalTexture);
   if(t===1)victim.hit=null;

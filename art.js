@@ -211,7 +211,32 @@ function bannerCommander(c,phase,swing=null){
   c.restore();
 }
 function troopSkin(id,q=0){const skin=id===3?7:id;return q?skin+"tier"+q:skin}
+function mountedLancer(c,phase){
+  const step=Math.sin(phase);
+  const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
+  shadow(c,23,40,13);
+  for(const [x,side] of [[12,-1],[31,1],[16,1],[28,-1]]){
+    c.save();c.translate(x,29);c.rotate(side*step*.33);
+    fill('M-2 0 L2 0 L1 7 L3 10 L2 12 L-1 12 L-2 8 Z',side<0?'#50372c':'#79503a');
+    c.restore();
+  }
+  c.translate(0,-Math.abs(step)*1.2);
+  fill('M10 22 Q5 20 3 26 L1 34 Q6 33 9 28 Z','#48332c');
+  fill('M8 23 Q14 18 25 22 Q30 21 32 14 L35 11 L36 7 L39 11 L41 9 L41 14 L46 20 Q45 24 41 23 L36 20 Q36 29 31 32 Q24 35 13 32 Q6 32 8 23 Z','#98683f');
+  fill('M28 23 Q31 13 35 11 L38 12 L34 17 L32 26 Z','#49342c');
+  fill('M13 21 L26 21 L25 31 L16 29 L12 30 Z','#943f32');
+  fill('M14 27 L24 29 L24 31 L14 29 Z','#d4aa6c');
+  fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z','#824436');
+  fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
+  oval(c,22,9,4,5,'#e2bb90');
+  fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
+  fill('M17 6 Q14 1 9 4 Q12 0 18 1 L22 3 Z','#903f32');
+  c.strokeStyle='#68472d';c.lineWidth=1.35;c.beginPath();c.moveTo(21,20);c.lineTo(45,5);c.stroke();
+  fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
+  oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
+}
 function miniature(c,p,id,phase=0,q=0){
+  if(id===8){mountedLancer(c,phase);return}
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=id>=3&&id<=5,step=Math.sin(phase);
   const coat=['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039'][id];
@@ -348,12 +373,12 @@ function makeArt(scene){
       c.scale(2,2);bannerCommander(c,0,angle);
     });
   });
-  for(let id=0;id<=7;id++){
+  for(let id=0;id<=8;id++){
     const tiers=id<3||id===7?4:1;
     for(let q=0;q<tiers;q++){
       const key='man'+id+(q?'tier'+q:'');
       for(let frame=-1;frame<WALK_FRAMES;frame++){
-        paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:72,id===6?112:80,(c,p)=>{
+        paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:id===8?100:72,id===6?112:id===8?96:80,(c,p)=>{
           c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q);c.restore();
           if(tiers>1){
             const mask=document.createElement('canvas');

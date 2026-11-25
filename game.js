@@ -167,7 +167,7 @@ class Battle extends Phaser.Scene{
  panel(title,desc){this.resetStick();$('cover').hidden=true;let m=$('modal');m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
  startRun(){this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
- begin(){this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
  this.actors=[{id:this.commander.weapon,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?this.commander.skin:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?this.commander.skin:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
  this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
@@ -192,8 +192,11 @@ class Battle extends Phaser.Scene{
                 [alongX,top-margin],[alongX,top+height+margin]];
    const inside=edges.filter(([x,y])=>x>=0&&x<=960&&y>=0&&y<=600);
    const [x,y]=pick(inside.length?inside:edges);
-   let type=Math.floor(Math.random()*3),hp=boss?this.campaign.bossHP:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
- const enemy={s:this.add.image(x,y,'man'+(3+type)).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin:3+type,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:31+type*8+this.wave*2)*this.campaign.march};
+   const mounted=!boss&&!elite&&++this.ordinarySpawns%8===5;
+   const type=mounted?3:Math.floor(Math.random()*3);
+   const skin=mounted?8:3+type;
+   let hp=boss?this.campaign.bossHP:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
+ const enemy={s:this.add.image(x,y,'man'+skin).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:31+type*8+this.wave*2)*this.campaign.march};
  this.enemies.push(enemy);if(boss||elite){
    enemy.footBar=this.add.graphics().setDepth(1000);
    this.showEnemyHealth(enemy);

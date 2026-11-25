@@ -31,7 +31,7 @@ const commanders={
     passives:[{name:'背水迎击',description:'生命不高于一半时，自身伤害提高 50%。',
       damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
 };
-const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,235*referenceScale],['斧兵',40,1.8,35]];
+const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35]];
 const itemIcons=['whetstone','boots','badge','quiver','banner'];
 function itemIcon(id){
   const image=document.createElement('img');

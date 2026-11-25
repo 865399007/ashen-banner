@@ -121,7 +121,7 @@ class Battle extends Phaser.Scene{
  begin(){this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
  this.actors=[{id:0,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?6:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?6:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
  this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].skin=6;this.actors[0].stride=0;this.trail=[{x:360,y:300},{x:480,y:300}];this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if([4,8].includes(this.wave))this.spawn(false,true);this.hud()}
- clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);this.showEnemyHealth(null);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
@@ -145,17 +145,12 @@ class Battle extends Phaser.Scene{
    enemy.footBar.setPosition(sprite.x,sprite.y+sprite.displayHeight*(1-sprite.originY)+2);
  }
  showEnemyHealth(enemy){
-   if(enemy?.footBar){
-     const width=enemy.boss?54:34;
-     const remaining=Phaser.Math.Clamp(enemy.hp/enemy.max,0,1);
-     enemy.footBar.clear().fillStyle(0x231818).fillRect(-width/2,0,width,6)
-       .fillStyle(0xe65345).fillRect(1-width/2,1,(width-2)*remaining,4);
-     this.positionFootBar(enemy);
-   }
-   const bar=$('enemy-health');bar.hidden=!enemy||enemy.hp<=0;
-   if(bar.hidden)return;
-   bar.querySelector('span').textContent=enemy.boss?'敌军统帅':'敌军精英';
-   const meter=bar.querySelector('progress');meter.max=enemy.max;meter.value=enemy.hp;
+   const width=enemy.boss?54:34;
+   const fill=(width-2)*Phaser.Math.Clamp(enemy.hp/enemy.max,0,1);
+   const bar=enemy.footBar;
+   bar.clear().fillStyle(0x231818).fillRoundedRect(-width/2,0,width,6,3);
+   if(fill>0)bar.fillStyle(0xe65345).fillRoundedRect(1-width/2,1,fill,4,Math.min(2,fill/2));
+   this.positionFootBar(enemy);
  }
  walkEnemy(enemy,dt){
    const s=enemy.s, x=s.x,y=s.y;

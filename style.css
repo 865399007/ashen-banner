@@ -104,12 +104,12 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #field:has(#cover:not([hidden])) #wave{display:none}
 
 #field:has(#modal:not([hidden])) #wave{display:none}
-#enemy-health{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(48%,420px);pointer-events:none;text-align:center;color:#fff1d6;font-weight:bold;text-shadow:0 1px 3px #36281f}
-#enemy-health progress{display:block;width:100%;height:9px;appearance:none;background:#49382b;border:1px solid #785940;border-radius:9px;overflow:hidden}
-#enemy-health progress::-webkit-progress-bar{background:#49382b}
-#enemy-health progress::-webkit-progress-value{background:#ad513e}
-#enemy-health progress::-moz-progress-bar{background:#ad513e}
-@media(max-width:520px) and (orientation:portrait){#enemy-health{bottom:calc(32px + env(safe-area-inset-bottom))}}
+
+
+
+
+
+@media(max-width:520px) and (orientation:portrait){}
 #settings svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 1px 1px #493725)}
 #preferences:not([hidden]){position:absolute;z-index:4;top:calc(max(4px,env(safe-area-inset-top)) + 44px);right:max(8px,env(safe-area-inset-right));display:grid;gap:8px;padding:12px;width:180px;min-width:0;background:#e9d3b1}
 #preferences label{margin:0}#volume{width:100%;accent-color:#85634c}
@@ -151,7 +151,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   #cards small,.upgrade-card span,.camp-rows small{font-size:var(--caption)}
   #cards .offer-price{font-size:14px}
   #cards button[aria-pressed]{min-height:var(--touch);min-width:var(--touch);font-size:13px}
-  #enemy-health{font-size:14px}
+
   #field.pause-screen #modal{inset:0;max-height:none;padding:0}
 }
 @media(max-width:520px) and (orientation:portrait){
@@ -189,7 +189,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   max-height:calc(var(--usable-height) - 46px);overflow:auto;overscroll-behavior:contain;
 }
 #joystick{width:clamp(76px,19vmin,116px)}
-#enemy-health{bottom:var(--edge-b);width:min(70%,380px)}
+
 
 .camp-tabs button{margin:0}
 @media(pointer:coarse),(max-width:950px){

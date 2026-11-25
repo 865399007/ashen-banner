@@ -106,6 +106,14 @@ class Battle extends Phaser.Scene{
  };
  watchDensity();
  this.bindJoystick();
+ troops.forEach(([name],id)=>{
+   const btn=this.button($('test-army'),name,()=>{
+     if(this.mode!=='fight')return;
+     this.army=Array.from({length:6},()=>({id,q:3}));
+     this.deployMercenaries();this.hud();
+   });
+   btn.title='测试：6 名Ⅳ阶'+name;
+ });
  const preferences=$('preferences');
  let previousMode;
  this.closeSettings=()=>{
@@ -184,8 +192,22 @@ class Battle extends Phaser.Scene{
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
  startRun(){this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
  begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
- this.actors=[{id:this.commander.weapon,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?this.commander.skin:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?this.commander.skin:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
+ this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
+ this.deployMercenaries();
+ this.cameras.main.centerOn(this.hero.x,this.hero.y);
+ if(this.wave===finalWave)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);
+ this.hud()
+ }
+ createActor(unit,index){
+   const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
+   const s=this.add.image(480,300,'man'+skin).setOrigin(.5,.85).setScale((unit.hero?.62:.5)*2/3);
+   return {...unit,skin,stride:0,cd:index*.12,s};
+ }
+ deployMercenaries(){
+   for(const unit of this.actors.splice(1))unit.s.destroy();
+   this.army.forEach((unit,i)=>this.actors.push(this.createActor(unit,i+1)));
+   this.soulImage?.destroy();this.soulImage=null;
  this.soul=armySoul(this.army);
  if(this.soul){
    this.soulStrike=0;
@@ -201,7 +223,7 @@ class Battle extends Phaser.Scene{
    this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
      .setScale(.68+.045*(count-4)).setAlpha(0.8).setDepth(this.hero.y-1);
  }
- this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors.slice(1).forEach((unit,slot)=>{
+ this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
    unit.s.setPosition(pos.x,pos.y);
    const variation=(slot*.618+Math.random()*.08)%1;
@@ -211,7 +233,9 @@ class Battle extends Phaser.Scene{
    unit.followResponse=10+variation*4;
    unit.followGoal=pos;
    unit.goalHistory=[];
- });if(this.wave===finalWave)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
+ });
+   Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.soul?.count===6&&this.soul.id===id)));
+ }
  clearField(){this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;

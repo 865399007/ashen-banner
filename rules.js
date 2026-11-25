@@ -24,7 +24,7 @@ const commanders={
        damageMultiplier:scene=>1+.05*scene.army.length},
       {name:'战地振奋',description:'小队每累计击败 5 名敌人，主角恢复 3 点生命。',
        onKill(scene){
-         if(scene.kills%5===0)scene.hp=Math.min(scene.maxHP,scene.hp+3);
+         if(scene.kills%5===0)scene.healCommander(3);
        }}
     ]
   },

@@ -1,3 +1,12 @@
+function showHealing(scene,sprite,amount){
+  if(amount<=0)return;
+  const y=sprite.y-sprite.displayHeight*.8;
+  const label=scene.add.text(sprite.x,y,'+'+Number(amount.toFixed(1)),{
+    fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',color:'#85f79a',stroke:'#214a2c',strokeThickness:3
+  }).setOrigin(.5,1).setDepth(1101).setScale(.8);
+  scene.tweens.add({targets:label,y:y-20,alpha:0,duration:720,onComplete:()=>label.destroy()});
+}
+
 function prepareHitTextures(scene){
   for(const key of scene.textures.getTextureKeys().filter(name=>name.startsWith('man')||name.startsWith('commanderSwing'))){
     const source=scene.textures.get(key).getSourceImage();

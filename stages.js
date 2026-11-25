@@ -63,6 +63,7 @@ function clearStage(scene){
 }
 function stepStage(scene,dt){
  const key=scene.stageKey,h=scene.hero;
+ if(scene.wave<=3&&key!=='camp'&&key!=='pursuit')return;
  if(scene.stageCaster){
    const caster=scene.stageCaster;
    stepEnemyMove(scene,caster,dt);

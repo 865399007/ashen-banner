@@ -192,6 +192,8 @@ function installCoop(scene){
    const draw=(k,...args)=>{keys.add(k);return sprite(k,...args)};
    for(const p of state.players){
      const u=draw('p'+p.index,p.x,p.y,'man'+commanders[p.hero].skin,.42);
+     if(u.previousHealth!==undefined&&p.hp>u.previousHealth)showHealing(scene,u,p.hp-u.previousHealth);
+     u.previousHealth=p.hp;
      u.setAlpha(p.down>0?.5:1).setAngle(p.down>0?70:0);
      if(p.index===state.you){scene.hero=u;
        const n=Math.max(1,Math.hypot(lastInput.x,lastInput.y));

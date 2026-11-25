@@ -156,9 +156,10 @@ class Battle extends Phaser.Scene{
    }
  }
  startRun(){if(!this.camp.stageOpen(this.stageKey))return;this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
- begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;this.hp=Math.min(this.maxHP,this.hp+15+6*this.bag[bandage]);
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
+ this.healCommander(15+6*this.bag[bandage]);
  setupStage(this);this.flagUntil=0;this.bountyTaken=false;
  this.deployMercenaries();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);
@@ -661,9 +662,14 @@ class Battle extends Phaser.Scene{
      this.hp=1;this.lastStandSpent=true;
    }
  }
+ healCommander(amount){
+   const before=this.hp;
+   this.hp=Math.min(this.maxHP,before+amount);
+   showHealing(this,this.hero,this.hp-before);
+ }
  need(){return 8+this.level*3}
  collect(d){
-   if(d.heal){this.hp=Math.min(this.maxHP,this.hp+d.heal);return}
+   if(d.heal){this.healCommander(d.heal);return}
    this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}}
  reward(keptTier){if(this.pending){let lv=this.level-this.pending+1,q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],
  ['操练　佣兵攻速 +'+5*n+'%',()=>this.mercHaste+=.05*n],

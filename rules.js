@@ -82,4 +82,18 @@ function refreshPrice(wave,previous){
 function tier(w,luck){let n=Math.random(),k=1+luck/100;
  return n<Math.min(.08,Math.max(0,w-7)*.0023*k)?3:n<Math.min(.25,Math.max(0,w-3)*.02*k)?2:n<Math.min(.6,Math.max(0,w-1)*.06*k)?1:0}
 
-if(typeof module!=='undefined'&&module.exports)module.exports={troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+// Each row is a weighted patrol for the village, starting at the listed wave.
+const villagePatrols=[
+  [1,[3]],
+  [2,[3,3,4]],
+  [3,[3,3,4,9]],
+  [5,[3,4,9,11,5]],
+  [7,[4,5,9,11,10,12,8]],
+  [10,[5,8,10,11,13,14,16]],
+  [13,[5,8,10,13,14,15,16,23]]
+];
+function villageEnemy(wave){
+  const patrol=villagePatrols.reduce((current,row)=>wave>=row[0]?row:current,villagePatrols[0]);
+  return pick(patrol[1]);
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

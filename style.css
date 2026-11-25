@@ -293,25 +293,19 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .party-choice{color:#f6e8c6;background:#39433b;border:1px solid #928464;padding:6px}
 
 #field #cover:not([hidden]){
-  inset:0;max-height:none;display:flex;flex-direction:column;align-items:center;
-  background:#563420 url("assets/title/commander.png") center top / cover no-repeat;
-  color:#fff1d4;text-align:center;text-shadow:0 1px 3px #382317;
+  position:absolute;inset:0;width:100%;height:100%;max-height:none;overflow:auto;display:block;
+  background:#bca17c url("assets/field/sand.png") center/cover;color:#392c23;text-align:center
 }
-#cover::before{content:"";flex:1 0 48%}
-.title-menu{width:min(100%,600px);padding:12px max(12px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom))}
-.title-menu h1{font-size:clamp(36px,7vw,66px);color:#ffdf9b;margin:3px 0}
-#cover .title-menu p{margin:0 0 12px}
-.title-menu .loadout label{gap:6px}
-.title-menu button{min-height:44px}
-@media(min-aspect-ratio:1/1){
-  #field #cover:not([hidden]){flex-direction:row;background-position:24% top;background-size:auto 150%}
-  #cover::before{flex:1}
-  .title-menu{width:46%;max-height:100%;overflow:auto}
-}
+.camp-home{min-height:100%;max-width:1000px;margin:auto;padding: max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;justify-content:center}
+.camp-home h1{font-size:clamp(24px,4vh,42px);margin:0;color:#463224}
+#camp-buildings{width:min(100%,840px);display:grid;grid-template-columns:repeat(6,1fr);align-items:end;margin:6px auto}
+#cover #camp-buildings button{grid-column:span 2;display:grid;justify-items:center;background:none;border:0;box-shadow:none;color:#38271b;text-shadow:0 1px 2px #fff2cb;padding:2px;font-weight:bold}
+#cover #camp-buildings button:nth-child(4){grid-column:2/span 2}
+#camp-buildings img{width:100%;height:clamp(75px,23vh,205px);object-fit:contain}
+.camp-orders{border-radius:6px;padding:6px 12px;background:#383029ed;color:#fff0d7}
+.camp-orders summary{cursor:pointer;padding:6px}
+.camp-orders button{margin:3px}
 
-.camp-map{position:relative;width:100%;aspect-ratio:3/2;margin:8px auto;background:#8a7956 url("assets/camp-map.webp") center/100% 100% no-repeat;border-radius:6px}
-#modal .camp-map button{position:absolute;transform:translate(-50%,-50%);width:29%;height:34%;display:flex;align-items:flex-end;justify-content:center;padding:0 0 4px;background:transparent;border:0;box-shadow:none;color:white;text-shadow:0 1px 3px #22180c,0 0 5px #22180c;font-weight:bold}
-#modal .camp-map button:hover,#modal .camp-map button:focus-visible{color:#ffdc88;text-decoration:underline}
 
 .mercenary-actions{display:flex;flex-flow:row nowrap;gap:4px}
 .mercenary-actions:not(:empty){margin-top:4px}

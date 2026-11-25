@@ -19,7 +19,13 @@ class Battle extends Phaser.Scene{
  }
  };
  $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
- this.syncStages();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
+ this.syncStages();
+ for(const [name,key] of [['训练场','training'],['指挥帐篷','command'],['铁匠铺','forge'],['军需帐篷','supply'],['军械库','armory']]){
+   const button=this.button($('camp-buildings'),name,()=>this.camp.open(this,name));
+   const image=document.createElement('img');image.alt='';image.src='assets/camp/'+key+'.webp';
+   button.prepend(image);
+ }
+ makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{
    if(event.code!=='Space'||(this.mode!=='fight'&&this.mode!=='paused'))return;
@@ -122,6 +128,7 @@ class Battle extends Phaser.Scene{
  }
  resetRun(){Object.assign(this,{wave:1,flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
+   if(this.mode==='title')$('camp-wallet').textContent='银币 '+this.camp.data.silver+'　·　铁料 '+this.camp.data.iron+'　·　军功章 '+this.camp.data.medals;
    $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
  $('battle-hud').hidden=['title','camp'].includes(this.mode);
  $('experience').style.width=100*this.xp/this.need()+'%';

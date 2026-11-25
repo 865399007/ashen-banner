@@ -220,7 +220,7 @@ class Battle extends Phaser.Scene{
      const pixels=ctx.getImageData(0,0,source.width,source.height);
      const rgba=pixels.data;
      // Map the original shading to navy shadows, azure midtones and ice-blue highlights.
-     const palette=[[16,38,82],[47,123,205],[164,223,255]];
+     const palette=[[30,94,135],[84,185,244],[177,224,251]];
      for(let i=0;i<rgba.length;i+=4){
        const light=Math.min(1,(rgba[i]*.30+rgba[i+1]*.59+rgba[i+2]*.11)/220);
        const band=light<.5?0:1,blend=light*2-band;
@@ -233,7 +233,7 @@ class Battle extends Phaser.Scene{
      body.getContext('2d').putImageData(pixels,0,0);
      ctx.clearRect(0,0,tex.width,tex.height);
      ctx.save();
-     for(const [color,blur] of [['#3185ff',12],['#71c7ff',6],['#d5f2ff',2]]){
+     for(const [color,blur] of [['#54b9f4',12],['#82cdf8',6],['#d5f2ff',2]]){
        ctx.shadowColor=color;ctx.shadowBlur=blur;
        ctx.drawImage(body,padding,padding);
      }

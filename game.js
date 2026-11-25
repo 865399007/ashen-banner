@@ -38,7 +38,8 @@ function itemIcon(id){
   image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';
   return image;
 }
-const items=[['粗磨刀石',0,'伤害 +8%',5],['行军靴',0,'移速 +6%',4],['斥候徽章',1,'幸运 +15',3],['穿甲箭袋',2,'小队伤害 +28%',2],['百战军旗',3,'生命上限 +60、伤害 +35%',1]];
+const itemStackLimit=6;
+const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥候徽章',1,'幸运 +15'],['穿甲箭袋',2,'小队伤害 +28%'],['百战军旗',3,'生命上限 +60、伤害 +35%']];
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function tier(w,luck){let n=Math.random(),k=1+luck/100;
  return n<Math.min(.08,Math.max(0,w-7)*.0023*k)?3:n<Math.min(.25,Math.max(0,w-3)*.02*k)?2:n<Math.min(.6,Math.max(0,w-1)*.06*k)?1:0}
@@ -429,8 +430,8 @@ class Battle extends Phaser.Scene{
    return;
  }
  this.roll();this.shop()}
- item(q){return pick(items.map((it,i)=>it[1]===q&&this.bag[i]<it[3]?i:-1).filter(i=>i>=0))??-1}
- applyItem(id){this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===2)this.luck+=15;if(id===3)this.damage+=.28;if(id===4){this.maxHP+=60;this.hp+=60;this.damage+=.35}}
+ item(q){return pick(items.map((it,i)=>it[1]===q&&this.bag[i]<itemStackLimit?i:-1).filter(i=>i>=0))??-1}
+ applyItem(id){if(this.bag[id]>=itemStackLimit)return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===2)this.luck+=15;if(id===3)this.damage+=.28;if(id===4){this.maxHP+=60;this.hp+=60;this.damage+=.35}}
  roll(){const pool=this.camp.data.axe?[0,1,2,3]:[0,1,2];let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=this.wave<=2?(merc<2&&(gear>=2||Math.random()<.5)):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35;
  let q=tier(this.wave,this.luck),id=isMerc?pick([...pool,...this.army.map(a=>a.id)]):this.item(q);if(id<0){isMerc=true;id=pick(pool)}
  if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:(isMerc?12:7)+q*9+this.wave,lock:false}}
@@ -441,7 +442,7 @@ class Battle extends Phaser.Scene{
  emblem.setAttribute('aria-hidden','true');
  name.textContent=o.merc?troops[o.id][0]:items[o.id][0];
  detail.textContent=o.merc?'佣兵':items[o.id][2];
- c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=items[o.id][3];
+ c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=itemStackLimit;
  const reason=full?(o.merc?'满编':'已满'):this.gold<o.price?'差 '+(o.price-this.gold)+' 银币':'';
  const price=document.createElement('span');
  price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);

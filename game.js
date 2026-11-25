@@ -117,7 +117,18 @@ class Battle extends Phaser.Scene{
  this.actors=[{id:0,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?6:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?6:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
  this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].skin=6;this.actors[0].stride=0;this.trail=[{x:360,y:300},{x:480,y:300}];this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if([4,8].includes(this.wave))this.spawn(false,true);this.hud()}
  clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);this.showEnemyHealth(null);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
- spawn(boss=false,elite=false){let side=Math.floor(Math.random()*4),x=side<2?side*960:Math.random()*960,y=side<2?Math.random()*600:(side-2)*600;let type=Math.floor(Math.random()*3),hp=boss?1200:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
+ spawn(boss=false,elite=false){
+   const camera=this.cameras.main;
+   const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
+   const left=Phaser.Math.Clamp(this.hero.x-width/2,0,960-width);
+   const top=Phaser.Math.Clamp(this.hero.y-height/2,0,600-height);
+   const margin=boss?56:elite?40:26;
+   const alongX=left+Math.random()*width,alongY=top+Math.random()*height;
+   const edges=[[left-margin,alongY],[left+width+margin,alongY],
+                [alongX,top-margin],[alongX,top+height+margin]];
+   const inside=edges.filter(([x,y])=>x>=0&&x<=960&&y>=0&&y<=600);
+   const [x,y]=pick(inside.length?inside:edges);
+   let type=Math.floor(Math.random()*3),hp=boss?1200:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
  const enemy={s:this.add.image(x,y,'man'+(3+type)).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin:3+type,stride:Math.random(),hp,max:hp,boss,elite,speed:boss?42:31+type*8+this.wave*2};
  this.enemies.push(enemy);if(boss||elite){
    enemy.footBar=this.add.graphics().setDepth(1000);

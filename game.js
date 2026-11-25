@@ -58,6 +58,11 @@ class Battle extends Phaser.Scene{
  $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
  this.camp=new GreyCamp();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
+ window.addEventListener('keydown',event=>{
+   if(event.code!=='Space'||(this.mode!=='fight'&&this.mode!=='paused'))return;
+   event.preventDefault();
+   if(!event.repeat)this.pauseRun();
+ });
  const fitViewport=()=>{
    const field=$('field'),width=field.clientWidth,height=field.clientHeight;
    if(!width||!height)return;

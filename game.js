@@ -482,10 +482,10 @@ class Battle extends Phaser.Scene{
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}
  $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败敌军统帅':Math.ceil(this.timeLeft)+' 秒');
  if(this.timeLeft<=0&&this.wave<finalWave){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
- need(){return 5+this.level*2}
+ need(){return 8+this.level*3}
  collect(d){
    if(d.heal){this.hp=Math.min(this.maxHP,this.hp+d.heal);return}
-   this.gold+=2;this.xp+=2;if(d.chest)this.boxes.push(d.crateTier??tier(this.wave,this.luck));while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}}
+   this.gold+=2;this.xp+=1;if(d.chest)this.boxes.push(d.crateTier??tier(this.wave,this.luck));while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}}
  reward(){if(this.pending){let lv=this.level-this.pending+1,q=lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n]];
  const hand=document.createElement('div');hand.className='upgrade-hand';m.append(hand);
  const symbols=['♥','⚔','➶','♧'];

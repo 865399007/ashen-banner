@@ -103,6 +103,7 @@ class Battle extends Phaser.Scene{
  }
  resetRun(){Object.assign(this,{wave:1,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,boxes:[],damage:1,speed:startingSpeed,luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
+   $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
  $('battle-hud').hidden=['title','camp'].includes(this.mode);
  $('experience').style.width=100*this.xp/this.need()+'%';
  for(const [id,value] of Object.entries({level:'Lv. '+this.level,money:this.gold}))$(id).textContent=value;
@@ -115,7 +116,7 @@ class Battle extends Phaser.Scene{
  begin(){this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
  this.actors=[{id:0,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?6:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?6:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
  this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].skin=6;this.actors[0].stride=0;this.trail=[{x:360,y:300},{x:480,y:300}];this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if([4,8].includes(this.wave))this.spawn(false,true);this.hud()}
- clearField(){for(const prop of this.occluders)prop.image.setAlpha(1);this.showEnemyHealth(null);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);this.showEnemyHealth(null);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){let side=Math.floor(Math.random()*4),x=side<2?side*960:Math.random()*960,y=side<2?Math.random()*600:(side-2)*600;let type=Math.floor(Math.random()*3),hp=boss?1200:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
  const enemy={s:this.add.image(x,y,'man'+(3+type)).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin:3+type,stride:Math.random(),hp,max:hp,boss,elite,speed:boss?42:31+type*8+this.wave*2};
  this.enemies.push(enemy);if(boss||elite){
@@ -269,7 +270,8 @@ class Battle extends Phaser.Scene{
  attack(a,e){
  if(a.hero){
    a.swingTime=.21;
-   a.s.setFlipX(e.s.x<a.s.x).setTexture('commanderSwing0');
+   a.s.setFlipX(e.s.x<a.s.x);
+   if(!a.hit)a.s.setTexture('commanderSwing0');
  }
  this.sfx.swing(a.id);this.weaponEffect(a,e);
  let allies=this.army.filter(u=>u.id===a.id).length;
@@ -297,7 +299,7 @@ class Battle extends Phaser.Scene{
  if(commander.swingTime>0){
    commander.swingTime=Math.max(0,commander.swingTime-dt);
    const frame=Math.min(commanderSwingAngles.length-1,Math.floor((.21-commander.swingTime)/.03));
-   h.setTexture('commanderSwing'+frame);
+   if(!commander.hit)h.setTexture('commanderSwing'+frame);
  }
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);this.recordTrail();

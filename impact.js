@@ -1,10 +1,10 @@
 function prepareHitTextures(scene){
-  for(const key of scene.textures.getTextureKeys().filter(name=>name.startsWith('man'))){
+  for(const key of scene.textures.getTextureKeys().filter(name=>name.startsWith('man')||name.startsWith('commanderSwing'))){
     const source=scene.textures.get(key).getSourceImage();
-    const flash=scene.textures.createCanvas(key.replace('man','flash'),source.width,source.height);
+    const flash=scene.textures.createCanvas('hit-'+key,source.width,source.height);
     flash.context.drawImage(source,0,0);
     flash.context.globalCompositeOperation='source-in';
-    flash.context.fillStyle='#fff9ec';
+    flash.context.fillStyle='#ff4842';
     flash.context.fillRect(0,0,source.width,source.height);
     flash.refresh();
   }
@@ -121,7 +121,7 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
     victim.normalTexture=sprite.texture.key;
   }
   victim.hit={age:0,dx:Math.cos(angle),dy:Math.sin(angle),last:0,force:hero?3:victim.boss?4:10};
-  sprite.setTexture(victim.normalTexture.replace('man','flash'));
+  sprite.setTexture('hit-'+victim.normalTexture);
   sprite.setScale(victim.hitBase*1.23,victim.hitBase*.77);
 }
 

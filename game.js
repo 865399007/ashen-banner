@@ -33,10 +33,10 @@ const commanders={
       damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
 };
 const soulTypes=[
-  {stat:'haste',label:'攻速',values:[12,20,30],ink:'#76d6c1'},
-  {stat:'reach',label:'射程',values:[15,25,35],ink:'#9edcf8'},
-  {stat:'crit',label:'暴击率',values:[8,14,20],ink:'#c3a4ef'},
-  {stat:'power',label:'伤害',values:[15,25,40],ink:'#ffc085'}
+  {stat:'haste',label:'攻速',values:[12,20,30]},
+  {stat:'reach',label:'射程',values:[15,25,35]},
+  {stat:'crit',label:'暴击率',values:[8,14,20]},
+  {stat:'power',label:'伤害',values:[15,25,40]}
 ];
 function armySoul(army){
   const counts=[0,0,0,0];
@@ -188,15 +188,18 @@ class Battle extends Phaser.Scene{
  this.hero=this.actors[0].s;
  this.soul=armySoul(this.army);
  if(this.soul){
-   const {id,count,type}=this.soul,key='soul-'+id;
+   this.soulStrike=0;
+   const {id,count}=this.soul,key='soul-'+id;
    if(!this.textures.exists(key)){
      const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
      const tex=this.textures.createCanvas(key,source.width,source.height),ctx=tex.context;
      ctx.drawImage(source,0,0);ctx.globalCompositeOperation='source-atop';
-     ctx.fillStyle=type.ink;ctx.globalAlpha=.68;ctx.fillRect(0,0,source.width,source.height);tex.refresh();
+     const gold=ctx.createLinearGradient(0,0,source.width,source.height);
+     gold.addColorStop(0,'#ffe394');gold.addColorStop(.48,'#d8a349');gold.addColorStop(1,'#936025');
+     ctx.fillStyle=gold;ctx.globalAlpha=.72;ctx.fillRect(0,0,source.width,source.height);tex.refresh();
    }
    this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
-     .setScale(.68+.045*(count-4)).setAlpha(.42+.06*(count-4)).setDepth(this.hero.y-1);
+     .setScale(.68+.045*(count-4)).setAlpha(.65+.06*(count-4)).setDepth(this.hero.y-1);
  }
  this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
@@ -411,7 +414,13 @@ class Battle extends Phaser.Scene{
  }
  soulBonus(stat){return this.soul?.type.stat===stat?this.soul.bonus:0}
  attack(a,e){
- if(a.hero)a.s.setFlipX(e.s.x<a.s.x);
+ if(a.hero){
+   a.s.setFlipX(e.s.x<a.s.x);
+   if(this.soulImage){
+     this.soulStrike=.22;
+     this.soulAngle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
+   }
+ }
  if(a.hero&&a.skin===6){
    a.swingTime=.21;
    if(!a.hit)a.s.setTexture('commanderSwing0');
@@ -456,9 +465,16 @@ class Battle extends Phaser.Scene{
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  if(i)this.follow(a,i-1,target,x||y,dt);
- a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range*(1+this.soulBonus('reach')):troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]/(a.hero?1+this.soulBonus('haste'):1)}}
- if(this.soulImage)this.soulImage.setPosition(h.x+(h.flipX?8:-8),h.y-12+Math.sin(this.elapsed*3)*1.3)
-   .setFlipX(h.flipX).setDepth(h.y-.5);
+ a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range*(1+(this.soul ? .25 : 0)+this.soulBonus('reach')):troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]/(a.hero?1+this.soulBonus('haste'):1)}}
+ if(this.soulImage){
+   const strike=this.soulStrike>0?Math.sin(Math.PI*(1-this.soulStrike/.22)):0;
+   const angle=this.soulAngle||0;
+   const thrust=strike*(this.soul.id===1?17:11);
+   this.soulImage.setPosition(h.x+(h.flipX?8:-8)+Math.cos(angle)*thrust,
+     h.y-12+Math.sin(this.elapsed*3)*1.3+Math.sin(angle)*thrust)
+     .setFlipX(h.flipX).setAngle(strike*(h.flipX?-1:1)*(this.soul.id===3?30:17)).setDepth(h.y-.5);
+   this.soulStrike=Math.max(0,this.soulStrike-dt);
+ }
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
    const pullRadius=drop.chest?94:70*(1+.05*this.camp.level('sense'));

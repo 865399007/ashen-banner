@@ -1,74 +1,15 @@
-const finalWave=15;
-const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
-function cardRank(tier){
-  const label=document.createElement('span');
-  label.className='card-rank';
-  label.textContent=roman[tier]+' 阶';
-  return label;
-}
-// Calibrate the shared world scale against Rouge-main's 900-unit portrait view.
-const portraitWorldWidth=270;
-const referenceScale=portraitWorldWidth/900;
-const startingSpeed=90;
-const campaigns={
-  border:{name:'灰烬边境',elites:[4,8],pace:1,march:1,bossHP:1200,brief:'第 4、8 波出现精英。'},
-  pass:{name:'碎石隘口',elites:[3,6,9],pace:1.15,march:.95,bossHP:1650,brief:'敌军增援较慢，第 3、6、9 波出现精英，统帅生命更高。'},
-  pursuit:{name:'疾风追袭',elites:[5,8],pace:.84,march:1.22,bossHP:1100,brief:'敌军行进更快，增援更频繁。第 5、8 波出现精英。'}
-};
-const commanders={
-  banner:{name:"灰旗指挥官",weapon:0,skin:6,range:63,baseDamage:17,
-    passives:[
-      {name:'旗手号令',description:'每招募一名在队佣兵，主角伤害提高 5%。',
-       damageMultiplier:scene=>1+.05*scene.army.length},
-      {name:'战地振奋',description:'小队每累计击败 5 名敌人，主角恢复 3 点生命。',
-       onKill(scene){
-         if(scene.kills%5===0)scene.hp=Math.min(scene.maxHP,scene.hp+3);
-       }}
-    ]
-  },
-  scout:{name:'逐风斥候',weapon:2,skin:'2tier2',range:115,baseDamage:19,
-    passives:[{name:'疾行',description:'基础移速提高 20%。',speedBonus:startingSpeed*.2}]},
-  guard:{name:'铁壁枪卫',weapon:1,skin:'1tier3',range:61,baseDamage:29,
-    passives:[{name:'背水迎击',description:'生命不高于一半时，自身伤害提高 50%。',
-      damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
-};
-const soulTypes=[
-  {stat:'haste',label:'攻速',values:[12,20,30]},
-  {stat:'reach',label:'射程',values:[15,25,35]},
-  {stat:'crit',label:'暴击率',values:[8,14,20]},
-  {stat:'power',label:'伤害',values:[15,25,40]}
-];
-function armySoul(army){
-  const counts=[0,0,0,0];
-  for(const unit of army)if(unit.q===3)counts[unit.id]++;
-  const id=counts.findIndex(n=>n>=4);
-  if(id<0)return null;
-  const count=counts[id],type=soulTypes[id];
-  return {id,count,type,bonus:type.values[count-4]/100};
-}
-const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35]];
-const itemIcons=['whetstone','boots','badge','quiver','banner'];
-function itemIcon(id){
-  const image=document.createElement('img');
-  image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';
-  return image;
-}
-const itemStackLimit=6;
-const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥候徽章',1,'幸运 +15'],['穿甲箭袋',2,'小队伤害 +28%'],['百战军旗',3,'生命上限 +60、伤害 +35%']];
-const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-function tier(w,luck){let n=Math.random(),k=1+luck/100;
- return n<Math.min(.08,Math.max(0,w-7)*.0023*k)?3:n<Math.min(.25,Math.max(0,w-3)*.02*k)?2:n<Math.min(.6,Math.max(0,w-1)*.06*k)?1:0}
 class Battle extends Phaser.Scene{
  preload(){
    for(const key of ['sand',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
  }
  create(){
+ this.camp=new GreyCamp();
  for(const [id,entries] of [['hero-choice',commanders],['campaign-choice',campaigns]]){
-   for(const [key,entry] of Object.entries(entries))$(id).add(new Option(entry.name,key));
+   for(const [key,entry] of (id==='campaign-choice'?stageOrder.map(key=>[key,entries[key]]):Object.entries(entries)))$(id).add(new Option(entry.name,key));
  }
  const selectLoadout=()=>{
  this.commander=commanders[$('hero-choice').value];
- this.campaign=campaigns[$('campaign-choice').value];
+ this.stageKey=$('campaign-choice').value;this.campaign=campaigns[this.stageKey];
  $('campaign-brief').textContent=this.campaign.brief;
  $('commander-passives').replaceChildren();
  for(const passive of this.commander.passives){
@@ -78,7 +19,7 @@ class Battle extends Phaser.Scene{
  }
  };
  $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
- this.camp=new GreyCamp();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
+ this.syncStages();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{
    if(event.code!=='Space'||(this.mode!=='fight'&&this.mode!=='paused'))return;
@@ -105,7 +46,7 @@ class Battle extends Phaser.Scene{
    },{once:true});
  };
  watchDensity();
- this.bindJoystick();
+ this.bindJoystick();installCoop(this);
  troops.forEach(([name],id)=>{
    const btn=this.button($('test-army'),name,()=>{
      if(this.mode!=='fight')return;
@@ -156,7 +97,7 @@ class Battle extends Phaser.Scene{
    };
    this.resetStick();
    surface.addEventListener('pointerdown',e=>{
-     if(this.mode!=='fight'||finger!==null||e.button!==0)return;
+     if(!['fight','coopFight'].includes(this.mode)||finger!==null||e.button!==0)return;
      if(e.pointerType==='mouse')e.preventDefault();
      finger=e.pointerId;originX=e.clientX;originY=e.clientY;
      const rect=surface.getBoundingClientRect();
@@ -179,7 +120,7 @@ class Battle extends Phaser.Scene{
    window.addEventListener('resize',this.resetStick);
    document.addEventListener('visibilitychange',this.resetStick);
  }
- resetRun(){Object.assign(this,{wave:1,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
+ resetRun(){Object.assign(this,{wave:1,flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
    $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
  $('battle-hud').hidden=['title','camp'].includes(this.mode);
@@ -190,10 +131,17 @@ class Battle extends Phaser.Scene{
 }
  panel(title,desc){this.resetStick();$('cover').hidden=true;let m=$('modal');m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
- startRun(){this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
- begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
+ syncStages(){
+   for(const option of $('campaign-choice').options){
+     const open=this.camp.stageOpen(option.value);
+     option.disabled=!open;option.textContent=campaigns[option.value].name+(open?'':' · 未解锁');
+   }
+ }
+ startRun(){if(!this.camp.stageOpen(this.stageKey))return;this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;this.hp=Math.min(this.maxHP,this.hp+15+6*this.bag[bandage]);
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
+ setupStage(this);this.flagUntil=0;this.bountyTaken=false;
  this.deployMercenaries();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);
  if(this.wave===finalWave)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);
@@ -202,36 +150,43 @@ class Battle extends Phaser.Scene{
  createActor(unit,index){
    const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
    const s=this.add.image(480,300,'man'+skin).setOrigin(.5,.85).setScale((unit.hero?.62:.5)*2/3);
-   return {...unit,skin,stride:0,cd:index*.12,s};
+   return {...unit,skin,stride:0,shots:0,cd:index*.12,s};
  }
  deployMercenaries(){
    for(const unit of this.actors.splice(1))unit.s.destroy();
+   this.bondCounts=troops.map((_,id)=>this.army.filter(unit=>unit.id===id).length);
+   this.swordHits=0;this.volleyIn=8*(1-.12*this.bag[11]);
    this.army.forEach((unit,i)=>this.actors.push(this.createActor(unit,i+1)));
    this.soulImage?.destroy();this.soulImage=null;
  this.soul=armySoul(this.army);
  if(this.soul){
    this.soulStrike=0;
    const {id,count}=this.soul,key='soul-'+id;
-   const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
-   const padding=16;
-   if(!this.textures.exists(key)){
-     const tex=this.textures.createCanvas(key,source.width,source.height),ctx=tex.context;
-     ctx.drawImage(source,0,0);
-     const pixels=ctx.getImageData(0,0,source.width,source.height);
-     const rgba=pixels.data;
-     // Map the original shading to navy shadows, azure midtones and ice-blue highlights.
-     const palette=[[30,94,135],[84,185,244],[177,224,251]];
-     for(let i=0;i<rgba.length;i+=4){
-       const light=Math.min(1,(rgba[i]*.30+rgba[i+1]*.59+rgba[i+2]*.11)/220);
-       const band=light<.5?0:1,blend=light*2-band;
-       for(let channel=0;channel<3;channel++){
-         rgba[i+channel]=palette[band][channel]*(1-blend)+palette[band+1][channel]*blend;
+   const skin=mercSkins[id];
+   const ink=getComputedStyle(document.documentElement).getPropertyValue('--tier-3').trim();
+   const poses=id===2?[0,.4,.85,1,-.35,-.1,0]:[0,-.22,-.42,.35,1,.55,0];
+   poses.forEach((pose,frame)=>{
+     const frameKey=key+'-'+frame;
+     if(this.textures.exists(frameKey))return;
+     paintTexture(this,frameKey,120,112,(ctx,polygon)=>{
+       ctx.save();ctx.translate(24,16);ctx.scale(2,2);
+       miniature(ctx,polygon,skin,0,3,ink,pose);
+       ctx.restore();
+       const pixels=ctx.getImageData(0,0,120,112);
+       const rgba=pixels.data;
+       // Map the original shading to navy shadows, azure midtones and ice-blue highlights.
+       const palette=[[30,94,135],[84,185,244],[177,224,251]];
+       for(let i=0;i<rgba.length;i+=4){
+         const light=Math.min(1,(rgba[i]*.30+rgba[i+1]*.59+rgba[i+2]*.11)/220);
+         const band=light<.5?0:1,blend=light*2-band;
+         for(let channel=0;channel<3;channel++){
+           rgba[i+channel]=palette[band][channel]*(1-blend)+palette[band+1][channel]*blend;
+         }
        }
-     }
-     ctx.putImageData(pixels,0,0);
-     tex.refresh();
-   }
-   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
+       ctx.putImageData(pixels,0,0);
+     });
+   });
+   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key+'-0').setOrigin(.5,84/112)
      .setScale(.68+.045*(count-4)).setAlpha(0.75).setDepth(this.hero.y-1);
  }
  this.actors.slice(1).forEach((unit,slot)=>{
@@ -247,8 +202,8 @@ class Battle extends Phaser.Scene{
  });
    Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.soul?.count===6&&this.soul.id===id)));
  }
- clearField(){this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
- spawn(boss=false,elite=false){
+ clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ spawn(boss=false,elite=false,forcedSkin=null){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
    const left=Phaser.Math.Clamp(this.hero.x-width/2,0,960-width);
@@ -264,12 +219,14 @@ class Battle extends Phaser.Scene{
    // Alternate infantry reinforcements with the existing patrols.
    const reinforcement=!boss&&!elite&&this.ordinarySpawns%2===0;
    const variant=(this.ordinarySpawns/2-1)%8;
-   const skin=reinforcement?9+variant:mounted?8:3+type;
+   const skin=forcedSkin??(boss?this.campaign.bossSkin:reinforcement&&variant===7&&this.wave>=2&&this.ordinarySpawns%32===16?23:reinforcement?9+variant:mounted?8:3+type);
    const pace=reinforcement?[47,24,33,58,29,38,32,54][variant]:31+type*8;
    const toughness=reinforcement?[2,15,7,-2,12,6,9,0][variant]:type*3;
    let hp=boss?this.campaign.bossHP:(13+this.wave*4+toughness)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
  const enemy={s:this.add.image(x,y,'man'+skin).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
- if(mounted)enemy.charge={phase:"ready",remaining:.45};
+ enemy.move=boss?this.campaign.bossMove:({5:'bow',23:'bolt',13:'hammer',14:'hammer',15:'hammer'})[skin];
+ enemy.reload=.25+Math.random()*.55;
+ if(skin===8)enemy.charge={phase:"ready",remaining:.45};
  this.enemies.push(enemy);if(boss||elite){
    enemy.footBar=this.add.graphics().setDepth(1000);
    this.showEnemyHealth(enemy);
@@ -314,8 +271,10 @@ class Battle extends Phaser.Scene{
    return true;
  }
  walkEnemy(enemy,dt){
+   if(enemy.move&&stepEnemyMove(this,enemy,dt))return;
    if(enemy.charge&&this.advanceCharge(enemy,dt))return;
    const s=enemy.s, x=s.x,y=s.y;
+   enemy.facing=Math.atan2(this.hero.y-y,this.hero.x-x);
    this.move(s,this.hero.x,this.hero.y,enemy.speed*dt);
    if(enemy.elite||enemy.boss)resolveFootprint(this,s,x,y,true);
    this.animateWalk(enemy,s.x-x,s.y-y,enemy.boss?48:22);
@@ -335,7 +294,7 @@ class Battle extends Phaser.Scene{
    if(s.texture.key!==key)s.setTexture(key);
  }
  footfall(unit,forwardX,forwardY,side){
-   const sprint=unit.charge?.phase==='dash';
+   const sprint=unit.rush||unit.charge?.phase==='dash';
    if(!sprint&&unit.dustPuff?.active)return;
    const size=Phaser.Math.Clamp(unit.s.displayHeight/64,.45,1.45),trail=8*size;
    const x=unit.s.x-trail*forwardX-3*forwardY*side;
@@ -362,7 +321,7 @@ class Battle extends Phaser.Scene{
    return {x:centerX+Math.cos(angle)*radius,y:centerY+Math.sin(angle)*radius};
  }
  follow(unit,slot,target,marching,dt){
-   const engage=!marching && target && unit.id!==2 && distance(target.s,this.hero)<105;
+   const engage=!marching && target && ![2,5].includes(unit.id) && distance(target.s,this.hero)<105;
    const wanted=engage?target.s:this.followPosition(slot);
    const history=unit.goalHistory;
    // Snapshot moving targets so that each soldier reacts on its own beat.
@@ -400,19 +359,31 @@ class Battle extends Phaser.Scene{
    const reach=Math.max(7,Math.hypot(dx,dy));
    const fx=this.add.graphics().setPosition(x,y).setRotation(angle).setDepth(1000);
    const rank=unit.hero?0:unit.q;
-   const edge=[0xffecc5,0xc9e2de,0xe3ccef,0xffcf77][rank];
-   if(unit.id===2){
+   const edge=rank?strikeInks[rank].body:0xffecc5;
+   const flight=Math.max(65,reach*.75);
+   if(rank)weaponAccent(this,unit,enemy.s.x,targetY,angle,body,[2,5].includes(unit.id)?flight:0);
+   if(!unit.hero&&unit.id===3&&this.bondCounts[3]===6){
+     const radius=this.mercRange(unit)*1.4;
+     const wave=this.add.graphics().setPosition(x,y).setRotation(angle).setDepth(999);
+     wave.lineStyle(1.3,edge,.8).beginPath().arc(0,0,radius,-Math.PI/3,Math.PI/3).strokePath();
+     wave.setScale(.55);
+     this.tweens.add({targets:wave,scaleX:1,scaleY:1,alpha:0,duration:150,onComplete:()=>wave.destroy()});
+   }
+   if(unit.id===2||unit.id===5){
      fx.setScale(body*.028);
      fx.lineStyle(2,0x795035).lineBetween(-13,0,0,0);
      fx.fillStyle(0xe6e0c7).fillTriangle(3,0,-2,-2,-2,2);
      fx.fillStyle(0xd6ae72).fillTriangle(-9,0,-15,-3,-13,0).fillTriangle(-9,0,-15,3,-13,0);
      if(rank){
+       const tail=13+rank*8;
+       strikeShard(fx,-tail,0,tail,0,rank+1,strikeInks[rank].shadow);
+       strikeShard(fx,-tail+3,0,tail-2,0,rank*.65,strikeInks[rank].light);
        fx.fillStyle(edge,.85).fillTriangle(-8,-1.6,-19-rank*2,0,-8,1.6);
        if(rank>=2)fx.lineStyle(1.4,edge,.85).lineBetween(-11,-3,-19,-4).lineBetween(-11,3,-19,4);
        if(rank===3)fx.fillStyle(edge).fillTriangle(5,0,-3,-4,-1,0).fillTriangle(5,0,-1,0,-3,4);
      }
-     this.tweens.add({targets:fx,x:x+dx,y:y+dy,duration:Math.max(65,reach*.75),onComplete:()=>fx.destroy()});
-   }else if(unit.id===1){
+     this.tweens.add({targets:fx,x:x+dx,y:y+dy,duration:flight,onComplete:()=>fx.destroy()});
+   }else if(unit.id===1||unit.id===8){
      const length=body*.8, thrust=Math.min(reach,body*.35);
      fx.setPosition(enemy.s.x-thrust*Math.cos(angle),targetY-thrust*Math.sin(angle));
      fx.lineStyle(body*.065,0x9c7754).lineBetween(-length,0,-body*.2,0);
@@ -453,20 +424,118 @@ class Battle extends Phaser.Scene{
    a.s.setFlipX(e.s.x<a.s.x);
    if(this.soulImage){
      this.soulStrike=.22;
-     this.soulAngle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
+     this.soulFacesLeft=e.s.x<a.s.x;
    }
  }
  if(a.hero&&a.skin===6){
    a.swingTime=.21;
    if(!a.hit)a.s.setTexture('commanderSwing0');
  }
- this.sfx.swing(a.id);this.weaponEffect(a,e);
- let allies=this.army.filter(u=>u.id===a.id).length;
- const critical=Math.random()<.05+(a.hero?this.soulBonus('crit'):0);
- const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
- if(e.hp<=0){e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
+ this.sfx.swing(a.id===5?2:a.id);
+ if(a.hero){this.weaponEffect(a,e);if(!this.arrowBlocked(a,e))this.dealHit(a,e,1);return}
+ const count=this.bondCounts[a.id];
+ if(a.id===9){
+   const angle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
+   a.rush={x:e.s.x+4*Math.cos(angle),y:e.s.y+4*Math.sin(angle),time:.20};return;
+ }
+ if(a.id===2||a.id===5){
+   a.shots++;
+   const arrows=1+(a.id===5?this.bag[20]:0)+Number(a.id===2&&count>=4)+(a.shots%5===0?this.bag[5]:0);
+   for(let i=0;i<arrows&&this.mode==='fight';i++){
+     const target=i===0?e:this.closestInRange(a);
+     if(target)this.weaponStrike(a,target);
+   }
+ }else{
+   this.weaponStrike(a,e);
+   if(a.id===7&&this.mode==='fight'){
+     const second=e.hp>0?e:this.closestInRange(a);
+     if(second)this.weaponStrike(a,second);
+   }
+   if(this.mode==='fight'&&a.id===0&&count===6&&++this.swordHits%4===0)this.groupStrike(0);
+ }
+ }
+ attackInterval(a){
+   if(a.hero)return troops[a.id][2]/(1+this.soulBonus('haste')+.05*this.bag[16]);
+   const count=this.bondCounts[a.id];
+   let haste=this.mercHaste+.05*this.bag[16]+(this.elapsed<this.flagUntil?.20:0);
+   if((a.id===0||a.id===2)&&count>=2)haste+=a.id===0&&count>=4?.16:.08;
+   if(a.id>=4)haste+=Math.floor(count/2)*.08;
+   return troops[a.id][2]*(a.id===5?1+.15*this.bag[20]:1)*([1,8].includes(a.id)?1+.05*this.bag[13]:1)/(1+haste);
+ }
+ mercRange(a){
+   const count=this.bondCounts[a.id];
+   return troops[a.id][3]*([1,8].includes(a.id)?1+.15*this.bag[13]:1)*(a.id===1&&count>=2?1.1:a.id===3&&count>=2?1.08:1);
+ }
+ closestInRange(a){
+   let target=null,limit=this.mercRange(a);
+   for(const enemy of this.enemies){
+     const d=distance(a.s,enemy.s);
+     if(d<=limit){limit=d;target=enemy}
+   }
+   return target;
+ }
+ groupStrike(id){
+   for(const unit of this.actors){
+     if(this.mode!=='fight')break;
+     if(unit.hero||unit.id!==id)continue;
+     const enemy=this.closestInRange(unit);
+     if(enemy)this.weaponStrike(unit,enemy);
+   }
+ }
+ weaponStrike(a,e){
+   const count=this.bondCounts[a.id],r=this.mercRange(a);
+   const angle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
+   const dx=Math.cos(angle),dy=Math.sin(angle);
+   const hits=[e],piercing=[2,5].includes(a.id)&&this.bag[3]>0;
+   const sweeping=[3,6,8,9].includes(a.id);
+   if(a.id===1||sweeping||piercing){
+     const extra=[];
+     for(const other of this.enemies){
+       if(other===e)continue;
+       const x=other.s.x-a.s.x,y=other.s.y-a.s.y;
+       const along=x*dx+y*dy,side=Math.abs(x*dy-y*dx);
+       if(sweeping){
+         const radius=a.id===9?19:a.id===3&&count===6?r*1.4:r;
+         if(a.id===9||a.id===6){if(distance(other.s,e.s)<=(a.id===6?17:radius))extra.push(other);continue}
+         if(along>=Math.hypot(x,y)*.5&&Math.hypot(x,y)<=radius)extra.push(other);
+       }else if(along>0&&along<=r&&side<=6&&(!piercing||along>=distance(a.s,e.s)))extra.push(other);
+     }
+     extra.sort((l,h)=>distance(a.s,l.s)-distance(a.s,h.s));
+     hits.push(...(sweeping?extra:extra.slice(0,piercing?1:count>=4?2:1)));
+   }
+   this.weaponEffect(a,piercing?hits[hits.length-1]:e);
+   for(const victim of hits){
+     if(this.arrowBlocked(a,victim))break;
+     if(this.mode!=='fight')break;
+     if(a.id===1&&count===6&&victim.charge?.phase==='dash'){
+       victim.charge.phase='recover';victim.charge.remaining=.75;
+       victim.s.x=Phaser.Math.Clamp(victim.s.x+dx*7,8,952);
+       victim.s.y=Phaser.Math.Clamp(victim.s.y+dy*7,8,592);
+     }
+     if(a.id===6&&!victim.boss&&!victim.elite){
+       victim.s.x=Phaser.Math.Clamp(victim.s.x+dx*5,8,952);
+       victim.s.y=Phaser.Math.Clamp(victim.s.y+dy*5,8,592);
+     }
+     const heavy=victim.boss||victim.elite||[4,8,10,13].includes(victim.skin);
+     const power=(piercing?.9:1)*(a.id===5&&heavy?1.25:a.id===3&&count>=4?1.15:1);
+     this.dealHit(a,victim,power);
+     if(this.mode==='fight'&&victim.hp>0&&this.bag[6]){
+       victim.comboHits=(victim.comboHits||0)+1;
+       if(victim.comboHits%5===0)this.dealHit(a,victim,power);
+     }
+   }
+ }
+ arrowBlocked(a,e){
+   if((a.id!==2&&a.id!==5)||e.skin!==10||!shieldFront(e,a.s))return false;
+   shieldSpark(this,e.s);return true;
+ }
+ dealHit(a,e,power){
+ const critical=Math.random()<.05+this.critBonus+(a.hero?this.soulBonus('crit'):0);
+ if(e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
+ const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
+ if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
- if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
+ if(e.elite){if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});
@@ -476,7 +545,7 @@ class Battle extends Phaser.Scene{
    this.healDropsRemaining--;
  }
  this.hud()}}
- update(_,ms){if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
+ update(_,ms){if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
  let x=Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),y=Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);
  if(!x&&!y){x=this.stickX;y=this.stickY}
  if(x||y)this.dir=[x/Math.hypot(x,y),y/Math.hypot(x,y)];
@@ -492,46 +561,108 @@ class Battle extends Phaser.Scene{
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
- for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){const contactDamage=e.boss?22:7+this.wave+({13:4,14:2,15:3}[e.skin]||0);this.hp=Math.max(0,this.hp-contactDamage);this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],contactDamage,true);this.hud();if(!this.hp){this.end(false);return}}}
+ for(const e of this.enemies){
+   advanceImpact(e,dt);
+   if(!e.hit)this.walkEnemy(e,dt);
+   if(this.mode!=='fight')return;
+   e.s.setDepth(e.s.y);
+   if(e.footBar)this.positionFootBar(e);
+   if(!e.move&&distance(e.s,h)<19)this.enemyHit(e.s,7+this.wave);
+   if(this.mode!=='fight')return;
+ }
+ stepStage(this,dt);if(this.mode!=='fight')return;stepStageFire(this,dt);if(this.mode!=='fight')return;
+ stepHostileShots(this,dt);
+ if(this.mode!=='fight')return;
  const defending=!x&&!y;
  const nearby=defending?this.enemies.filter(e=>distance(e.s,h)<105):[];
  for(let [i,a] of this.actors.entries()){
-   const candidates=i&&a.id!==2&&nearby.length?nearby:this.enemies;
+   if(a.rush){
+     const rush=a.rush,ox=a.s.x,oy=a.s.y;
+     this.move(a.s,rush.x,rush.y,360*dt);rush.time-=dt;
+     this.animateWalk(a,a.s.x-ox,a.s.y-oy,12);
+     a.s.setDepth(a.s.y+1);
+     if(distance(a.s,rush)<1||rush.time<=0){
+       a.rush=null;
+       const victim=this.closestInRange(a);
+       if(victim&&distance(victim.s,a.s)<22)this.weaponStrike(a,victim);
+       if(this.mode!=='fight')return;
+     }
+     continue;
+   }
+   const candidates=i&&![2,5].includes(a.id)&&nearby.length?nearby:this.enemies;
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
+ if(a.hero&&a.cd<=0&&(!target||d>this.commander.range)){
+   const box=this.containers.find(b=>distance(a.s,b.s)<=this.commander.range);
+   if(box){
+     this.sfx.swing(a.id);box.s.setAlpha(.62);a.cd=troops[a.id][2];
+     if(--box.hp<=0){
+       const {x,y}=box.s;box.s.destroy();this.containers.splice(this.containers.indexOf(box),1);
+       const chest=Math.random()<.04;
+       this.drops.push({chest,s:chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62)});
+     }
+   }
+ }
  if(i)this.follow(a,i-1,target,x||y,dt);
- a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range*(1+(this.soul ? .25 : 0)+this.soulBonus('reach')):troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]/(a.hero?1+this.soulBonus('haste'):1)}}
+ if(i&&a.id===4&&target){a.facing=Math.atan2(target.s.y-a.s.y,target.s.x-a.s.x);a.s.setFlipX(Math.cos(a.facing)<0)}
+ a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range*(1+(this.soul ? .25 : 0)+this.soulBonus('reach')):this.mercRange(a))&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}
+ if(this.bondCounts[2]===6&&(this.volleyIn-=dt)<=0){
+   this.volleyIn+=8*(1-.12*this.bag[11]);this.groupStrike(2);
+   if(this.mode!=='fight')return;
+ }
  if(this.soulImage){
-   const strike=this.soulStrike>0?Math.sin(Math.PI*(1-this.soulStrike/.22)):0;
-   const angle=this.soulAngle||0;
-   const thrust=strike*(this.soul.id===1?17:11);
-   this.soulImage.setPosition(h.x+(h.flipX?8:-8)+Math.cos(angle)*thrust,
-     h.y-12+Math.sin(this.elapsed*3)*1.3+Math.sin(angle)*thrust)
-     .setFlipX(h.flipX).setAngle(strike*(h.flipX?-1:1)*(this.soul.id===3?30:17)).setDepth(h.y-.5);
+   const frame=this.soulStrike>0?Math.min(6,Math.floor((1-this.soulStrike/.22)*7)):0;
+   const left=this.soulStrike>0?this.soulFacesLeft:h.flipX;
+   this.soulImage.setTexture('soul-'+this.soul.id+'-'+frame)
+     .setPosition(h.x+(left?8:-8),h.y-12+Math.sin(this.elapsed*3)*1.3)
+     .setFlipX(left).setDepth(h.y-.5);
    this.soulStrike=Math.max(0,this.soulStrike-dt);
  }
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
-   const pullRadius=drop.chest?94:70*(1+.05*this.camp.level('sense'));
+   const pullRadius=(drop.chest?94:70*(1+.05*this.camp.level('sense')))*(1+.20*this.bag[satchel]);
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}
  $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败敌军统帅':Math.ceil(this.timeLeft)+' 秒');
- if(this.timeLeft<=0&&this.wave<finalWave){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
+ if(this.timeLeft<=0&&this.wave<finalWave){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.freeRefreshes=this.bag[12];this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
+ enemyHit(source,raw){
+   if(this.invul>0)return;
+   const edict=this.bag[19]&&this.bondCounts[4]>=2;
+   const guarded=this.actors.some(a=>!a.hero&&a.id===4&&distance(a.s,this.hero)<(edict?70:50));
+   const damage=Math.max(1,Math.round(raw*15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18])*(guarded?(edict?.80:.88):1)));
+   this.takeCommanderDamage(damage);this.invul=.65;this.showInvulFade=true;
+   impact(this,source,this.actors[0],damage,true);this.hud();
+   if(!this.hp)this.end(false);
+ }
+ takeCommanderDamage(amount){
+   this.hp=Math.max(0,this.hp-amount);
+   if(this.hp===0&&this.bag[lastStand]&&!this.lastStandSpent){
+     this.hp=1;this.lastStandSpent=true;
+   }
+ }
  need(){return 8+this.level*3}
  collect(d){
    if(d.heal){this.hp=Math.min(this.maxHP,this.hp+d.heal);return}
-   this.gold+=2;this.xp+=1;if(d.chest)this.boxes.push(d.crateTier??tier(this.wave,this.luck));while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}}
- reward(){if(this.pending){let lv=this.level-this.pending+1,q=lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n]];
+   this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}}
+ reward(keptTier){if(this.pending){let lv=this.level-this.pending+1,q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],
+ ['操练　佣兵攻速 +'+5*n+'%',()=>this.mercHaste+=.05*n],
+ ['锐眼　暴击率 +'+(1+2*n)+'%',()=>this.critBonus+=(1+2*n)/100],
+ ['铁甲　护甲 +'+n,()=>this.armor+=n]];
  const hand=document.createElement('div');hand.className='upgrade-hand';m.append(hand);
- const symbols=['♥','⚔','➶','♧'];
- Phaser.Utils.Array.Shuffle(options.map(([label,apply],i)=>({label,apply,symbol:symbols[i]}))).forEach(({label,apply,symbol},index)=>{
+ const symbols=['♥','⚔','➶','♧','⚑','✦','⬟'];
+ Phaser.Utils.Array.Shuffle(options.map(([label,apply],i)=>({label,apply,symbol:symbols[i]}))).slice(0,4).forEach(({label,apply,symbol},index)=>{
    const [name,effect]=label.split('　');
-   const card=this.button(hand,'',()=>{apply();this.pending--;this.hud();this.reward()});
+   const card=this.button(hand,'',()=>{apply();this.upgradeRefreshes=0;this.pending--;this.hud();this.reward()});
    card.className='upgrade-card';card.dataset.tier=q;card.style.setProperty('--delay',index*45+'ms');
    const icon=document.createElement('i'),title=document.createElement('strong'),value=document.createElement('span');
    icon.textContent=symbol;icon.setAttribute('aria-hidden','true');
    title.textContent=name;value.textContent=effect;card.append(cardRank(q),icon,title,value);
  });
+ const cost=refreshPrice(this.wave,this.upgradeRefreshes);
+ this.button(m,'重抽 · '+cost+' 银币',()=>{
+   if(this.gold<cost)return;
+   this.gold-=cost;this.upgradeRefreshes++;this.hud();this.reward(q);
+ },this.gold<cost);
  return}
  if(this.boxes.length){
    const q=this.boxes.shift(),id=this.item(q);
@@ -542,23 +673,38 @@ class Battle extends Phaser.Scene{
    m.querySelector('p').before(icon);
    actions.className='loot-actions';m.append(actions);
    if(id>=0)this.button(actions,'领取',()=>{this.applyItem(id);this.hud();this.reward()}).className='primary';
-   this.button(actions,'回收 +8 银币',()=>{this.gold+=8;this.hud();this.reward()});
+   const salvage=id<0?4*(q+1):Math.max(1,Math.floor(refitPrice(false,id,q,this.wave)*.25));
+   this.button(actions,'回收 +'+salvage+' 银币',()=>{this.gold+=salvage;this.hud();this.reward()});
    return;
  }
  this.roll();this.shop()}
- item(q){return pick(items.map((it,i)=>it[1]===q&&this.bag[i]<itemStackLimit?i:-1).filter(i=>i>=0))??-1}
- applyItem(id){if(this.bag[id]>=itemStackLimit)return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===2)this.luck+=15;if(id===3)this.damage+=.28;if(id===4){this.maxHP+=60;this.hp+=60;this.damage+=.35}}
- roll(){const pool=this.camp.data.axe?[0,1,2,3]:[0,1,2];let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=this.wave<=2?(merc<2&&(gear>=2||Math.random()<.5)):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35;
- let q=tier(this.wave,this.luck),id=isMerc?pick([...pool,...this.army.map(a=>a.id)]):this.item(q);if(id<0){isMerc=true;id=pick(pool)}
- if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:(isMerc?12:7)+q*9+this.wave,lock:false}}
- if(this.wave<=5&&!merc){let o=this.offers.find(o=>!o.lock);if(o)Object.assign(o,{merc:true,id:0,price:12+this.wave+o.q*9})}}
+ item(q,bias=false){
+   const pool=items.map((it,i)=>it[1]===q&&this.camp.itemOpen(i)&&this.bag[i]<itemCap(i)?i:-1).filter(i=>i>=0);
+   const tags={3:[2,5],5:[2,5],6:[0,7],11:[0,2],13:[1,8],15:[2,5,7],16:[0,7],18:[4,6],19:[4],20:[5]};
+   if(bias&&Math.random()<.05){
+     const match=pool.filter(i=>this.army.some(a=>tags[i]?.includes(a.id)));
+     if(match.length)return pick(match);
+   }
+   return pick(pool)??-1;
+ }
+ recruitOffer(pool){
+   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse'];
+   const weights=pool.map(id=>this.army.some(a=>a.id===id)?2:this.army.some(a=>classes[a.id]===classes[id])?1.35:1);
+   let r=Math.random()*weights.reduce((a,b)=>a+b,0);
+   return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
+ }
+ applyItem(id){if(this.bag[id]>=itemCap(id))return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;}
+ roll(){const pool=troops.map((_,id)=>id).filter(id=>this.camp.troopOpen(id));let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=this.wave<=2?(merc<2&&(gear>=2||Math.random()<(2-merc)/(4-merc-gear))):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35;
+ let q=tier(this.wave,this.luck),id=isMerc?this.recruitOffer(pool):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=pick(pool)}
+ if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:refitPrice(isMerc,id,q,this.wave),lock:false}}
+ if(this.wave<=5&&!merc){let o=this.offers.find(o=>!o.lock);if(o)Object.assign(o,{merc:true,id:0,price:refitPrice(true,0,o.q,this.wave)})}}
  shop(deal=true){this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
- c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=['⚔','♜','➶','⚒'][o.id];else emblem.append(itemIcon(o.id));
+ c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=troopEmblems[o.id];else emblem.append(itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
  name.textContent=o.merc?troops[o.id][0]:items[o.id][0];
  detail.textContent=o.merc?'佣兵':items[o.id][2];
- c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=itemStackLimit;
+ c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=itemCap(o.id);
  const reason=full?(o.merc?'满编':'已满'):this.gold<o.price?'差 '+(o.price-this.gold)+' 银币':'';
  const price=document.createElement('span');
  price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);
@@ -584,7 +730,9 @@ class Battle extends Phaser.Scene{
          actions.replaceChildren();
          if(!open)return;
          slot.setAttribute('aria-pressed','true');
-         this.button(actions,'遣散',()=>{
+         const refund=Math.floor(refitPrice(true,unit.id,unit.q,this.wave)/4);
+         this.button(actions,'遣散 +'+refund+' 银币',()=>{
+           this.gold+=refund;
            this.army.splice(i,1);this.shop(false);
          });
          const partner=this.army.findIndex(other=>other!==unit&&other.id===unit.id&&other.q===unit.q);
@@ -616,7 +764,7 @@ class Battle extends Phaser.Scene{
    group.append(heading,grid);inventory.append(group);
  }
  m.append(inventory);
- let cost=2+this.refreshes;this.button(m,'刷新 · '+cost,()=>{this.gold-=cost;this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary'}
+ let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(m,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary'}
  pauseRun(){
    const field=$('field'),modal=$('modal');
    if(this.mode==='paused'){
@@ -631,7 +779,7 @@ class Battle extends Phaser.Scene{
  end(win){
    if(this.mode==='over')return;
    this.mode='over';this.clearField();this.hud();
-   const reward=this.camp.settle(this,win);
+   const reward=this.camp.settle(this,win);this.syncStages();
    const m=this.panel(win?'突围成功':'灰旗倒下','完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
    const receipt=document.createElement('p');receipt.textContent=reward;m.append(receipt);
    this.button(m,'返回灰旗营地',()=>this.camp.open(this)).className='primary';

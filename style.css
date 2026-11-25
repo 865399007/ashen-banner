@@ -259,3 +259,51 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #test-army button[aria-pressed=true]{background:#865332;outline:1px solid #eed59d}
 #field:has(#cover:not([hidden]),#modal:not([hidden]),#preferences:not([hidden])) #test-army{display:none}
 @media(max-height:420px){#test-army{grid-template-columns:repeat(2,auto)}}
+
+#test-army{max-height:65%;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
+.coop-status{position:absolute;bottom:calc(var(--edge-b,8px) + 10px);left:50%;transform:translateX(-50%);color:#fff0cc;text-shadow:0 1px 3px #302114;white-space:nowrap;pointer-events:none;z-index:5}
+#field.cooperative #test-army,#field.cooperative #field-controls{display:none}
+#modal input[aria-label="房间号"]{display:block;margin:10px auto;padding:8px;text-align:center;width:9em;font:inherit;border:1px solid #866642;border-radius:5px;background:#f0dfb7;color:#4c3426}
+
+.coop-exit{position:absolute;z-index:8;right:max(8px,env(safe-area-inset-right));top:max(4px,env(safe-area-inset-top));min-width:48px;min-height:44px;padding:0 6px;border:0;background:transparent;box-shadow:none;color:#fff0cf;font-family:inherit;font-weight:700;font-size:16px;text-shadow:0 1px 3px #493428}
+.coop-exit[hidden]{display:none}
+#field.cooperative #modal:has(.party-hall),#field.cooperative #modal:has(.party-choice){
+  width:min(490px,calc(100% - 24px));max-height:calc(100% - 88px);padding:clamp(12px,3vh,26px) 16px;
+  border:1px solid #a98957;border-radius:9px;color:#f6e8c6;
+  background:linear-gradient(165deg,#3e4740f7,#252c29fc 55%,#31332dfc);
+  box-shadow:inset 0 0 0 3px #343932,0 12px 30px #30291966}
+#field.cooperative #modal:has(.party-hall)>h2,#field.cooperative #modal:has(.party-choice)>h2{color:#f9e5ba;font-size:clamp(22px,4vh,30px);letter-spacing:.12em}
+#field.cooperative #modal:has(.party-hall)>p,#field.cooperative #modal:has(.party-choice)>p{color:#d9c79f;margin:5px auto 15px}
+.party-seats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.party-seat{min-width:0;position:relative;padding:12px 4px 14px;display:grid;justify-items:center;align-content:end;justify-content:stretch;
+ border:1px solid #b69b68;border-radius:5px;background:radial-gradient(ellipse at 50% 38%,#a77951 0%,transparent 64%),linear-gradient(150deg,#71473a,#492f2a)}
+.party-seat.seat-1{background:radial-gradient(ellipse at 50% 38%,#829383 0%,transparent 64%),linear-gradient(150deg,#455f59,#354640)}
+.party-seat.vacant{background:repeating-linear-gradient(135deg,#ffffff03 0 2px,transparent 2px 8px),#353e37;border:1px dashed #9b9275}
+.seat-role{justify-self:start;margin-left:6px;font-size:12px;color:#e2c99c}
+.party-seat canvas.seat-portrait,.party-seat .invite-seat{width:100%!important;height:clamp(74px,18vh,150px)!important;object-fit:contain}
+#modal .party-seat button.invite-seat{background:transparent;color:#d9c79e;border:0;box-shadow:none;font-size:36px;margin:0}
+.seat-name{font-size:clamp(15px,2.6vh,19px);color:#fff2d4}
+.seat-state{margin-top:5px;color:#dbcdae;font:12px sans-serif;letter-spacing:0}
+.seat-state.ready{color:#bce5ab}.party-tools{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px auto 0;color:#d4c2a3;font-size:13px}
+.party-code{font:700 18px monospace;letter-spacing:.12em;color:#f9e4be}
+#modal .party-tools button,#modal .party-ready,.party-choice{min-height:44px;border-radius:5px}
+#modal .party-ready{width:min(260px,100%);background:#985037;color:#fff0d9;border:1px solid #ce9460}
+.invite-note{min-height:14px;font-size:12px;color:#eac889}.invite-copy{width:95%}
+.party-choice{color:#f6e8c6;background:#39433b;border:1px solid #928464;padding:6px}
+
+#field #cover:not([hidden]){
+  inset:0;max-height:none;display:flex;flex-direction:column;align-items:center;
+  background:#563420 url("assets/title/commander.png") center top / cover no-repeat;
+  color:#fff1d4;text-align:center;text-shadow:0 1px 3px #382317;
+}
+#cover::before{content:"";flex:1 0 48%}
+.title-menu{width:min(100%,600px);padding:12px max(12px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom))}
+.title-menu h1{font-size:clamp(36px,7vw,66px);color:#ffdf9b;margin:3px 0}
+#cover .title-menu p{margin:0 0 12px}
+.title-menu .loadout label{gap:6px}
+.title-menu button{min-height:44px}
+@media(min-aspect-ratio:1/1){
+  #field #cover:not([hidden]){flex-direction:row;background-position:24% top;background-size:auto 150%}
+  #cover::before{flex:1}
+  .title-menu{width:46%;max-height:100%;overflow:auto}
+}

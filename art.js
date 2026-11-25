@@ -210,8 +210,9 @@ function bannerCommander(c,phase,swing=null){
   shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
   c.restore();
 }
-function troopSkin(id,q=0){const skin=id===3?7:id;return q?skin+"tier"+q:skin}
-function mountedLancer(c,phase){
+const mercSkins=[0,1,2,7,17,18,19,20,21,22];
+function troopSkin(id,q=0){const skin=mercSkins[id];return q?skin+"tier"+q:skin}
+function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   const step=Math.sin(phase);
   const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   shadow(c,23,40,13);
@@ -224,23 +225,29 @@ function mountedLancer(c,phase){
   fill('M10 22 Q5 20 3 26 L1 34 Q6 33 9 28 Z','#48332c');
   fill('M8 23 Q14 18 25 22 Q30 21 32 14 L35 11 L36 7 L39 11 L41 9 L41 14 L46 20 Q45 24 41 23 L36 20 Q36 29 31 32 Q24 35 13 32 Q6 32 8 23 Z','#98683f');
   fill('M28 23 Q31 13 35 11 L38 12 L34 17 L32 26 Z','#49342c');
-  fill('M13 21 L26 21 L25 31 L16 29 L12 30 Z','#943f32');
+  fill('M13 21 L26 21 L25 31 L16 29 L12 30 Z',ally?'#416879':'#943f32');
   fill('M14 27 L24 29 L24 31 L14 29 Z','#d4aa6c');
-  fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z','#824436');
+  fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z',ally?'#537775':'#824436');
   fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
   oval(c,22,9,4,5,'#e2bb90');
   fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
   fill('M17 6 Q14 1 9 4 Q12 0 18 1 L22 3 Z','#903f32');
+  c.save();c.translate(21,20);c.rotate(pose*.55);c.translate(-21,-20);
+  if(q){c.strokeStyle=ink;c.lineWidth=3.4;if(q===3){c.shadowColor=ink;c.shadowBlur=4}c.stroke(new Path2D('M21 20 L49 2'))}
   c.strokeStyle='#68472d';c.lineWidth=1.35;c.beginPath();c.moveTo(21,20);c.lineTo(45,5);c.stroke();
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
-  oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
+  c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk){
-  if(id===8){mountedLancer(c,phase);return}
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
+  if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
+  const recruit=id>=17&&id<=22;
+  const recruitSkin=id;
+  if(id===23)id=5;
+  if(recruit)id=({17:10,18:2,19:14,20:9,21:11})[id];
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
-  const coat=['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039',null,'#635273','#864437','#853d32','#615366','#92483b','#916b42','#844939','#63474a'][id];
-  const trim=['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727',null,'#473649','#55372e','#58332c','#423a49','#65352d','#674c35','#5b3930','#443137'][id];
+  const coat=recruit?'#506975':['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039',null,'#635273','#864437','#853d32','#615366','#92483b','#916b42','#844939','#63474a'][id];
+  const trim=recruit?'#384957':['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727',null,'#473649','#55372e','#58332c','#423a49','#65352d','#674c35','#5b3930','#443137'][id];
   const paint=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   const stroke=(path,color,width)=>{
     c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
@@ -294,20 +301,28 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
       stroke('M10 26 Q16 28 21 25','#eac279',1.5);
     }
   }
-  c.save();c.translate(20,21);c.rotate(step*.10);c.translate(-20,-21);
-  const lightEdge=q===3?({
+  c.save();c.translate(20,21);if(id===1)c.translate(5*pose,0);
+  const swing=recruit?(recruitSkin===18?.18:1.05):id===1?1.02:id===7?1.8:id===0?.96:0;
+  c.rotate(step*.10+pose*swing);c.translate(-20,-21);
+  const lightEdge=q===3&&!recruit?({
     0:'M23 19 L33 6',
     1:'M28 7 L31.5 1.5',
     2:'M25.5 9 Q36.5 17 26.6 28',
     7:'M31 12 Q30 15 34 15 Q33 19 28 20'
   })[id]:null;
+  if(recruit&&q){
+    const outline={17:'M18 12 L32 10 L33 29 L25 34 L17 30 Z',18:'M18 25 L33 14 M22 12 Q33 14 35 25',19:'M20 13 L27 6 L34 12 L28 19 Z',20:'M3 14 L7 21 M23 20 L32 12',21:'M26 10 L31 1 L34 7 L30 14'};
+    c.save();
+    if(q===3){c.shadowColor=weaponInk;c.shadowBlur=5}
+    stroke(outline[recruitSkin],weaponInk,3.1);c.restore();
+  }
   if(lightEdge){
     c.save();
     c.shadowColor='#ffbd42';c.shadowBlur=6;
     stroke(lightEdge,'rgba(255,192,72,.7)',4.8);
     c.restore();
   }
-  if(q>0){
+  if(q>0&&!recruit){
     if(id===0){
       const blade='M23 21 L29 10 L34 5 L32 12 L26 23 Z';
       stroke(blade,weaponInk,2.6);
@@ -322,7 +337,15 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
       stroke('M27 10 L31 11 Q30 15 35 15 Q33 22 27 20 L25 15 Z',weaponInk,2.6);
     }
   }
-  if(id===13){ // Two-handed greatsword
+  if(recruitSkin===18||recruitSkin===23){
+    stroke('M16 25 L32 15','#68492f',3);
+    stroke('M20 12 Q32 14 35 25','#847465',2);
+    stroke('M20 12 L20 22 L35 25','#c7b69a',.7);
+    stroke('M19 23 L34 14','#cfb997',1);
+  }else if(recruitSkin===19){
+    stroke('M18 30 L29 10','#775333',2.4);
+    paint('M21 8 L26 5 L35 11 L31 17 L21 12 Z',wash(21,35,'#716768','#d2c6bb'));
+  }else if(id===13){ // Two-handed greatsword
     stroke('M18 27 L24 17','#61402b',2.3);
     paint('M20 20 L29 5 L35 1 L33 8 L24 22 Z',wash(20,34,'#88878d','#e9dfcc'));
     stroke('M18 18 L26 23','#caa369',1.8);
@@ -349,7 +372,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
     paint('M3 19 L1 10 L4 13 L7 21 Z M23 20 L33 7 L32 13 L26 22 Z',wash(1,32,'#ada3aa','#f4dfbe'));
   }else if(id===10){
     paint('M18 12 L32 10 L33 29 L25 34 L17 30 Z','#aea097');
-    paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z','#8d4835');
+    paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z',recruit?'#496477':'#8d4835');
     stroke('M25 15 L25 28 M21 21 L29 20','#ead6ac',1.8);
   }else if(id===11){
     stroke('M20 34 L29 5','#654826',2);
@@ -379,10 +402,12 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
     paint('M18.4 17.6 Q20 16.6 21.7 18.4 L23.9 19 L25 17.3 Q27.6 16.8 27.1 20 L25 22.4 L20 21.3 Z','#d8b78b');
   }else{
     stroke('M25.5 9 Q36.5 17 26.6 28','#694527',1.5);
-    stroke('M25.5 9 L21.4 18 L26.6 28','#b9a483',.48);
+    const nock=21.4-6*pose;
+    stroke('M25.5 9 L'+nock+' 18 L26.6 28','#b9a483',.48);
     paint('M15 17.3 L24 17.8 L28.8 16.7 L29.5 19 L25.6 20.5 L16 20.2 Z',wash(15,29,'#987455','#e3be91'));
+    c.save();c.translate(-6*pose,0);
     stroke('M16 18 L33 17.1','#63482b',.72);
-    p([[32,16.2],[35,17],[32,18.1]],'#776953');
+    p([[32,16.2],[35,17],[32,18.1]],'#776953');c.restore();
   }
   if(q && id===0){
     paint('M20 18 L28 16 L28 27 Q26 30 21 30 Z',['','#486569','#514065','#9d4330'][q]);
@@ -390,7 +415,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk){
     if(q===3)stroke('M21 25 L24 28 L27 23','#edcf99',1.4);
   }else if(q && id===1){
     paint('M28 8 Q24 8 22 7 L'+(23-q*3)+' '+(10+q*2)+' Q22 13 27 12 Z',['','#527371','#695477','#a84c34'][q]);
-  }else if(q && id===2){
+  }else if(q && id===2&&!recruit){
     stroke('M26 9 Q32 11 32 16 M32 22 Q31 26 27 28',['','#adc8bd','#b8a1c4','#efc47a'][q],1.8);
     if(q>=2)paint('M25 9 L22 5 L29 8 L30 12 Z M27 27 L24 32 L30 29 L31 24 Z',q===3?'#ddb16c':'#a59bb0');
   }else if(q && id===7){
@@ -441,12 +466,12 @@ function makeArt(scene){
       c.scale(2,2);bannerCommander(c,0,angle);
     });
   });
-  for(let id=0;id<=16;id++){
-    const tiers=id<3||id===7?4:1;
+  for(let id=0;id<=23;id++){
+    const tiers=mercSkins.includes(id)?4:1;
     for(let q=0;q<tiers;q++){
       const key='man'+id+(q?'tier'+q:'');
       for(let frame=-1;frame<WALK_FRAMES;frame++){
-        paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:id===8?100:72,id===6?112:id===8?96:80,(c,p)=>{
+        paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:(id===8||id===22)?100:72,id===6?112:(id===8||id===22)?96:80,(c,p)=>{
           c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q]);c.restore();
         });
       }

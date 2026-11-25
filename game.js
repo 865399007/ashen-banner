@@ -720,7 +720,7 @@ class Battle extends Phaser.Scene{
    if(label==='佣兵'){
      grid.setAttribute('aria-label',label);
      grid.classList.add('mercenary-slots');
-     const actions=document.createElement('div');
+     const actions=document.createElement('div');actions.className='mercenary-actions';
      for(let i=0;i<6;i++){
        const unit=this.army[i];
        if(!unit){
@@ -733,16 +733,19 @@ class Battle extends Phaser.Scene{
          actions.replaceChildren();
          if(!open)return;
          slot.setAttribute('aria-pressed','true');
-         const refund=Math.floor(refitPrice(true,unit.id,unit.q,this.wave)/4);
-         this.button(actions,'遣散 +'+refund+' 银币',()=>{
-           this.gold+=refund;
-           this.army.splice(i,1);this.shop(false);
-         });
          const partner=this.army.findIndex(other=>other!==unit&&other.id===unit.id&&other.q===unit.q);
          const merge=this.button(actions,'合成',()=>{
            unit.q++;this.army.splice(partner,1);this.shop(false);
          },partner<0||unit.q>=3);
          merge.title=unit.q>=3?'已达最高品质':'需要两名同兵种、同品质佣兵';
+         const refund=Math.floor(refitPrice(true,unit.id,unit.q,this.wave)/4);
+         const dismiss=this.button(actions,'遣散',()=>{
+           this.gold+=refund;
+           this.army.splice(i,1);this.shop(false);
+         });
+         dismiss.title='遣散返还 '+refund+' 银币';
+         const value=document.createElement('small');
+         value.textContent='+'+refund+' 银币';dismiss.append(value);
        });
        const name=slot.textContent;
        const portrait=document.createElement('canvas');

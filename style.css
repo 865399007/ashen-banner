@@ -239,7 +239,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #cards>div.locked{border-color:#dfc094;box-shadow:0 3px 0 #756448}
 .upgrade-card[data-tier="0"],#cards>[data-tier="0"]{--rank-face:#4b5141;--rank-ring:#cad1a9}
 .upgrade-card[data-tier="1"],#cards>[data-tier="1"]{--rank-face:#526775;--rank-ring:#b5cad3}
-.upgrade-card[data-tier="2"],#cards>[data-tier="2"]{--rank-face:#594463;--rank-ring:#d9afe5}
+.upgrade-card[data-tier="2"],#cards>[data-tier="2"]{--rank-face:#706174;--rank-ring:#cfc0d2}
 .upgrade-card[data-tier="3"],#cards>[data-tier="3"]{--rank-face:#715331;--rank-ring:#f1cc85}
 .upgrade-card i,#cards i{
   display:grid;place-items:center;font-style:normal;width:28px;height:28px;clip-path:none;border-radius:50%;border:2px solid var(--rank-ring);

@@ -181,7 +181,7 @@ class Battle extends Phaser.Scene{
    unit.followGoal=pos;
    unit.goalHistory=[];
  });if(this.wave===10)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
- clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();enemy.charge?.warning?.destroy()}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
@@ -226,22 +226,18 @@ class Battle extends Phaser.Scene{
    charge.remaining-=dt;
    if(charge.phase==='ready'){
      const gap=distance(s,this.hero);
-     if(charge.remaining>0||gap<44||gap>125)return false;
+     if(charge.remaining>0||gap<28||gap>56)return false;
      const dx=(this.hero.x-s.x)/gap,dy=(this.hero.y-s.y)/gap;
-     charge.x=Phaser.Math.Clamp(s.x+dx*(gap+24),0,960);
-     charge.y=Phaser.Math.Clamp(s.y+dy*(gap+24),0,600);
+     charge.x=Phaser.Math.Clamp(s.x+dx*Math.min(56,gap+8),0,960);
+     charge.y=Phaser.Math.Clamp(s.y+dy*Math.min(56,gap+8),0,600);
      charge.phase='aim';charge.remaining=.55;
      s.setFlipX(dx<0).setAngle(dx<0?-8:8);
-     charge.warning=this.add.graphics().setDepth(-1);
-     charge.warning.lineStyle(5,0x914331,.48).lineBetween(s.x,s.y,charge.x,charge.y);
-     charge.warning.lineStyle(1,0xffda98,.9).lineBetween(s.x,s.y,charge.x,charge.y);
    }else if(charge.phase==='aim'&&charge.remaining<=0){
-     charge.warning.destroy();charge.warning=null;
      charge.phase='dash';s.setAngle(0);
    }else if(charge.phase==='dash'){
      const x=s.x,y=s.y;
      this.move(s,charge.x,charge.y,dt*290);
-     this.animateWalk(enemy,s.x-x,s.y-y,30);
+     this.animateWalk(enemy,s.x-x,s.y-y,20);
      if(Math.hypot(s.x-charge.x,s.y-charge.y)<.1){
        charge.phase='recover';charge.remaining=.45;
        this.animateWalk(enemy,0,0,30);
@@ -273,7 +269,8 @@ class Battle extends Phaser.Scene{
    if(s.texture.key!==key)s.setTexture(key);
  }
  footfall(unit,forwardX,forwardY,side){
-   if(unit.dustPuff?.active)return;
+   const sprint=unit.charge?.phase==='dash';
+   if(!sprint&&unit.dustPuff?.active)return;
    const size=Phaser.Math.Clamp(unit.s.displayHeight/64,.45,1.45),trail=8*size;
    const x=unit.s.x-trail*forwardX-3*forwardY*side;
    const y=unit.s.y-trail*forwardY+3*forwardX*side;
@@ -281,13 +278,13 @@ class Battle extends Phaser.Scene{
    const cloud=this.add.image(0,0,'dust-wisp').setScale(.43);
    const strand=this.add.image(0,1,'dust-wisp').setScale(.23).setAlpha(.78);
    cloud.setFlipX(forwardX<0);strand.setFlipX(forwardX<0);
-   puff.add([cloud,strand]);unit.dustPuff=puff;this.footDust.add(puff);
-   this.tweens.add({targets:puff,x:x-9*size*forwardX,y:y-size*(7*forwardY+5),
-     alpha:0,duration:380,ease:'Sine.In',onUpdate:t=>{
+   puff.add([cloud,strand]);if(!sprint)unit.dustPuff=puff;this.footDust.add(puff);
+   this.tweens.add({targets:puff,x:x-(sprint?25:9)*size*forwardX,y:y-size*((sprint?25:7)*forwardY+5),
+     alpha:0,duration:sprint?580:380,ease:'Sine.In',onUpdate:t=>{
        const spread=t.progress;
        strand.setPosition(-forwardX*10*spread,-forwardY*8*spread-2*spread);
        cloud.setScale(.43+.12*spread,.43+.035*spread);
-     },onComplete:()=>{unit.dustPuff=null;puff.destroy()}});
+     },onComplete:()=>{if(unit.dustPuff===puff)unit.dustPuff=null;puff.destroy()}});
  }
  move(s,x,y,len){let dx=x-s.x,dy=y-s.y,d=Math.hypot(dx,dy);if(d){s.x+=dx/d*Math.min(d,len);s.y+=dy/d*Math.min(d,len)}}
  followPosition(slot){
@@ -394,7 +391,7 @@ class Battle extends Phaser.Scene{
  let allies=this.army.filter(u=>u.id===a.id).length;
  const critical=Math.random()<.05;
  const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
- if(e.hp<=0){e.charge?.warning?.destroy();e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
+ if(e.hp<=0){e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=10;this.end(true);return}
  if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;

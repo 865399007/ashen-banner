@@ -339,7 +339,6 @@ class Battle extends Phaser.Scene{
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?commanderAttackRange:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
-   if(drop.heal&&this.hp>=this.maxHP)continue;
    const pullRadius=drop.chest?94:70*(1+.05*this.camp.level('sense'));
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}

@@ -240,8 +240,9 @@ class Battle extends Phaser.Scene{
    const centerY=Phaser.Math.Clamp(this.hero.y,33+radius,590-radius);
    return {x:centerX+Math.cos(angle)*radius,y:centerY+Math.sin(angle)*radius};
  }
- follow(unit,slot,dt){
-   const goal=this.followPosition(slot),gap=distance(unit.s,goal);
+ follow(unit,slot,target,marching,dt){
+   const engage=!marching && target && unit.id!==2 && distance(target.s,this.hero)<105;
+   const goal=engage?target.s:this.followPosition(slot),gap=distance(unit.s,goal);
    if(gap<.5){this.animateWalk(unit,0,0,35);return}
    const step=Math.min(dt*this.speed*1.65,gap*(1-Math.exp(-11*dt)));
    const oldX=unit.s.x,oldY=unit.s.y;
@@ -345,7 +346,7 @@ class Battle extends Phaser.Scene{
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
  for(let [i,a] of this.actors.entries()){let target=null,d=Infinity;for(let e of this.enemies){let v=distance(a.s,e.s);if(v<d){target=e;d=v}}
- if(i)this.follow(a,i-1,dt);
+ if(i)this.follow(a,i-1,target,x||y,dt);
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){

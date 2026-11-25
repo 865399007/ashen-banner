@@ -215,7 +215,7 @@ class Battle extends Phaser.Scene{
    const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
    const padding=16;
    if(!this.textures.exists(key)){
-     const tex=this.textures.createCanvas(key,source.width+2*padding,source.height+2*padding),ctx=tex.context;
+     const tex=this.textures.createCanvas(key,source.width,source.height),ctx=tex.context;
      ctx.drawImage(source,0,0);
      const pixels=ctx.getImageData(0,0,source.width,source.height);
      const rgba=pixels.data;
@@ -228,19 +228,10 @@ class Battle extends Phaser.Scene{
          rgba[i+channel]=palette[band][channel]*(1-blend)+palette[band+1][channel]*blend;
        }
      }
-     const body=document.createElement('canvas');
-     body.width=source.width;body.height=source.height;
-     body.getContext('2d').putImageData(pixels,0,0);
-     ctx.clearRect(0,0,tex.width,tex.height);
-     ctx.save();
-     for(const [color,blur] of [['#54b9f4',12],['#82cdf8',6],['#d5f2ff',2]]){
-       ctx.shadowColor=color;ctx.shadowBlur=blur;
-       ctx.drawImage(body,padding,padding);
-     }
-     ctx.restore();
+     ctx.putImageData(pixels,0,0);
      tex.refresh();
    }
-   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,(padding+source.height*.85)/(source.height+2*padding))
+   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
      .setScale(.68+.045*(count-4)).setAlpha(0.7).setDepth(this.hero.y-1);
  }
  this.actors.slice(1).forEach((unit,slot)=>{

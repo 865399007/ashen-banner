@@ -316,7 +316,7 @@ class Battle extends Phaser.Scene{
  move(s,x,y,len){let dx=x-s.x,dy=y-s.y,d=Math.hypot(dx,dy);if(d){s.x+=dx/d*Math.min(d,len);s.y+=dy/d*Math.min(d,len)}}
  followPosition(slot){
    const count=this.actors.length-1;
-   const radius=39;
+   const radius=34;
    const angle=Math.PI+slot*2*Math.PI/count;
    const centerX=Phaser.Math.Clamp(this.hero.x,15+radius,945-radius);
    const centerY=Phaser.Math.Clamp(this.hero.y,33+radius,590-radius);

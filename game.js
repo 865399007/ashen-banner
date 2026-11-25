@@ -1,4 +1,10 @@
 const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
+function cardRank(tier){
+  const label=document.createElement('span');
+  label.className='card-rank';
+  label.textContent=roman[tier]+' 阶';
+  return label;
+}
 // Calibrate the shared world scale against Rouge-main's 900-unit portrait view.
 const portraitWorldWidth=270;
 const referenceScale=portraitWorldWidth/900;
@@ -373,7 +379,7 @@ class Battle extends Phaser.Scene{
    card.className='upgrade-card';card.dataset.tier=q;card.style.setProperty('--delay',index*45+'ms');
    const icon=document.createElement('i'),title=document.createElement('strong'),value=document.createElement('span');
    icon.textContent=symbol;icon.setAttribute('aria-hidden','true');
-   title.textContent=name;value.textContent=effect;card.append(icon,title,value);
+   title.textContent=name;value.textContent=effect;card.append(cardRank(q),icon,title,value);
  });
  return}
  if(this.boxes.length){
@@ -399,13 +405,13 @@ class Battle extends Phaser.Scene{
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
  c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=['⚔','♜','➶','⚒'][o.id];else emblem.append(itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
- name.textContent=(o.merc?troops[o.id][0]:items[o.id][0])+' '+roman[o.q];
+ name.textContent=o.merc?troops[o.id][0]:items[o.id][0];
  detail.textContent=o.merc?'佣兵':items[o.id][2];
- c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=items[o.id][3];
+ c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=items[o.id][3];
  const reason=full?(o.merc?'满编':'已满'):this.gold<o.price?'差 '+(o.price-this.gold)+' 银币':'';
  const price=document.createElement('span');
  price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);
- const buy=this.button(c,'',()=>{if(this.offers[i]!==o)return;this.gold-=o.price;if(o.merc)this.army.push({id:o.id,q:o.q});else this.applyItem(o.id);this.offers[i]=null;this.shop(false)},Boolean(reason));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent+'，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
+ const buy=this.button(c,'',()=>{if(this.offers[i]!==o)return;this.gold-=o.price;if(o.merc)this.army.push({id:o.id,q:o.q});else this.applyItem(o.id);this.offers[i]=null;this.shop(false)},Boolean(reason));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent+' '+roman[o.q]+'阶，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
  const inventory=document.createElement('div');
  inventory.className='refit-inventory';
  for(const label of ['佣兵','道具']){

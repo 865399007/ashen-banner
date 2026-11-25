@@ -270,3 +270,5 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #cards small,#cards .offer-price{color:#f1e2ca}
 #cards button[aria-pressed]{border:1px solid #97816d;border-radius:5px;box-shadow:none;min-height:44px}
 #cards button[aria-pressed=true]{background:#e1ceb2;color:#403739}
+
+.upgrade-card .card-rank,#cards .card-rank{font:700 12px/1.2 var(--game-type);color:#fff1d4;white-space:nowrap}

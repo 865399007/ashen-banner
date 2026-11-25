@@ -212,9 +212,10 @@ class Battle extends Phaser.Scene{
  if(this.soul){
    this.soulStrike=0;
    const {id,count}=this.soul,key='soul-'+id;
+   const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
+   const padding=16;
    if(!this.textures.exists(key)){
-     const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
-     const tex=this.textures.createCanvas(key,source.width,source.height),ctx=tex.context;
+     const tex=this.textures.createCanvas(key,source.width+2*padding,source.height+2*padding),ctx=tex.context;
      ctx.drawImage(source,0,0);
      const pixels=ctx.getImageData(0,0,source.width,source.height);
      const rgba=pixels.data;
@@ -227,9 +228,19 @@ class Battle extends Phaser.Scene{
          rgba[i+channel]=palette[band][channel]*(1-blend)+palette[band+1][channel]*blend;
        }
      }
-     ctx.putImageData(pixels,0,0);tex.refresh();
+     const body=document.createElement('canvas');
+     body.width=source.width;body.height=source.height;
+     body.getContext('2d').putImageData(pixels,0,0);
+     ctx.clearRect(0,0,tex.width,tex.height);
+     ctx.save();
+     for(const [color,blur] of [['#ff254f',12],['#ff727a',6],['#ffe4bc',2]]){
+       ctx.shadowColor=color;ctx.shadowBlur=blur;
+       ctx.drawImage(body,padding,padding);
+     }
+     ctx.restore();
+     tex.refresh();
    }
-   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
+   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,(padding+source.height*.85)/(source.height+2*padding))
      .setScale(.68+.045*(count-4)).setAlpha(0.5).setDepth(this.hero.y-1);
  }
  this.actors.slice(1).forEach((unit,slot)=>{

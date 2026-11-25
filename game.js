@@ -203,7 +203,8 @@ class Battle extends Phaser.Scene{
  }
  walkEnemy(enemy,dt){
    const s=enemy.s, x=s.x,y=s.y;
-   this.move(s,this.hero.x,this.hero.y,enemy.speed*dt);resolveFootprint(this,s,x,y,true);
+   this.move(s,this.hero.x,this.hero.y,enemy.speed*dt);
+   if(enemy.elite||enemy.boss)resolveFootprint(this,s,x,y,true);
    this.animateWalk(enemy,s.x-x,s.y-y,enemy.boss?48:22);
  }
  animateWalk(unit,dx,dy,stepLength){
@@ -252,7 +253,7 @@ class Battle extends Phaser.Scene{
    if(gap<.5){this.animateWalk(unit,0,0,35);return}
    const step=Math.min(dt*this.speed*1.65,gap*(1-Math.exp(-11*dt)));
    const oldX=unit.s.x,oldY=unit.s.y;
-   this.move(unit.s,goal.x,goal.y,step);resolveFootprint(this,unit.s,oldX,oldY,true);
+   this.move(unit.s,goal.x,goal.y,step);
    this.animateWalk(unit,unit.s.x-oldX,unit.s.y-oldY,35);
  }
  weaponEffect(unit,enemy){

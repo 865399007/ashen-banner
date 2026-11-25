@@ -135,7 +135,7 @@ function advanceImpact(victim,dt){
   const fromX=sprite.x,fromY=sprite.y;
   sprite.x=Phaser.Math.Clamp(sprite.x+hit.dx*(displacement-hit.last),10,950);
   sprite.y=Phaser.Math.Clamp(sprite.y+hit.dy*(displacement-hit.last),24,592);
-  resolveFootprint(sprite.scene,sprite,fromX,fromY);
+  if(victim.hero||victim.elite||victim.boss)resolveFootprint(sprite.scene,sprite,fromX,fromY);
   hit.last=displacement;
   const squeeze=.23*Math.cos(t*Math.PI*2)*(1-t);
   sprite.setScale(victim.hitBase*(1+squeeze),victim.hitBase*(1-squeeze));

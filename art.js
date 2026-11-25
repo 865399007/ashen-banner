@@ -223,7 +223,7 @@ function miniature(c,p,id,phase=0,q=0){
   function wash(x,end,dark,light){
     const g=c.createLinearGradient(x,0,end,4);g.addColorStop(0,dark);g.addColorStop(1,light);return g;
   }
-  shadow(c,15,34,7);
+  if(enemy)shadow(c,15,34,7);
   for(const side of [-1,1]){
     c.save();c.translate(15+side*3.4+side*step*2.1,side*step*2);
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
@@ -354,7 +354,23 @@ function makeArt(scene){
       const key='man'+id+(q?'tier'+q:'');
       for(let frame=-1;frame<WALK_FRAMES;frame++){
         paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:72,id===6?112:80,(c,p)=>{
-          c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q);
+          c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q);c.restore();
+          if(tiers>1){
+            const mask=document.createElement('canvas');
+            mask.width=c.canvas.width;mask.height=c.canvas.height;
+            const ink=mask.getContext('2d');
+            ink.drawImage(c.canvas,0,0);
+            ink.globalCompositeOperation='source-in';
+            ink.fillStyle=['#596143','#5384a0','#a57bad','#ce9947'][q];
+            ink.fillRect(0,0,mask.width,mask.height);
+            c.globalCompositeOperation='destination-over';
+            for(let side=0;side<8;side++){
+              const angle=side*Math.PI/4;
+              c.drawImage(mask,Math.round(3*Math.cos(angle)),Math.round(3*Math.sin(angle)));
+            }
+            c.save();c.scale(2,2);shadow(c,15,34,7);c.restore();
+            c.globalCompositeOperation='source-over';
+          }
         });
       }
     }

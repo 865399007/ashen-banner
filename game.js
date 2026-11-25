@@ -1,3 +1,4 @@
+const finalWave=15;
 const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
 function cardRank(tier){
   const label=document.createElement('span');
@@ -207,7 +208,7 @@ class Battle extends Phaser.Scene{
    unit.followResponse=10+variation*4;
    unit.followGoal=pos;
    unit.goalHistory=[];
- });if(this.wave===10)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
+ });if(this.wave===finalWave)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
  clearField(){this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;
@@ -420,7 +421,7 @@ class Battle extends Phaser.Scene{
  const critical=Math.random()<.05+(a.hero?this.soulBonus('crit'):0);
  const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
  if(e.hp<=0){e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
- if(e.boss){this.cleared=10;this.end(true);return}
+ if(e.boss){this.cleared=this.wave;this.end(true);return}
  if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
@@ -463,8 +464,8 @@ class Battle extends Phaser.Scene{
    const pullRadius=drop.chest?94:70*(1+.05*this.camp.level('sense'));
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}
- $('wave').textContent='第 '+this.wave+' / 10 波　 ·　'+(this.wave===10?'击败敌军统帅':Math.ceil(this.timeLeft)+' 秒');
- if(this.timeLeft<=0&&this.wave<10){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
+ $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败敌军统帅':Math.ceil(this.timeLeft)+' 秒');
+ if(this.timeLeft<=0&&this.wave<finalWave){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
  need(){return 5+this.level*2}
  collect(d){
    if(d.heal){this.hp=Math.min(this.maxHP,this.hp+d.heal);return}

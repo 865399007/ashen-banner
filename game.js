@@ -156,7 +156,7 @@ class Battle extends Phaser.Scene{
    }
  }
  startRun(){if(!this.camp.stageOpen(this.stageKey))return;this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
- begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=Phaser.Math.Between(6,12);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
  this.healCommander(15+6*this.bag[bandage]);
@@ -565,10 +565,11 @@ class Battle extends Phaser.Scene{
  const chest=e.elite||Math.random()<.006;
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});
- if(this.healDropsRemaining>0&&Math.random()<.008){
-   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'field-dressing').setScale(.52);
-   this.drops.push({s:pack,heal:15});
+ if(this.healDropsRemaining>0&&--this.killsUntilHeal===0){
+   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'field-dressing').setScale(.52).setDepth(y+2);
+   this.drops.push({s:pack,heal:15,collectAfter:this.elapsed+.45});
    this.healDropsRemaining--;
+   this.killsUntilHeal=Phaser.Math.Between(6,12);
  }
  this.hud()}}
  update(_,ms){if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
@@ -636,6 +637,7 @@ class Battle extends Phaser.Scene{
  }
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
+   if(this.elapsed<(drop.collectAfter??0))continue;
    const pullRadius=(drop.chest?94:70*(1+.05*this.camp.level('sense')))*(1+.20*this.bag[satchel]);
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}

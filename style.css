@@ -213,3 +213,14 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .refit-slots span:empty{border-style:dashed;background:transparent}
 
 #modal .refit-slots button[aria-pressed=true]{outline:2px solid #604422;outline-offset:-2px}
+.refit-slots.mercenary-slots{grid-template-columns:repeat(3,minmax(0,44px))}
+#modal .mercenary-slots>button,#modal .mercenary-slots>span{position:relative;box-sizing:border-box;width:100%;height:auto;min-width:0;min-height:0;aspect-ratio:1;padding:0;border-radius:0}
+.mercenary-slots canvas{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain}
+.mercenary-slots small{position:absolute;right:2px;bottom:0;font:bold 11px Georgia;color:#39291e;text-shadow:0 0 2px #fff2cf}
+
+#modal:has(.loot-actions){background:transparent;border:0;box-shadow:none}
+#modal:has(.loot-actions) :is(h2,p,.loot-icon){color:#412e20;text-shadow:0 1px 2px #ffe6b2}
+.loot-icon{font:40px/1.2 Georgia,serif;margin:6px auto}
+.loot-actions{display:flex;justify-content:center;align-items:center;gap:8px;max-width:360px;margin:12px auto 0}
+#modal .loot-actions button{min-height:44px;margin:0;padding:4px 8px;white-space:nowrap}
+#modal .loot-actions .primary{flex:1}

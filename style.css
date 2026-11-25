@@ -23,8 +23,12 @@ canvas{image-rendering:auto}body{background:#25291f}header,.strip,footer{backgro
 .hud-bar b{letter-spacing:.035em}
 
 @media(max-width:500px){#battle-hud{top:4px;left:4px;transform:none}}
-#modal:has(#cards){background:transparent;border:0;box-shadow:none}
-#modal:has(#cards) h2,#modal:has(#cards) p{color:#412e20;text-shadow:0 1px 2px #ffe6b2}
+#modal:has(#cards){
+  background: url("assets/refit-grain.png") repeat, linear-gradient(155deg,#343538,#222326 65%,#1b1c1e);
+  border:1px solid #494a4c;
+  box-shadow:0 5px 18px #0005;
+}
+#modal:has(#cards) h2,#modal:has(#cards) p{color:#f0e7d7;text-shadow:0 1px 2px #151517}
 #cards{display:flex;justify-content:center;gap:clamp(4px,1vw,14px);margin:12px 0}
 #cards>div{flex:0 1 138px;min-width:0;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 3px;border:3px double #86653c;border-radius:7px;color:#493727;box-shadow:0 3px 6px #392c2240}
 #cards.deal>div{animation:deal-card .28s backwards;animation-delay:var(--delay)}
@@ -188,7 +192,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   #preferences:not([hidden]){top:calc(var(--edge-t) + 78px);max-height:calc(var(--usable-height) - 78px)}
 }
 
-.refit-inventory{display:flex;justify-content:space-between;gap:10px;max-width:600px;margin:8px auto;color:#38281b;text-shadow:0 1px 2px #ffe6b2;text-align:left}
+.refit-inventory{display:flex;justify-content:space-between;gap:10px;max-width:600px;margin:8px auto;color:#e5dac6;text-shadow:0 1px 2px #151517;text-align:left}
 .refit-inventory section{box-sizing:border-box;width:48%;max-width:218px;padding:5px 7px;background:transparent}
 .refit-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin-top:3px;font-size:12px}
 .refit-slots span,#modal .refit-slots button{display:grid;place-items:center;min-height:22px;text-align:center;line-height:1.15;border:0;background:transparent;color:inherit;box-shadow:none;margin:0;padding:2px;font-size:inherit}

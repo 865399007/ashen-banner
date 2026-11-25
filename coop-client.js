@@ -279,7 +279,12 @@ function installCoop(scene){
        });
        const cost=refreshPrice(state.wave,me.refresh);button(m,'刷新 · '+cost,'refresh',0,p.gold<cost);
      }
-     button(m,p.ready?'已准备 · 等待队友':'准备下一波','ready',0,p.ready);return;
+     button(m,p.ready?'已准备 · 等待队友':'准备下一波','ready',0,p.ready);
+     const hero=commanders[p.hero];
+     appendCommanderStats(m,hero.name,[['团队等级',state.level],['团队经验',state.xp],['生命',statNumber(p.hp)+' / '+p.max],
+       ['普攻伤害',statNumber(hero.baseDamage*p.power)],['攻击间隔',statNumber(troops[hero.weapon][2]*.75)+' 秒'],
+       ['攻击距离',hero.range],['移速',statNumber(p.speed)],['幸运',p.luck]]);
+     return;
    }
    const m=panel(state.phase==='won'?'合作突围成功':state.phase==='closed'?'队友已退出房间':'小队倒下','第 '+state.wave+' 波 · 团队等级 '+state.level);
    scene.button(m,'返回主界面',stop);

@@ -1,3 +1,13 @@
+function appendCommanderStats(panel,name,rows){
+ const section=document.createElement('section'),title=document.createElement('h3'),list=document.createElement('dl');
+ section.className='commander-stats';title.textContent=name+' · 主角属性';
+ for(const [label,value] of rows){
+   const cell=document.createElement('div'),term=document.createElement('dt'),amount=document.createElement('dd');
+   term.textContent=label;amount.textContent=value;cell.append(term,amount);list.append(cell);
+ }
+ section.append(title,list);panel.append(section);
+}
+const statNumber=value=>Number(value.toFixed(2));
 class Battle extends Phaser.Scene{
  preload(){
    for(const key of ['sand',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
@@ -709,7 +719,20 @@ class Battle extends Phaser.Scene{
  let q=tier(this.wave,this.luck),id=isMerc?this.recruitOffer(pool):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=pick(pool)}
  if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:refitPrice(isMerc,id,q,this.wave),lock:false}}
  if(this.wave<=5&&!merc){let o=this.offers.find(o=>!o.lock);if(o)Object.assign(o,{merc:true,id:0,price:refitPrice(true,0,o.q,this.wave)})}}
- shop(deal=true){this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
+ showCommanderStats(panel){
+   const c=this.commander,percent=value=>statNumber(value*100)+'%';
+   const damage=c.baseDamage*(1+this.soulBonus('power'))*this.damage*c.passives.reduce((v,p)=>v*(p.damageMultiplier?.(this)??1),1);
+   const interval=this.attackInterval({hero:true,id:c.weapon});
+   const reduction=1-15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18]);
+   appendCommanderStats(panel,c.name,[
+     ['等级',this.level],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
+     ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.soul?.25:0)+this.soulBonus('reach')))],
+     ['暴击率',percent(Math.min(1,.05+this.critBonus+this.soulBonus('crit')))],['暴击伤害','150%'],['护甲',this.armor],['常驻减伤',percent(reduction)],
+     ['移速',statNumber(this.speed)],['幸运',this.luck],['拾取范围',statNumber(70*(1+.05*this.camp.level('sense'))*(1+.2*this.bag[satchel]))],
+     ['宝箱拾取范围',statNumber(94*(1+.2*this.bag[satchel]))],['开波恢复',15+6*this.bag[bandage]],['佣兵攻速加成',percent(this.mercHaste)]
+   ]);
+ }
+ shop(deal=true){this.soul=armySoul(this.army);this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
  c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=troopEmblems[o.id];else emblem.append(itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
@@ -778,7 +801,7 @@ class Battle extends Phaser.Scene{
    group.append(heading,grid);inventory.append(group);
  }
  m.append(inventory);
- let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(m,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary'}
+ let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(m,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary';this.showCommanderStats(m)}
  pauseRun(){
    const field=$('field'),modal=$('modal');
    if(this.mode==='paused'){

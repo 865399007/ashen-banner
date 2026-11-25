@@ -43,9 +43,14 @@ function setupStage(scene){
    scene.stageObjects.push(image);
    scene.obstacles.push({x,y,rx:kind==='standard'?3:13,ry:5});
  }
-
+ scene.supplyCrates=[[-65,-28],[102,54]].map(([dx,dy])=>{
+   const x=scene.hero.x+dx,y=scene.hero.y+dy;
+   return {crate:true,s:scene.add.image(x,y,'supply-crate').setOrigin(.5,.9).setScale(.68).setDepth(y)};
+ });
 }
 function clearStage(scene){
+ for(const crate of scene.supplyCrates??[])crate.s.destroy();
+ scene.supplyCrates=[];
  for(const obj of scene.stageObjects??[])obj.destroy();
  scene.stageObjects=[];
  if(scene.stageObstacleStart!==undefined){

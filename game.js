@@ -454,14 +454,11 @@ class Battle extends Phaser.Scene{
    if(!a.hit)a.s.setTexture('commanderSwing0');
  }
  this.sfx.swing(a.id===5?2:a.id);
- if(a.hero){this.weaponEffect(a,e);if(e.crate){
-   const {x,y}=e.s;
-   this.supplyCrates.splice(this.supplyCrates.indexOf(e),1);e.s.destroy();
-   const chest=Math.random()<.04;
-   const loot=this.add.image(x,y-6,chest?'loot-coffer':'silver-coin').setScale(.68).setDepth(y+1);
-   this.drops.push({s:loot,chest,visibleUntil:this.elapsed+.6});
-   this.tweens.add({targets:loot,y:y-18,duration:180,yoyo:true,ease:'Sine.easeOut'});
- }else if(!this.arrowBlocked(a,e))this.dealHit(a,e,1);return}
+ if(a.hero){
+   this.weaponEffect(a,e);
+   if(!this.arrowBlocked(a,e))this.dealHit(a,e,1);
+   return;
+ }
  const count=this.bondCounts[a.id];
  if(a.id===9){
    const angle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
@@ -622,11 +619,6 @@ class Battle extends Phaser.Scene{
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  const range=a.hero?this.commander.range*(1+(this.soul ? .25 : 0)+this.soulBonus('reach')):this.mercRange(a);
- if(a.hero&&d>=range){
-   for(const crate of this.supplyCrates){
-     const gap=distance(a.s,crate.s);if(gap<range&&gap<d){target=crate;d=gap}
-   }
- }
  if(i)this.follow(a,i-1,target,x||y,dt);
  if(i&&a.id===4&&target){a.facing=Math.atan2(target.s.y-a.s.y,target.s.x-a.s.x);a.s.setFlipX(Math.cos(a.facing)<0)}
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<range&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}
@@ -644,7 +636,6 @@ class Battle extends Phaser.Scene{
  }
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
-   if(this.elapsed<drop.visibleUntil)continue;
    const pullRadius=(drop.chest?94:70*(1+.05*this.camp.level('sense')))*(1+.20*this.bag[satchel]);
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}

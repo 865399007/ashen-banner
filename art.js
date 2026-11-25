@@ -432,16 +432,6 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
 function makeArt(scene){
   const theme=getComputedStyle(document.documentElement);
   const rankColors=[0,1,2,3].map(q=>theme.getPropertyValue('--tier-'+q).trim());
-  paintTexture(scene,'supply-crate',40,36,(c,p)=>{
-    oval(c,20,31,17,4,'rgba(49,33,20,.3)');
-    p([[3,10],[17,3],[37,8],[23,16]],'#d4a36b');
-    p([[3,10],[23,16],[23,33],[3,26]],'#a67041');
-    p([[23,16],[37,8],[37,25],[23,33]],'#714829');
-    c.strokeStyle='#624027';c.lineWidth=1;
-    c.stroke(new Path2D('M10 12 L24 5 M16 14 L30 6 M4 16 L22 22 M4 21 L22 27 M24 22 L36 15'));
-    p([[5,12],[8,13],[8,27],[5,26]],'#deb078');
-    p([[18,16],[21,17],[21,31],[18,30]],'#cd9b60');
-  });
   paintTexture(scene,'loot-coffer',28,24,(c,p)=>{
     p([[2,8],[8,3],[25,6],[26,16],[19,21],[2,17]],'#845431');
     p([[2,8],[8,3],[25,6],[19,12]],'#ebbd62');

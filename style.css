@@ -244,3 +244,8 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .loot-icon .item-icon{width:48px;height:48px;margin:auto}
 
 #commander-passives{font-size:clamp(12px,2vw,15px);line-height:1.5;margin:8px auto 14px;max-width:34em}
+
+.loadout{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 16px}
+.loadout select{font:inherit;padding:4px;color:#382b20;background:#efe1c5;border:1px solid #977852;border-radius:4px}
+#campaign-brief{margin:6px auto;font-size:13px}
+#cover{overflow-y:auto}

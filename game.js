@@ -3,9 +3,13 @@ const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
 const portraitWorldWidth=270;
 const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
-const commanderAttackRange=63;
+const campaigns={
+  border:{name:'灰烬边境',elites:[4,8],pace:1,march:1,bossHP:1200,brief:'第 4、8 波出现精英。'},
+  pass:{name:'碎石隘口',elites:[3,6,9],pace:1.15,march:.95,bossHP:1650,brief:'敌军增援较慢，第 3、6、9 波出现精英，统帅生命更高。'},
+  pursuit:{name:'疾风追袭',elites:[5,8],pace:.84,march:1.22,bossHP:1100,brief:'敌军行进更快，增援更频繁。第 5、8 波出现精英。'}
+};
 const commanders={
-  banner:{
+  banner:{name:"灰旗指挥官",weapon:0,skin:6,range:63,baseDamage:17,
     passives:[
       {name:'旗手号令',description:'每招募一名在队佣兵，主角伤害提高 5%。',
        damageMultiplier:scene=>1+.05*scene.army.length},
@@ -14,7 +18,12 @@ const commanders={
          if(scene.kills%5===0)scene.hp=Math.min(scene.maxHP,scene.hp+3);
        }}
     ]
-  }
+  },
+  scout:{name:'逐风斥候',weapon:2,skin:'2tier2',range:115,baseDamage:19,
+    passives:[{name:'疾行',description:'基础移速提高 20%。',speedBonus:startingSpeed*.2}]},
+  guard:{name:'铁壁枪卫',weapon:1,skin:'1tier3',range:61,baseDamage:29,
+    passives:[{name:'背水迎击',description:'生命不高于一半时，自身伤害提高 50%。',
+      damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
 };
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,235*referenceScale],['斧兵',40,1.8,35]];
 const itemIcons=['whetstone','boots','badge','quiver','banner'];
@@ -31,12 +40,22 @@ class Battle extends Phaser.Scene{
  preload(){
    for(const key of ['sand',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
  }
- create(){this.commander=commanders.banner;
+ create(){
+ for(const [id,entries] of [['hero-choice',commanders],['campaign-choice',campaigns]]){
+   for(const [key,entry] of Object.entries(entries))$(id).add(new Option(entry.name,key));
+ }
+ const selectLoadout=()=>{
+ this.commander=commanders[$('hero-choice').value];
+ this.campaign=campaigns[$('campaign-choice').value];
+ $('campaign-brief').textContent=this.campaign.brief;
+ $('commander-passives').replaceChildren();
  for(const passive of this.commander.passives){
    const line=document.createElement('div');
    line.textContent=passive.name+' · '+passive.description;
    $('commander-passives').append(line);
  }
+ };
+ $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
  this.camp=new GreyCamp();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  const fitViewport=()=>{
@@ -124,7 +143,7 @@ class Battle extends Phaser.Scene{
    window.addEventListener('resize',this.resetStick);
    document.addEventListener('visibilitychange',this.resetStick);
  }
- resetRun(){Object.assign(this,{wave:1,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,boxes:[],damage:1,speed:startingSpeed,luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
+ resetRun(){Object.assign(this,{wave:1,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
    $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
  $('battle-hud').hidden=['title','camp'].includes(this.mode);
@@ -137,8 +156,8 @@ class Battle extends Phaser.Scene{
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
  startRun(){this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
  begin(){this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
- this.actors=[{id:0,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?6:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?6:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
- this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].skin=6;this.actors[0].stride=0;this.trail=[{x:360,y:300},{x:480,y:300}];this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if([4,8].includes(this.wave))this.spawn(false,true);this.hud()}
+ this.actors=[{id:this.commander.weapon,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?this.commander.skin:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?this.commander.skin:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
+ this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].stride=0;this.trail=[{x:360,y:300},{x:480,y:300}];this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
  clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;
@@ -151,8 +170,8 @@ class Battle extends Phaser.Scene{
                 [alongX,top-margin],[alongX,top+height+margin]];
    const inside=edges.filter(([x,y])=>x>=0&&x<=960&&y>=0&&y<=600);
    const [x,y]=pick(inside.length?inside:edges);
-   let type=Math.floor(Math.random()*3),hp=boss?1200:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
- const enemy={s:this.add.image(x,y,'man'+(3+type)).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin:3+type,stride:Math.random(),hp,max:hp,boss,elite,speed:boss?42:31+type*8+this.wave*2};
+   let type=Math.floor(Math.random()*3),hp=boss?this.campaign.bossHP:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
+ const enemy={s:this.add.image(x,y,'man'+(3+type)).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin:3+type,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:31+type*8+this.wave*2)*this.campaign.march};
  this.enemies.push(enemy);if(boss||elite){
    enemy.footBar=this.add.graphics().setDepth(1000);
    this.showEnemyHealth(enemy);
@@ -297,15 +316,15 @@ class Battle extends Phaser.Scene{
    }
  }
  attack(a,e){
- if(a.hero){
+ if(a.hero)a.s.setFlipX(e.s.x<a.s.x);
+ if(a.hero&&a.skin===6){
    a.swingTime=.21;
-   a.s.setFlipX(e.s.x<a.s.x);
    if(!a.hit)a.s.setTexture('commanderSwing0');
  }
  this.sfx.swing(a.id);this.weaponEffect(a,e);
  let allies=this.army.filter(u=>u.id===a.id).length;
  const critical=Math.random()<.05;
- const damage=(critical?1.5:1)*(a.hero?17*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
+ const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
  if(e.hp<=0){e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=10;this.end(true);return}
  if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
@@ -333,11 +352,11 @@ class Battle extends Phaser.Scene{
  }
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);this.recordTrail();
- advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)}
+ advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
  for(let [i,a] of this.actors.entries()){let target=null,d=Infinity;for(let e of this.enemies){let v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  if(i)this.follow(a,i-1,target,x||y,dt);
- a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?commanderAttackRange:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
+ a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
    const pullRadius=drop.chest?94:70*(1+.05*this.camp.level('sense'));

@@ -52,7 +52,7 @@ class GreyCamp {
       },d.axe||d.silver<18||d.iron<2);
     }
     if(section==='指挥帐篷'){
-      row('灰烬边境','最佳 '+d.best+'/10 波　·　通关 '+d.victories+' 次。第 4、8 波迎战精英，第 10 波击败统帅。');
+      row('战役记录','最佳 '+d.best+'/10 波　·　通关 '+d.victories+' 次。所有战役均在第 10 波迎战统帅。');
       const box=row('老兵难度','通关后可消耗 1 枚军功章解锁。敌军生命 +25%，结算银币翻倍。');
       game.button(box,d.veteran?'切换普通':d.challenge?'切换老兵':'解锁老兵',()=>{
         if(!d.challenge){if(!d.victories||d.medals<1)return;d.medals--;d.challenge=true}

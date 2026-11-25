@@ -235,7 +235,7 @@ function mountedLancer(c,phase){
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0){
+function miniature(c,p,id,phase=0,q=0,weaponInk){
   if(id===8){mountedLancer(c,phase);return}
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
@@ -248,7 +248,7 @@ function miniature(c,p,id,phase=0,q=0){
   function wash(x,end,dark,light){
     const g=c.createLinearGradient(x,0,end,4);g.addColorStop(0,dark);g.addColorStop(1,light);return g;
   }
-  if(enemy||q===0)shadow(c,15,34,7);
+  shadow(c,15,34,7);
   for(const side of [-1,1]){
     c.save();c.translate(15+side*3.4+side*step*2.1,side*step*2);
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
@@ -295,6 +295,21 @@ function miniature(c,p,id,phase=0,q=0){
     }
   }
   c.save();c.translate(20,21);c.rotate(step*.10);c.translate(-20,-21);
+  if(q>0){
+    if(id===0){
+      const blade='M23 21 L29 10 L34 5 L32 12 L26 23 Z';
+      stroke(blade,weaponInk,2.6);
+      paint(blade,wash(23,34,'#928984','#e4dac6'));
+    }else if(id===1){
+      stroke('M20.3 34 L29 5',weaponInk,4);
+      stroke('M27.3 7.6 L29.4 2.5 L32 .5 L31.5 6.3 L29 8.8 Z',weaponInk,2.6);
+    }else if(id===2){
+      stroke('M25.5 9 Q36.5 17 26.6 28',weaponInk,4.4);
+    }else if(id===7){
+      stroke('M21 29 L28 10',weaponInk,4);
+      stroke('M27 10 L31 11 Q30 15 35 15 Q33 22 27 20 L25 15 Z',weaponInk,2.6);
+    }
+  }
   if(id===13){ // Two-handed greatsword
     stroke('M18 27 L24 17','#61402b',2.3);
     paint('M20 20 L29 5 L35 1 L33 8 L24 22 Z',wash(20,34,'#88878d','#e9dfcc'));
@@ -419,23 +434,7 @@ function makeArt(scene){
       const key='man'+id+(q?'tier'+q:'');
       for(let frame=-1;frame<WALK_FRAMES;frame++){
         paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:id===8?100:72,id===6?112:id===8?96:80,(c,p)=>{
-          c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q);c.restore();
-          if(q>0){
-            const mask=document.createElement('canvas');
-            mask.width=c.canvas.width;mask.height=c.canvas.height;
-            const ink=mask.getContext('2d');
-            ink.drawImage(c.canvas,0,0);
-            ink.globalCompositeOperation='source-in';
-            ink.fillStyle=rankColors[q];
-            ink.fillRect(0,0,mask.width,mask.height);
-            c.globalCompositeOperation='destination-over';
-            for(let side=0;side<8;side++){
-              const angle=side*Math.PI/4;
-              c.drawImage(mask,Math.round(3*Math.cos(angle)),Math.round(3*Math.sin(angle)));
-            }
-            c.save();c.scale(2,2);shadow(c,15,34,7);c.restore();
-            c.globalCompositeOperation='source-over';
-          }
+          c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q]);c.restore();
         });
       }
     }

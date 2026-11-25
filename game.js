@@ -169,7 +169,17 @@ class Battle extends Phaser.Scene{
  startRun(){this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
  begin(){this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
  this.actors=[{id:this.commander.weapon,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?this.commander.skin:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?this.commander.skin:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
- this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors[0].stride=0;this.actors.slice(1).forEach((unit,slot)=>{const pos=this.followPosition(slot);unit.s.setPosition(pos.x,pos.y)});if(this.wave===10)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
+ this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors.slice(1).forEach((unit,slot)=>{
+   const pos=this.followPosition(slot);
+   unit.s.setPosition(pos.x,pos.y);
+   const variation=(slot*.618+Math.random()*.08)%1;
+   unit.stride=(variation+.25)%1;
+   unit.stepLength=32+variation*7;
+   unit.reaction=.025+variation*.16;
+   unit.followResponse=10+variation*4;
+   unit.followGoal=pos;
+   unit.goalHistory=[];
+ });if(this.wave===10)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
  clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies)enemy.footBar?.destroy();this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;
@@ -249,12 +259,19 @@ class Battle extends Phaser.Scene{
  }
  follow(unit,slot,target,marching,dt){
    const engage=!marching && target && unit.id!==2 && distance(target.s,this.hero)<105;
-   const goal=engage?target.s:this.followPosition(slot),gap=distance(unit.s,goal);
-   if(gap<.5){this.animateWalk(unit,0,0,35);return}
-   const step=Math.min(dt*this.speed*1.65,gap*(1-Math.exp(-11*dt)));
+   const wanted=engage?target.s:this.followPosition(slot);
+   const history=unit.goalHistory;
+   // Snapshot moving targets so that each soldier reacts on its own beat.
+   history.push({x:wanted.x,y:wanted.y,time:this.elapsed});
+   while(history.length && history[0].time<=this.elapsed-unit.reaction){
+     unit.followGoal=history.shift();
+   }
+   const goal=unit.followGoal,gap=distance(unit.s,goal);
+   if(gap<.5){this.animateWalk(unit,0,0,unit.stepLength);return}
+   const step=Math.min(dt*this.speed*1.65,gap*(1-Math.exp(-unit.followResponse*dt)));
    const oldX=unit.s.x,oldY=unit.s.y;
    this.move(unit.s,goal.x,goal.y,step);
-   this.animateWalk(unit,unit.s.x-oldX,unit.s.y-oldY,35);
+   this.animateWalk(unit,unit.s.x-oldX,unit.s.y-oldY,unit.stepLength);
  }
  weaponEffect(unit,enemy){
    const body=unit.s.height*(unit.hit?unit.hitBase:unit.s.scaleY);

@@ -5,7 +5,12 @@ const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
 const commanderAttackRange=63;
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,235*referenceScale],['斧兵',40,1.8,35]];
-const itemIcons=['◆','♧','✦','➶','⚑'];
+const itemIcons=['whetstone','boots','badge','quiver','banner'];
+function itemIcon(id){
+  const image=document.createElement('img');
+  image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';
+  return image;
+}
 const items=[['粗磨刀石',0,'伤害 +8%',5],['行军靴',0,'移速 +6%',4],['斥候徽章',1,'幸运 +15',3],['穿甲箭袋',2,'小队伤害 +28%',2],['百战军旗',3,'生命上限 +60、伤害 +35%',1]];
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function tier(w,luck){let n=Math.random(),k=1+luck/100;
@@ -348,7 +353,7 @@ class Battle extends Phaser.Scene{
    const m=this.panel('战利品宝箱',id<0?'该品质道具均已达到上限':items[id][0]+' '+roman[q]+' · '+items[id][2]);
    const icon=document.createElement('div'),actions=document.createElement('div');
    icon.className='loot-icon';icon.setAttribute('aria-hidden','true');
-   icon.textContent=id<0?'🪙':itemIcons[id];
+   if(id<0)icon.textContent='🪙';else icon.append(itemIcon(id));
    m.querySelector('p').before(icon);
    actions.className='loot-actions';m.append(actions);
    if(id>=0)this.button(actions,'领取',()=>{this.applyItem(id);this.hud();this.reward()}).className='primary';
@@ -364,7 +369,7 @@ class Battle extends Phaser.Scene{
  if(this.wave<=5&&!merc){let o=this.offers.find(o=>!o.lock);if(o)Object.assign(o,{merc:true,id:0,price:12+this.wave+o.q*9})}}
  shop(deal=true){this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
- c.dataset.suit=o.merc?'佣兵':'道具';emblem.textContent=o.merc?['⚔','♜','➶','⚒'][o.id]:itemIcons[o.id];
+ c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=['⚔','♜','➶','⚒'][o.id];else emblem.append(itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
  name.textContent=(o.merc?troops[o.id][0]:items[o.id][0])+' '+roman[o.q];
  detail.textContent=o.merc?'佣兵':items[o.id][2];
@@ -419,7 +424,7 @@ class Battle extends Phaser.Scene{
      this.bag.forEach((count,id)=>{
        if(!count)return;
        const slot=document.createElement('span');
-       slot.textContent=items[id][0]+' ×'+count;slot.title=items[id][2];grid.append(slot);
+       slot.append(itemIcon(id),items[id][0]+' ×'+count);slot.title=items[id][2];grid.append(slot);
      });
      if(!grid.childElementCount)grid.textContent='暂无道具';
    }

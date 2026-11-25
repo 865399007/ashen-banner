@@ -233,3 +233,8 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 @media(prefers-reduced-motion:reduce){
   #field.low-health::after{animation:none!important;opacity:.55}
 }
+
+.item-icon{display:block;width:30px;height:30px;object-fit:contain}
+#cards [data-suit="道具"] i{clip-path:none;background:transparent}
+#cards .item-icon{width:100%;height:100%}
+.loot-icon .item-icon{width:48px;height:48px;margin:auto}

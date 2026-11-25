@@ -355,7 +355,7 @@ class Battle extends Phaser.Scene{
  Phaser.Utils.Array.Shuffle(options.map(([label,apply],i)=>({label,apply,symbol:symbols[i]}))).forEach(({label,apply,symbol},index)=>{
    const [name,effect]=label.split('　');
    const card=this.button(hand,'',()=>{apply();this.pending--;this.hud();this.reward()});
-   card.className='upgrade-card';card.dataset.suit=name;card.style.setProperty('--delay',index*45+'ms');
+   card.className='upgrade-card';card.dataset.tier=q;card.style.setProperty('--delay',index*45+'ms');
    const icon=document.createElement('i'),title=document.createElement('strong'),value=document.createElement('span');
    icon.textContent=symbol;icon.setAttribute('aria-hidden','true');
    title.textContent=name;value.textContent=effect;card.append(icon,title,value);
@@ -382,7 +382,7 @@ class Battle extends Phaser.Scene{
  if(this.wave<=5&&!merc){let o=this.offers.find(o=>!o.lock);if(o)Object.assign(o,{merc:true,id:0,price:12+this.wave+o.q*9})}}
  shop(deal=true){this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
- c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=['⚔','♜','➶','⚒'][o.id];else emblem.append(itemIcon(o.id));
+ c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=['⚔','♜','➶','⚒'][o.id];else emblem.append(itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
  name.textContent=(o.merc?troops[o.id][0]:items[o.id][0])+' '+roman[o.q];
  detail.textContent=o.merc?'佣兵':items[o.id][2];

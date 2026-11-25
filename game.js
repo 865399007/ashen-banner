@@ -4,6 +4,18 @@ const portraitWorldWidth=270;
 const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
 const commanderAttackRange=63;
+const commanders={
+  banner:{
+    passives:[
+      {name:'旗手号令',description:'每招募一名在队佣兵，主角伤害提高 5%。',
+       damageMultiplier:scene=>1+.05*scene.army.length},
+      {name:'战地振奋',description:'小队每累计击败 5 名敌人，主角恢复 3 点生命。',
+       onKill(scene){
+         if(scene.kills%5===0)scene.hp=Math.min(scene.maxHP,scene.hp+3);
+       }}
+    ]
+  }
+};
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,235*referenceScale],['斧兵',40,1.8,35]];
 const itemIcons=['whetstone','boots','badge','quiver','banner'];
 function itemIcon(id){
@@ -19,7 +31,13 @@ class Battle extends Phaser.Scene{
  preload(){
    for(const key of ['sand',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
  }
- create(){this.camp=new GreyCamp();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
+ create(){this.commander=commanders.banner;
+ for(const passive of this.commander.passives){
+   const line=document.createElement('div');
+   line.textContent=passive.name+' · '+passive.description;
+   $('commander-passives').append(line);
+ }
+ this.camp=new GreyCamp();$('camp').onclick=()=>this.camp.open(this);makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  const fitViewport=()=>{
    const field=$('field'),width=field.clientWidth,height=field.clientHeight;
@@ -287,8 +305,8 @@ class Battle extends Phaser.Scene{
  this.sfx.swing(a.id);this.weaponEffect(a,e);
  let allies=this.army.filter(u=>u.id===a.id).length;
  const critical=Math.random()<.05;
- const damage=(critical?1.5:1)*(a.hero?17:troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
- if(e.hp<=0){e.footBar?.destroy();this.kills++;let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
+ const damage=(critical?1.5:1)*(a.hero?17*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
+ if(e.hp<=0){e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=10;this.end(true);return}
  if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;

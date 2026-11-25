@@ -339,6 +339,8 @@ function miniature(c,p,id,phase=0,q=0){
   }
 }
 function makeArt(scene){
+  const theme=getComputedStyle(document.documentElement);
+  const rankColors=[0,1,2,3].map(q=>theme.getPropertyValue('--tier-'+q).trim());
   paintTexture(scene,'field-dressing',32,30,c=>{
     oval(c,17,26,9,2.5,'rgba(65,47,30,.3)');
     const face=new Path2D('M11 2 H19 V10 H27 V18 H19 V26 H11 V18 H3 V10 H11 Z');
@@ -386,7 +388,7 @@ function makeArt(scene){
             const ink=mask.getContext('2d');
             ink.drawImage(c.canvas,0,0);
             ink.globalCompositeOperation='source-in';
-            ink.fillStyle=['#596143','#5384a0','#a57bad','#ce9947'][q];
+            ink.fillStyle=rankColors[q];
             ink.fillRect(0,0,mask.width,mask.height);
             c.globalCompositeOperation='destination-over';
             for(let side=0;side<8;side++){

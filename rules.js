@@ -56,7 +56,7 @@ function armySoul(army){
 }
 const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞'];
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57]];
-const itemIcons=['whetstone','boots','badge','quiver','banner','quiver','badge','satchel','bandage','permit','ward','banner','permit','whetstone','badge','banner','bandage','satchel','ward','ward','quiver'];
+const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow'];
 function itemIcon(id){
   const image=document.createElement('img');
   image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';

@@ -1,3 +1,11 @@
+function mercenaryPortrait(scene,unit){
+ const source=scene.textures.get('man'+troopSkin(unit.id,unit.q)).getSourceImage();
+ const canvas=document.createElement('canvas');
+ canvas.width=source.width;canvas.height=source.height;
+ canvas.getContext('2d').drawImage(source,0,0);
+ canvas.setAttribute('aria-hidden','true');
+ return canvas;
+}
 function appendCommanderStats(panel,name,rows){
  const section=document.createElement('section'),title=document.createElement('h3'),list=document.createElement('dl');
  section.className='commander-stats';title.textContent=name;
@@ -727,14 +735,14 @@ class Battle extends Phaser.Scene{
  }
  shop(deal=true){this.soul=armySoul(this.army);this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
- c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';if(o.merc)emblem.textContent=troopEmblems[o.id];else emblem.append(itemIcon(o.id));
+ c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';emblem.append(o.merc?mercenaryPortrait(this,o):itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
  name.textContent=o.merc?troops[o.id][0]:items[o.id][0];
  detail.textContent=o.merc?'佣兵':items[o.id][2];
  c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=itemCap(o.id);
  const reason=full?(o.merc?'满编':'已满'):this.gold<o.price?'差 '+(o.price-this.gold)+' 银币':'';
  const price=document.createElement('span');
- price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);
+ price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);if(reason){price.textContent+=' · '+reason;}
  const buy=this.button(c,'',()=>{if(this.offers[i]!==o)return;this.gold-=o.price;if(o.merc)this.army.push({id:o.id,q:o.q});else this.applyItem(o.id);this.offers[i]=null;this.shop(false)},Boolean(reason));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent+' '+roman[o.q]+'阶，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
  const inventory=document.createElement('div');
  inventory.className='refit-inventory';
@@ -761,22 +769,20 @@ class Battle extends Phaser.Scene{
          const merge=this.button(actions,'合成',()=>{
            unit.q++;this.army.splice(partner,1);this.shop(false);
          },partner<0||unit.q>=3);
+         merge.className='merge-unit';
          merge.title=unit.q>=3?'已达最高品质':'需要两名同兵种、同品质佣兵';
          const refund=Math.floor(refitPrice(true,unit.id,unit.q,this.wave)/4);
          const dismiss=this.button(actions,'遣散',()=>{
            this.gold+=refund;
            this.army.splice(i,1);this.shop(false);
          });
+         dismiss.className='dismiss-unit';
          dismiss.title='遣散返还 '+refund+' 银币';
          const value=document.createElement('small');
          value.textContent='+'+refund+' 银币';dismiss.append(value);
        });
        const name=slot.textContent;
-       const portrait=document.createElement('canvas');
-       const source=this.textures.get('man'+troopSkin(unit.id,unit.q)).getSourceImage();
-       portrait.width=source.width;portrait.height=source.height;
-       portrait.getContext('2d').drawImage(source,0,0);
-       portrait.setAttribute('aria-hidden','true');
+       const portrait=mercenaryPortrait(this,unit);
        const rank=document.createElement('small');rank.textContent=roman[unit.q];
        slot.replaceChildren(portrait,rank);
        slot.title=name;slot.setAttribute('aria-label',name);
@@ -794,7 +800,8 @@ class Battle extends Phaser.Scene{
    group.append(heading,grid);inventory.append(group);
  }
  m.append(inventory);
- let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(m,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary';this.showCommanderStats(m)}
+ const controls=document.createElement('div');controls.className='refit-controls';m.append(controls);
+ let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(controls,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(controls,'下一波 →',()=>{this.wave++;this.begin()}).className='primary';this.showCommanderStats(m)}
  pauseRun(){
    const field=$('field'),modal=$('modal');
    if(this.mode==='paused'){

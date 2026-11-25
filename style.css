@@ -335,3 +335,48 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   font-family: "Ma Shan Zheng", var(--game-type);
   font-weight: 400;
 }
+
+/* Field outfitter */
+#field #modal:has(#cards) {
+  padding:clamp(12px,3vw,28px);
+  border:1px solid #615c53;
+  border-radius:10px;
+  background: url("assets/refit-grain.png"),linear-gradient(145deg,#343435,#232325 60%,#292729);
+  color:#eadfca;
+}
+#modal:has(#cards)>h2 {text-align:left;margin:0;font-size:clamp(24px,4vw,36px);line-height:1.25}
+#modal:has(#cards)>p {text-align:left;margin:4px 0 16px;padding-bottom:10px;border-bottom:1px solid #605a52;color:#d5c7ae}
+#cards {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;margin:0 auto 16px;gap:clamp(4px,1vw,10px)}
+#cards>[data-tier="0"] {--rank-ring:#e4ded0;--rank-face:#464447}
+#cards>[data-tier="1"] {--rank-ring:#dcc0f1;--rank-face:#564159}
+#cards>[data-tier="2"] {--rank-ring:#ffbc78;--rank-face:#684735}
+#cards>[data-tier="3"] {--rank-ring:#ffa99a;--rank-face:#693d40}
+#cards>div {padding:9px 4px 6px;border:1px solid #756b5f;border-top:3px solid var(--rank-ring,#655e56);border-radius:5px;justify-content:flex-start;background:#363437;box-shadow:0 3px 0 #171618}
+#cards>[data-tier] {background:linear-gradient(165deg,var(--rank-face),#322f32 95%)}
+#cards .card-rank {color:var(--rank-ring);align-self:flex-end;font:600 11px Georgia,serif}
+#cards i {width:clamp(34px,5.5vw,48px);height:clamp(34px,5.5vw,48px);flex:none;border:1px solid #d2bea0;background:radial-gradient(circle at 38% 28%,#f6e9cd,#c3ae8b);box-shadow:0 2px 3px #211d20}
+#cards i canvas {width:100%;height:100%;object-fit:contain}
+#cards strong {color:#fff2da;font-size:clamp(15px,2vw,20px)}
+#cards small {font-size:12px;line-height:1.35;color:#d8cdbb}
+#cards .offer-price {margin-top:auto;padding:5px 0;color:#f7dca4;font-size:13px;font-weight:bold}
+#cards button[aria-pressed] {margin:0;padding:3px 8px;background:#302e31;color:#ecdfc9;border-color:#807468}
+#cards button[aria-pressed=true] {background:#dfcba4;color:#302d29}
+.refit-inventory {max-width:none;margin:0 auto 12px;gap:16px}
+.refit-inventory section {width:50%;max-width:none;padding:0}
+.refit-inventory section>strong,.commander-stats h3 {display:block;border-bottom:1px solid #605a52;padding-bottom:5px;color:#ead9bc}
+.refit-slots {row-gap:6px;margin-top:6px}
+.refit-slots>span .item-icon {width:32px;height:32px}
+.mercenary-slots small {color:#fff0d6;text-shadow:0 1px 3px #000}
+#modal .mercenary-actions button::before {display:inline-block;margin-right:3px;font-size:16px}
+.merge-unit::before {content:'⚒'}
+.dismiss-unit::before {content:'↗'}
+.refit-controls {display:flex;justify-content:flex-end;align-items:stretch;gap:8px;padding:10px 0;border-block:1px solid #605a52}
+#modal .refit-controls button {margin:0;min-height:44px;padding:6px 16px;border:1px solid #877965;background:#3e3b39;color:#f5e8d0;border-radius:5px}
+#modal .refit-controls .primary {background:#e4c599;color:#382b22;min-width:36%}
+#modal:has(#cards) .commander-stats {max-width:none;margin-top:12px;padding:0;background:transparent}
+#modal:has(#cards) .commander-stats dl {gap:0 12px}
+#modal:has(#cards) .commander-stats dl div {padding:6px 0;border-bottom:1px solid #484549}
+@media(max-width:420px) {
+  #field #modal:has(#cards) {padding:9px}
+  #cards button[aria-pressed] {padding-inline:4px;width:100%}
+}

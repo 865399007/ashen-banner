@@ -269,11 +269,11 @@ function installCoop(scene){
          c.dataset.tier=o.q;
          const name=node('strong','',(o.merc?troops:items)[o.id][0]);
          const emblem=node('i','');emblem.setAttribute('aria-hidden','true');
-         if(o.merc)emblem.textContent=troopEmblems[o.id];else emblem.append(itemIcon(o.id));
+         emblem.append(o.merc?mercenaryPortrait(scene,o):itemIcon(o.id));
          c.append(cardRank(o.q),emblem,name);
-         const price=document.createElement('span');price.textContent=o.price+' 银币';c.append(price);
+         const price=node('span','offer-price');price.textContent=o.price+' 银币';c.append(price);
          const buy=button(c,'','buy',i,p.gold<o.price||(o.merc?p.army.length>=6:(me.bag[o.id]||0)>=6));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent);
-         button(c,o.lock?'解锁':'锁定','lock',i);
+         button(c,o.lock?'解锁':'锁定','lock',i).setAttribute('aria-pressed',String(o.lock));
        });
        p.army.forEach((u,i)=>{
          const merge=p.army.some((v,j)=>j!==i&&v.id===u.id&&v.q===u.q)&&u.q<3;

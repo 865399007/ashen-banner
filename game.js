@@ -251,7 +251,7 @@ class Battle extends Phaser.Scene{
  move(s,x,y,len){let dx=x-s.x,dy=y-s.y,d=Math.hypot(dx,dy);if(d){s.x+=dx/d*Math.min(d,len);s.y+=dy/d*Math.min(d,len)}}
  followPosition(slot){
    const count=this.actors.length-1;
-   const radius=32;
+   const radius=39;
    const angle=Math.PI+slot*2*Math.PI/count;
    const centerX=Phaser.Math.Clamp(this.hero.x,15+radius,945-radius);
    const centerY=Phaser.Math.Clamp(this.hero.y,33+radius,590-radius);
@@ -267,10 +267,23 @@ class Battle extends Phaser.Scene{
      unit.followGoal=history.shift();
    }
    const goal=unit.followGoal,gap=distance(unit.s,goal);
-   if(gap<.5){this.animateWalk(unit,0,0,unit.stepLength);return}
    const step=Math.min(dt*this.speed*1.65,gap*(1-Math.exp(-unit.followResponse*dt)));
    const oldX=unit.s.x,oldY=unit.s.y;
-   this.move(unit.s,goal.x,goal.y,step);
+   if(gap>=.5)this.move(unit.s,goal.x,goal.y,step);
+   const hero=this.hero,clearance=31;
+   const dx=unit.s.x-hero.x,dy=unit.s.y-hero.y;
+   if(Math.hypot(dx,dy)<clearance){
+     const gx=goal.x-hero.x,gy=goal.y-hero.y;
+     let angle=dx||dy?Math.atan2(dy,dx):Math.PI+slot*2*Math.PI/(this.actors.length-1);
+     if(Math.hypot(gx,gy)>clearance){
+       const turn=Phaser.Math.Angle.Wrap(Math.atan2(gy,gx)-angle);
+       angle+=Phaser.Math.Clamp(turn,-step/clearance,step/clearance);
+     }
+     let offsetX=clearance*Math.cos(angle),offsetY=clearance*Math.sin(angle);
+     if(hero.x+offsetX<15||hero.x+offsetX>945)offsetX=-offsetX;
+     if(hero.y+offsetY<33||hero.y+offsetY>590)offsetY=-offsetY;
+     unit.s.setPosition(hero.x+offsetX,hero.y+offsetY);
+   }
    this.animateWalk(unit,unit.s.x-oldX,unit.s.y-oldY,unit.stepLength);
  }
  weaponEffect(unit,enemy){

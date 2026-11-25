@@ -61,7 +61,7 @@ class GreyCamp {
     }
     if(section==='军械库'){
       for(const [i,t] of troops.entries())row(t[0]+(i===3&&!d.axe?' · 未签约':''),'伤害 '+t[1]+'　间隔 '+t[2]+' 秒　射程 '+t[3]);
-      row('军魂附体','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得绯红军魂，射程增加 25%，并叠加对应兵种加成。'+soulTypes.map((t,i)=>troops[i][0]+'：'+t.label+' +'+t.values.join(' / ')+'%').join('；'));
+      row('军魂附体','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得蓝色军魂，射程增加 25%，并叠加对应兵种加成。'+soulTypes.map((t,i)=>troops[i][0]+'：'+t.label+' +'+t.values.join(' / ')+'%').join('；'));
       row('编制与合成','同名佣兵每 2 名提升一档羁绊。两名同阶同名佣兵可手动合成，最高 Ⅳ 阶。');
     }
     if(this.saveWarning)row('存档提示','浏览器存储不可用，本次进度仅在当前页面生效。');

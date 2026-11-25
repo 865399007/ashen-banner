@@ -22,7 +22,7 @@ class Battle extends Phaser.Scene{
  this.syncStages();
  for(const [name,key] of [['训练场','training'],['指挥帐篷','command'],['铁匠铺','forge'],['军需帐篷','supply'],['军械库','armory']]){
    const button=this.button($('camp-buildings'),name,()=>this.camp.open(this,name));
-   const image=document.createElement('img');image.alt='';image.src='assets/camp/'+key+'.webp';
+   const image=document.createElement('img');image.alt='';image.src='assets/camp/'+key+'.webp?v=c74e363';
    button.prepend(image);
  }
  $('camp-buildings').append($('coop-entry'));

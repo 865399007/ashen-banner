@@ -25,6 +25,7 @@ class Battle extends Phaser.Scene{
    const image=document.createElement('img');image.alt='';image.src='assets/camp/'+key+'.webp';
    button.prepend(image);
  }
+ $('camp-buildings').append($('coop-entry'));
  makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{

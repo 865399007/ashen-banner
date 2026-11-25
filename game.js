@@ -350,17 +350,36 @@ class Battle extends Phaser.Scene{
  const buy=this.button(c,'',()=>{if(this.offers[i]!==o)return;this.gold-=o.price;if(o.merc)this.army.push({id:o.id,q:o.q});else this.applyItem(o.id);this.offers[i]=null;this.shop(false)},Boolean(reason));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent+'，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
  const inventory=document.createElement('div');
  inventory.className='refit-inventory';
- for(const label of ['技能槽','道具']){
+ for(const label of ['佣兵','道具']){
    const group=document.createElement('section'),heading=document.createElement('strong'),grid=document.createElement('div');
    heading.textContent=label;grid.className='refit-slots';
-   if(label==='技能槽'){
-     grid.setAttribute('aria-label','佣兵武器槽');
-     grid.innerHTML=Array.from({length:6},(_,i)=>{
-   const unit=this.army[i];
-   if(!unit)return '<span aria-label="空位"></span>';
-   const name=troops[unit.id][0]+roman[unit.q];
-   return '<span class="unit" data-tier="'+unit.q+'" title="'+name+'" aria-label="'+name+'">'+['剑','枪','弓','斧'][unit.id]+roman[unit.q]+'</span>';
- }).join('');
+   if(label==='佣兵'){
+     grid.setAttribute('aria-label',label);
+     const actions=document.createElement('div');
+     for(let i=0;i<6;i++){
+       const unit=this.army[i];
+       if(!unit){
+         const empty=document.createElement('span');
+         empty.setAttribute('aria-label','空位');grid.append(empty);continue;
+       }
+       const slot=this.button(grid,troops[unit.id][0]+roman[unit.q],()=>{
+         const open=slot.getAttribute('aria-pressed')!=='true';
+         for(const other of grid.querySelectorAll('button'))other.setAttribute('aria-pressed','false');
+         actions.replaceChildren();
+         if(!open)return;
+         slot.setAttribute('aria-pressed','true');
+         this.button(actions,'遣散',()=>{
+           this.army.splice(i,1);this.shop(false);
+         });
+         const partner=this.army.findIndex(other=>other!==unit&&other.id===unit.id&&other.q===unit.q);
+         const merge=this.button(actions,'合成',()=>{
+           unit.q++;this.army.splice(partner,1);this.shop(false);
+         },partner<0||unit.q>=3);
+         merge.title=unit.q>=3?'已达最高品质':'需要两名同兵种、同品质佣兵';
+       });
+       slot.setAttribute('aria-pressed','false');
+     }
+     group.append(heading,grid,actions);inventory.append(group);continue;
    }else{
      this.bag.forEach((count,id)=>{
        if(!count)return;
@@ -372,7 +391,6 @@ class Battle extends Phaser.Scene{
    group.append(heading,grid);inventory.append(group);
  }
  m.append(inventory);
- this.army.forEach((a,i)=>{let j=this.army.findIndex((b,k)=>k>i&&a.id===b.id&&a.q===b.q);if(j>=0&&a.q<3)this.button(m,'合成 '+troops[a.id][0]+roman[a.q+1],()=>{a.q++;this.army.splice(j,1);this.shop(false)})});
  let cost=2+this.refreshes;this.button(m,'刷新 · '+cost,()=>{this.gold-=cost;this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary'}
  pauseRun(){
    const field=$('field'),modal=$('modal');

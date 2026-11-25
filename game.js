@@ -345,7 +345,12 @@ class Battle extends Phaser.Scene{
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
- for(let [i,a] of this.actors.entries()){let target=null,d=Infinity;for(let e of this.enemies){let v=distance(a.s,e.s);if(v<d){target=e;d=v}}
+ const defending=!x&&!y;
+ const nearby=defending?this.enemies.filter(e=>distance(e.s,h)<105):[];
+ for(let [i,a] of this.actors.entries()){
+   const candidates=i&&a.id!==2&&nearby.length?nearby:this.enemies;
+   let target=null,d=Infinity;
+   for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  if(i)this.follow(a,i-1,target,x||y,dt);
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
  updatePropOpacity(this,dt);

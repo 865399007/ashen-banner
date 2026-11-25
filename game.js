@@ -31,6 +31,20 @@ const commanders={
     passives:[{name:'背水迎击',description:'生命不高于一半时，自身伤害提高 50%。',
       damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
 };
+const soulTypes=[
+  {stat:'haste',label:'攻速',values:[12,20,30],ink:'#76d6c1'},
+  {stat:'reach',label:'射程',values:[15,25,35],ink:'#9edcf8'},
+  {stat:'crit',label:'暴击率',values:[8,14,20],ink:'#c3a4ef'},
+  {stat:'power',label:'伤害',values:[15,25,40],ink:'#ffc085'}
+];
+function armySoul(army){
+  const counts=[0,0,0,0];
+  for(const unit of army)if(unit.q===3)counts[unit.id]++;
+  const id=counts.findIndex(n=>n>=4);
+  if(id<0)return null;
+  const count=counts[id],type=soulTypes[id];
+  return {id,count,type,bonus:type.values[count-4]/100};
+}
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35]];
 const itemIcons=['whetstone','boots','badge','quiver','banner'];
 function itemIcon(id){
@@ -170,7 +184,20 @@ class Battle extends Phaser.Scene{
  startRun(){this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
  begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.hp=Math.min(this.maxHP,this.hp+15);
  this.actors=[{id:this.commander.weapon,q:0,hero:true},...this.army].map((u,i)=>({...u,skin:u.hero?this.commander.skin:troopSkin(u.id,u.q),stride:0,cd:i*.12,s:this.add.image(480+i*12,300,'man'+(u.hero?this.commander.skin:troopSkin(u.id,u.q))).setOrigin(.5,.85).setScale((i?.5:.62)*2/3)}));
- this.hero=this.actors[0].s;this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors.slice(1).forEach((unit,slot)=>{
+ this.hero=this.actors[0].s;
+ this.soul=armySoul(this.army);
+ if(this.soul){
+   const {id,count,type}=this.soul,key='soul-'+id;
+   if(!this.textures.exists(key)){
+     const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
+     const tex=this.textures.createCanvas(key,source.width,source.height),ctx=tex.context;
+     ctx.drawImage(source,0,0);ctx.globalCompositeOperation='source-atop';
+     ctx.fillStyle=type.ink;ctx.globalAlpha=.68;ctx.fillRect(0,0,source.width,source.height);tex.refresh();
+   }
+   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
+     .setScale(.68+.045*(count-4)).setAlpha(.42+.06*(count-4)).setDepth(this.hero.y-1);
+ }
+ this.cameras.main.centerOn(this.hero.x,this.hero.y);this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
    unit.s.setPosition(pos.x,pos.y);
    const variation=(slot*.618+Math.random()*.08)%1;
@@ -181,7 +208,7 @@ class Battle extends Phaser.Scene{
    unit.followGoal=pos;
    unit.goalHistory=[];
  });if(this.wave===10)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);this.hud()}
- clearField(){$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
@@ -381,6 +408,7 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:fx,rotation:facing+.45,alpha:0,duration:180,onComplete:()=>fx.destroy()});
    }
  }
+ soulBonus(stat){return this.soul?.type.stat===stat?this.soul.bonus:0}
  attack(a,e){
  if(a.hero)a.s.setFlipX(e.s.x<a.s.x);
  if(a.hero&&a.skin===6){
@@ -389,8 +417,8 @@ class Battle extends Phaser.Scene{
  }
  this.sfx.swing(a.id);this.weaponEffect(a,e);
  let allies=this.army.filter(u=>u.id===a.id).length;
- const critical=Math.random()<.05;
- const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
+ const critical=Math.random()<.05+(a.hero?this.soulBonus('crit'):0);
+ const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*(a.hero?1:1+.13*Math.floor(allies/2));e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
  if(e.hp<=0){e.footBar?.destroy();this.kills++;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=10;this.end(true);return}
  if(e.elite){this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
@@ -427,7 +455,9 @@ class Battle extends Phaser.Scene{
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  if(i)this.follow(a,i-1,target,x||y,dt);
- a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
+ a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range*(1+this.soulBonus('reach')):troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]/(a.hero?1+this.soulBonus('haste'):1)}}
+ if(this.soulImage)this.soulImage.setPosition(h.x+(h.flipX?8:-8),h.y-12+Math.sin(this.elapsed*3)*1.3)
+   .setFlipX(h.flipX).setDepth(h.y-.5);
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
    const pullRadius=drop.chest?94:70*(1+.05*this.camp.level('sense'));

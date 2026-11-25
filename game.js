@@ -215,10 +215,19 @@ class Battle extends Phaser.Scene{
    if(!this.textures.exists(key)){
      const source=this.textures.get('man'+troopSkin(id,3)).getSourceImage();
      const tex=this.textures.createCanvas(key,source.width,source.height),ctx=tex.context;
-     ctx.drawImage(source,0,0);ctx.globalCompositeOperation='source-atop';
-     const gold=ctx.createLinearGradient(0,0,source.width,source.height);
-     gold.addColorStop(0,'#ffe394');gold.addColorStop(.48,'#d8a349');gold.addColorStop(1,'#936025');
-     ctx.fillStyle=gold;ctx.globalAlpha=.72;ctx.fillRect(0,0,source.width,source.height);tex.refresh();
+     ctx.drawImage(source,0,0);
+     const pixels=ctx.getImageData(0,0,source.width,source.height);
+     const rgba=pixels.data;
+     // Map the original shading to bronze shadows, ochre midtones and gold highlights.
+     const palette=[[46,32,24],[151,94,34],[255,223,136]];
+     for(let i=0;i<rgba.length;i+=4){
+       const light=Math.min(1,(rgba[i]*.30+rgba[i+1]*.59+rgba[i+2]*.11)/220);
+       const band=light<.5?0:1,blend=light*2-band;
+       for(let channel=0;channel<3;channel++){
+         rgba[i+channel]=palette[band][channel]*(1-blend)+palette[band+1][channel]*blend;
+       }
+     }
+     ctx.putImageData(pixels,0,0);tex.refresh();
    }
    this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
      .setScale(.68+.045*(count-4)).setAlpha(0.9).setDepth(this.hero.y-1);

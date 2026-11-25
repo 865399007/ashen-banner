@@ -10,7 +10,7 @@ function appendCommanderStats(panel,name,rows){
 const statNumber=value=>Number(value.toFixed(2));
 class Battle extends Phaser.Scene{
  preload(){
-   for(const key of ['sand','jade-cross',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
+   for(const key of ['sand','linen-cross',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
  }
  create(){
  this.camp=new GreyCamp();
@@ -566,7 +566,7 @@ class Battle extends Phaser.Scene{
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});
  if(this.healDropsRemaining>0&&--this.killsUntilHeal===0){
-   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'jade-cross').setScale(.22).setDepth(y+2);
+   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'linen-cross').setScale(.22).setDepth(y+2);
    this.drops.push({s:pack,heal:15,collectAfter:this.elapsed+.45});
    this.healDropsRemaining--;
    this.killsUntilHeal=Phaser.Math.Between(6,12);

@@ -40,14 +40,21 @@ class GreyCamp {
     d.best=Math.max(d.best,run.cleared);if(win)d.victories++;this.save();
     return '营地银币 +'+silver+'　铁料 +'+iron+'　军功章 +'+medals;
   }
-  open(game,section='训练场'){
+  open(game,section=null){
     game.mode='camp';game.hud();$('wave').textContent='';
     const d=this.data;
-    const m=game.panel('灰旗营地','营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals);
-    const nav=document.createElement('nav');nav.className='camp-tabs';m.append(nav);
-    for(const tab of ['训练场','军需帐篷','铁匠铺','指挥帐篷','军械库']){
-      const btn=game.button(nav,tab,()=>this.open(game,tab));btn.setAttribute('aria-pressed',String(tab===section));
+    const m=game.panel(section||'灰旗营地','营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals);
+    if(!section){
+      const map=document.createElement('nav');map.className='camp-map';
+      map.setAttribute('aria-label','营地建筑');m.append(map);
+      for(const [name,x,y] of [['训练场',20,34],['指挥帐篷',50,31],['铁匠铺',80,36],['军需帐篷',29,75],['军械库',72,75]]){
+        const building=game.button(map,name,()=>this.open(game,name));
+        building.style.left=x+'%';building.style.top=y+'%';
+      }
+      game.button(m,'出征 →',()=>game.startRun()).className='primary';
+      return;
     }
+    game.button(m,'← 营地全景',()=>this.open(game));
     const body=document.createElement('div');body.className='camp-rows';m.append(body);
     const row=(title,info)=>{
       const box=document.createElement('div'),text=document.createElement('div'),name=document.createElement('strong'),detail=document.createElement('small');

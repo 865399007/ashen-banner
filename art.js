@@ -438,17 +438,6 @@ function makeArt(scene){
     p([[2,10],[19,14],[26,9],[26,12],[19,17],[2,13]],'#d69d40');
     c.fillStyle='#ffe4a2';c.fillRect(10,11,4,6);
   });
-  paintTexture(scene,'field-dressing',32,30,c=>{
-    oval(c,17,26,9,2.5,'rgba(65,47,30,.3)');
-    const face=new Path2D('M11 2 H19 V10 H27 V18 H19 V26 H11 V18 H3 V10 H11 Z');
-    const edge=new Path2D('M19 2 l3 3 v5 h-3 Z M27 10 l3 3 v8 h-8 l-3 -3 h8 Z M19 18 l3 3 v8 h-8 l-3 -3 h8 Z M3 18 h8 v3 H6 Z');
-    c.fillStyle='#205c39';c.fill(edge);
-    const green=c.createLinearGradient(8,4,21,25);
-    green.addColorStop(0,'#a8ed91');green.addColorStop(1,'#41a956');
-    c.fillStyle=green;c.fill(face);
-    c.strokeStyle='#c5f4a8';c.lineWidth=1.5;
-    c.stroke(new Path2D('M4 11 H12 V3 H18'));
-  });
   paintTexture(scene,'silver-coin',32,26,c=>{
     oval(c,14,20,12,3,'rgba(90,66,39,.32)');
     oval(c,16,15,10,7.4,'#5e6770',-.16);

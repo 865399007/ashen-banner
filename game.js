@@ -230,7 +230,7 @@ class Battle extends Phaser.Scene{
      ctx.putImageData(pixels,0,0);tex.refresh();
    }
    this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key).setOrigin(.5,.85)
-     .setScale(.68+.045*(count-4)).setAlpha(0.75).setDepth(this.hero.y-1);
+     .setScale(.68+.045*(count-4)).setAlpha(0.5).setDepth(this.hero.y-1);
  }
  this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);

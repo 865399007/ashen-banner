@@ -238,9 +238,9 @@ function mountedLancer(c,phase){
 function miniature(c,p,id,phase=0,q=0){
   if(id===8){mountedLancer(c,phase);return}
   if(id===6){bannerCommander(c,phase);return}
-  const weapon=id%3,enemy=id>=3&&id<=5,step=Math.sin(phase);
-  const coat=['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039'][id];
-  const trim=['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727'][id];
+  const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
+  const coat=['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039',null,'#635273','#864437','#853d32','#615366'][id];
+  const trim=['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727',null,'#473649','#55372e','#58332c','#423a49'][id];
   const paint=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   const stroke=(path,color,width)=>{
     c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
@@ -259,7 +259,7 @@ function miniature(c,p,id,phase=0,q=0){
     paint('M12 14 Q7 15 7 19 L'+hem+' 31 Q7 33 11 30 L15 17 Z',q===3?'#913e30':'#685381');
     stroke('M7 20 L'+hem+' 31 L7 31',q===3?'#ebb767':'#ad92bd',1);
   }
-  if(weapon===2){
+  if(weapon===2&&id!==11){
     stroke('M8 22 L3 12 M9 20 L5 10 M10 18 L8 10','#654627',1);
     paint('M3 14 L9 12 L13 22 Q10 25 8 24 Z','#5b412f');
   }
@@ -295,7 +295,23 @@ function miniature(c,p,id,phase=0,q=0){
     }
   }
   c.save();c.translate(20,21);c.rotate(step*.10);c.translate(-20,-21);
-  if(id===7){
+  if(id===9){
+    stroke('M7 25 L2 13 M22 24 L32 11','#59402f',2);
+    paint('M3 19 L1 10 L4 13 L7 21 Z M23 20 L33 7 L32 13 L26 22 Z',wash(1,32,'#ada3aa','#f4dfbe'));
+  }else if(id===10){
+    paint('M18 12 L32 10 L33 29 L25 34 L17 30 Z','#aea097');
+    paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z','#8d4835');
+    stroke('M25 15 L25 28 M21 21 L29 20','#ead6ac',1.8);
+  }else if(id===11){
+    stroke('M20 34 L29 5','#654826',2);
+    paint('M26 9 L30 1 L32 1 L31 7 L34 5 Q36 11 30 14 L30 10 Z',wash(26,35,'#938782','#e7d3b4'));
+    paint('M27 10 L18 11 L17 16 L25 13 Z','#ad4e37');
+  }else if(id===12){
+    paint('M7 15 Q6 4 16 2 L22 5 L23 10 L17 8 L12 14 L14 17 Z','#594958');
+    paint('M10 15 Q6 20 2 27 L7 25 L5 29 L14 23 Z','#776272');
+    stroke('M18 24 L25 20','#5e4331',2);
+    paint('M23 20 L32 14 L29 20 L25 23 Z','#d4c9b2');
+  }else if(id===7){
     stroke('M21 29 L28 10','#704a31',1.8);
     paint('M27 10 L31 11 Q30 15 35 15 Q33 22 27 20 L25 15 Z',wash(25,34,'#767374','#d5c9b5'));
   }else if(weapon===0){
@@ -375,7 +391,7 @@ function makeArt(scene){
       c.scale(2,2);bannerCommander(c,0,angle);
     });
   });
-  for(let id=0;id<=8;id++){
+  for(let id=0;id<=12;id++){
     const tiers=id<3||id===7?4:1;
     for(let q=0;q<tiers;q++){
       const key='man'+id+(q?'tier'+q:'');

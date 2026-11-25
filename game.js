@@ -195,9 +195,14 @@ class Battle extends Phaser.Scene{
    const [x,y]=pick(inside.length?inside:edges);
    const mounted=!boss&&!elite&&++this.ordinarySpawns%8===5;
    const type=mounted?3:Math.floor(Math.random()*3);
-   const skin=mounted?8:3+type;
-   let hp=boss?this.campaign.bossHP:(13+this.wave*4+type*3)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
- const enemy={s:this.add.image(x,y,'man'+skin).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:31+type*8+this.wave*2)*this.campaign.march};
+   // Alternate the four infantry reinforcements with the existing patrols.
+   const reinforcement=!boss&&!elite&&this.ordinarySpawns%2===0;
+   const variant=(this.ordinarySpawns/2-1)%4;
+   const skin=reinforcement?9+variant:mounted?8:3+type;
+   const pace=reinforcement?[47,24,33,58][variant]:31+type*8;
+   const toughness=reinforcement?[2,15,7,-2][variant]:type*3;
+   let hp=boss?this.campaign.bossHP:(13+this.wave*4+toughness)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
+ const enemy={s:this.add.image(x,y,'man'+skin).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
  if(mounted)enemy.charge={phase:"ready",remaining:.45};
  this.enemies.push(enemy);if(boss||elite){
    enemy.footBar=this.add.graphics().setDepth(1000);

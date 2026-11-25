@@ -248,7 +248,7 @@ function miniature(c,p,id,phase=0,q=0){
   function wash(x,end,dark,light){
     const g=c.createLinearGradient(x,0,end,4);g.addColorStop(0,dark);g.addColorStop(1,light);return g;
   }
-  if(enemy)shadow(c,15,34,7);
+  if(enemy||q===0)shadow(c,15,34,7);
   for(const side of [-1,1]){
     c.save();c.translate(15+side*3.4+side*step*2.1,side*step*2);
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
@@ -382,7 +382,7 @@ function makeArt(scene){
       for(let frame=-1;frame<WALK_FRAMES;frame++){
         paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:id===8?100:72,id===6?112:id===8?96:80,(c,p)=>{
           c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q);c.restore();
-          if(tiers>1){
+          if(q>0){
             const mask=document.createElement('canvas');
             mask.width=c.canvas.width;mask.height=c.canvas.height;
             const ink=mask.getContext('2d');

@@ -239,8 +239,8 @@ function miniature(c,p,id,phase=0,q=0){
   if(id===8){mountedLancer(c,phase);return}
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
-  const coat=['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039',null,'#635273','#864437','#853d32','#615366'][id];
-  const trim=['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727',null,'#473649','#55372e','#58332c','#423a49'][id];
+  const coat=['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039',null,'#635273','#864437','#853d32','#615366','#92483b','#916b42','#844939','#63474a'][id];
+  const trim=['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727',null,'#473649','#55372e','#58332c','#423a49','#65352d','#674c35','#5b3930','#443137'][id];
   const paint=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   const stroke=(path,color,width)=>{
     c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
@@ -259,7 +259,7 @@ function miniature(c,p,id,phase=0,q=0){
     paint('M12 14 Q7 15 7 19 L'+hem+' 31 Q7 33 11 30 L15 17 Z',q===3?'#913e30':'#685381');
     stroke('M7 20 L'+hem+' 31 L7 31',q===3?'#ebb767':'#ad92bd',1);
   }
-  if(weapon===2&&id!==11){
+  if(weapon===2&&id<9){
     stroke('M8 22 L3 12 M9 20 L5 10 M10 18 L8 10','#654627',1);
     paint('M3 14 L9 12 L13 22 Q10 25 8 24 Z','#5b412f');
   }
@@ -295,7 +295,29 @@ function miniature(c,p,id,phase=0,q=0){
     }
   }
   c.save();c.translate(20,21);c.rotate(step*.10);c.translate(-20,-21);
-  if(id===9){
+  if(id===13){ // Two-handed greatsword
+    stroke('M18 27 L24 17','#61402b',2.3);
+    paint('M20 20 L29 5 L35 1 L33 8 L24 22 Z',wash(20,34,'#88878d','#e9dfcc'));
+    stroke('M18 18 L26 23','#caa369',1.8);
+    oval(c,19,25,2,1.6,'#dab38a');
+  }else if(id===14){ // War pick
+    stroke('M18 31 L28 8','#715033',2.2);
+    paint('M17 8 Q25 6 29 8 Q34 11 35 18 Q29 13 26 12 L19 12 Z',wash(17,35,'#827773','#d1c7b6'));
+    paint('M4 16 L9 15 L10 24 L4 25 Z','#8a623b');
+  }else if(id===15){ // Flail
+    stroke('M20 24 L24 8','#744e31',2);
+    const sway=Math.sin(phase)*2;
+    stroke('M24 8 Q'+(31+sway)+' 6 '+(31+sway)+' 18','#645951',1);
+    c.save();c.translate(31+sway,20);
+    paint('M0 -6 L2 -3 L5 -4 L4 -1 L6 1 L3 2 L2 5 L0 3 L-3 5 L-3 2 L-5 0 L-3 -2 L-4 -4 L-1 -3 Z','#817776');
+    oval(c,0,-.5,2.3,2.3,'#c3b6aa');c.restore();
+  }else if(id===16){ // Torch raider
+    paint('M7 15 Q6 3 16 2 Q22 2 24 9 L18 8 L12 15 L10 18 Z','#794a40');
+    stroke('M23 25 L28 11','#694331',2.3);
+    paint('M25 13 Q20 9 25 4 L26 7 Q30 5 29 1 Q36 8 30 13 Z','#da7035');
+    paint('M26 12 Q24 9 28 7 L29 5 Q31 10 29 12 Z','#ffdc80');
+    paint('M5 25 L11 22 L14 23 L8 27 Z','#c9bbab');
+  }else if(id===9){
     stroke('M7 25 L2 13 M22 24 L32 11','#59402f',2);
     paint('M3 19 L1 10 L4 13 L7 21 Z M23 20 L33 7 L32 13 L26 22 Z',wash(1,32,'#ada3aa','#f4dfbe'));
   }else if(id===10){
@@ -391,7 +413,7 @@ function makeArt(scene){
       c.scale(2,2);bannerCommander(c,0,angle);
     });
   });
-  for(let id=0;id<=12;id++){
+  for(let id=0;id<=16;id++){
     const tiers=id<3||id===7?4:1;
     for(let q=0;q<tiers;q++){
       const key='man'+id+(q?'tier'+q:'');

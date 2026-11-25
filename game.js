@@ -195,12 +195,12 @@ class Battle extends Phaser.Scene{
    const [x,y]=pick(inside.length?inside:edges);
    const mounted=!boss&&!elite&&++this.ordinarySpawns%8===5;
    const type=mounted?3:Math.floor(Math.random()*3);
-   // Alternate the four infantry reinforcements with the existing patrols.
+   // Alternate infantry reinforcements with the existing patrols.
    const reinforcement=!boss&&!elite&&this.ordinarySpawns%2===0;
-   const variant=(this.ordinarySpawns/2-1)%4;
+   const variant=(this.ordinarySpawns/2-1)%8;
    const skin=reinforcement?9+variant:mounted?8:3+type;
-   const pace=reinforcement?[47,24,33,58][variant]:31+type*8;
-   const toughness=reinforcement?[2,15,7,-2][variant]:type*3;
+   const pace=reinforcement?[47,24,33,58,29,38,32,54][variant]:31+type*8;
+   const toughness=reinforcement?[2,15,7,-2,12,6,9,0][variant]:type*3;
    let hp=boss?this.campaign.bossHP:(13+this.wave*4+toughness)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
  const enemy={s:this.add.image(x,y,'man'+skin).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
  if(mounted)enemy.charge={phase:"ready",remaining:.45};
@@ -422,7 +422,7 @@ class Battle extends Phaser.Scene{
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
- for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
+ for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){const contactDamage=e.boss?22:7+this.wave+({13:4,14:2,15:3}[e.skin]||0);this.hp=Math.max(0,this.hp-contactDamage);this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],contactDamage,true);this.hud();if(!this.hp){this.end(false);return}}}
  const defending=!x&&!y;
  const nearby=defending?this.enemies.filter(e=>distance(e.s,h)<105):[];
  for(let [i,a] of this.actors.entries()){

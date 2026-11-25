@@ -614,17 +614,6 @@ class Battle extends Phaser.Scene{
    const candidates=i&&![2,5].includes(a.id)&&nearby.length?nearby:this.enemies;
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
- if(a.hero&&a.cd<=0&&(!target||d>this.commander.range)){
-   const box=this.containers.find(b=>distance(a.s,b.s)<=this.commander.range);
-   if(box){
-     this.sfx.swing(a.id);box.s.setAlpha(.62);a.cd=troops[a.id][2];
-     if(--box.hp<=0){
-       const {x,y}=box.s;box.s.destroy();this.containers.splice(this.containers.indexOf(box),1);
-       const chest=Math.random()<.04;
-       this.drops.push({chest,s:chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62)});
-     }
-   }
- }
  if(i)this.follow(a,i-1,target,x||y,dt);
  if(i&&a.id===4&&target){a.facing=Math.atan2(target.s.y-a.s.y,target.s.x-a.s.x);a.s.setFlipX(Math.cos(a.facing)<0)}
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?this.commander.range*(1+(this.soul ? .25 : 0)+this.soulBonus('reach')):this.mercRange(a))&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}

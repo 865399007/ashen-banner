@@ -3,7 +3,8 @@ const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
 const portraitWorldWidth=270;
 const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
-const troops=[['剑士',18,.8,63],['长枪兵',27,1.25,100],['长弓手',16,1.1,470*referenceScale],['斧兵',40,1.8,70]];
+const commanderAttackRange=63;
+const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,235*referenceScale],['斧兵',40,1.8,35]];
 const items=[['粗磨刀石',0,'伤害 +8%',5],['行军靴',0,'移速 +6%',4],['斥候徽章',1,'幸运 +15',3],['穿甲箭袋',2,'小队伤害 +28%',2],['百战军旗',3,'生命上限 +60、伤害 +35%',1]];
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function tier(w,luck){let n=Math.random(),k=1+luck/100;
@@ -308,7 +309,7 @@ class Battle extends Phaser.Scene{
  for(let e of this.enemies){advanceImpact(e,dt);if(!e.hit)this.walkEnemy(e,dt);e.s.setDepth(e.s.y);if(e.footBar)this.positionFootBar(e);if(distance(e.s,h)<(e.boss?37:19)&&this.invul<=0){this.hp=Math.max(0,this.hp-(e.boss?22:7+this.wave));this.invul=.65;this.showInvulFade=true;impact(this,e.s,this.actors[0],e.boss?22:7+this.wave,true);this.hud();if(!this.hp){this.end(false);return}}}
  for(let [i,a] of this.actors.entries()){let target=null,d=Infinity;for(let e of this.enemies){let v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  if(i)this.follow(a,i-1,target,x||y,dt);
- a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<troops[a.id][3]&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
+ a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<(a.hero?commanderAttackRange:troops[a.id][3])&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=troops[a.id][2]}}
  updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
    if(drop.heal&&this.hp>=this.maxHP)continue;
@@ -352,6 +353,24 @@ class Battle extends Phaser.Scene{
  const price=document.createElement('span');
  price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);
  const buy=this.button(c,'',()=>{if(this.offers[i]!==o)return;this.gold-=o.price;if(o.merc)this.army.push({id:o.id,q:o.q});else this.applyItem(o.id);this.offers[i]=null;this.shop(false)},Boolean(reason));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent+'，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
+ const inventory=document.createElement('div');
+ inventory.className='refit-inventory';
+ for(const label of ['技能槽','道具']){
+   const group=document.createElement('section'),heading=document.createElement('strong'),grid=document.createElement('div');
+   heading.textContent=label;grid.className='refit-slots';
+   if(label==='技能槽'){
+     for(const slot of $('roster').children)grid.append(slot.cloneNode(true));
+   }else{
+     this.bag.forEach((count,id)=>{
+       if(!count)return;
+       const slot=document.createElement('span');
+       slot.textContent=items[id][0]+' ×'+count;slot.title=items[id][2];grid.append(slot);
+     });
+     if(!grid.childElementCount)grid.textContent='暂无道具';
+   }
+   group.append(heading,grid);inventory.append(group);
+ }
+ m.append(inventory);
  this.army.forEach((a,i)=>{let j=this.army.findIndex((b,k)=>k>i&&a.id===b.id&&a.q===b.q);if(j>=0&&a.q<3)this.button(m,'合成 '+troops[a.id][0]+roman[a.q+1],()=>{a.q++;this.army.splice(j,1);this.shop(false)})});
  let cost=2+this.refreshes;this.button(m,'刷新 · '+cost,()=>{this.gold-=cost;this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(m,'下一波 →',()=>{this.wave++;this.begin()}).className='primary'}
  pauseRun(){

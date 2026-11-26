@@ -12,6 +12,29 @@ function showHealing(scene,sprite,amount){
     onComplete:()=>label.destroy()});
 }
 
+function showCommanderPromotion(scene,sprite){
+  const light=scene.add.graphics();
+  function draw(t){
+    if(!sprite.active){light.setVisible(false);return}
+    light.clear().setPosition(sprite.x,sprite.y).setDepth(sprite.y+.5);
+    const spread=1-(1-t)*(1-t);
+    light.lineStyle(1.4,0xfbd174,1-t);
+    light.strokeEllipse(0,-1,18+27*spread,6+9*spread);
+    for(let i=0;i<6;i++){
+      const angle=i*Math.PI/3+.2;
+      const x=Math.cos(angle)*(9+9*spread);
+      const y=Math.sin(angle)*4-4-spread*(i%2?24:16);
+      const size=(1-t)*(i%2?2.1:1.6);
+      light.fillStyle(i%2?0xffedae:0xeab35c,1-t);
+      light.beginPath();light.moveTo(x,y-2*size);light.lineTo(x+size,y);
+      light.lineTo(x,y+2*size);light.lineTo(x-size,y);light.closePath();light.fillPath();
+    }
+  }
+  draw(0);
+  scene.tweens.addCounter({from:0,to:1,duration:540,
+    onUpdate:tween=>draw(tween.getValue()),onComplete:()=>light.destroy()});
+}
+
 function hitTexture(scene,key){
   const hitKey='hit-'+key;
   if(!scene.textures.exists(hitKey)){

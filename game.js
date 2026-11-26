@@ -683,6 +683,7 @@ class Battle extends Phaser.Scene{
      const key=hero.baseTexture+pose.slice(oldBase.length);
      if(hero.hit)hero.normalTexture=key;
      hero.s.setTexture(hero.hit&&hero.hit.age<.095?hitTexture(this,key):key);
+     showCommanderPromotion(this,hero.s);
    }
  }
  reward(keptTier){if(this.pending){let lv=this.level-this.pending+1,q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],

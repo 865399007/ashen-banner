@@ -119,6 +119,8 @@ function installCoop(scene){
    if(!s){
      s=scene.add.image(x,y,texture).setOrigin(.5,.85).setScale(scale);
      sprites.set(key,s);
+   }else if(s.bannerCommander&&s.baseTexture!==texture){
+     showCommanderPromotion(scene,s);
    }
    s.fromX=s.x;s.fromY=s.y;s.toX=x;s.toY=y;s.baseTexture=texture;
    return s;

@@ -389,9 +389,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     oval(c,118,42,4,3,u.trim);line('M116 41 L120 40',u.shade,1.3);
   }
   // At battlefield scale each eye needs its own clear patch of skin.
-  const eyeXs=rank?[121,141]:[122,140];
-  for(const x of eyeXs){
-    fill(`M${x} 81 a4 4 0 0 1 8 0 v${rank?6:5} a4 4 0 0 1 -8 0Z`,'#352922');
+  const eyeCenters=rank?[125,145]:[126,144];
+  for(const x of eyeCenters){
+    fill(`M${x-3.4} 81.4 a3.4 3.4 0 0 1 6.8 0 v${rank?5.2:4.2} a3.4 3.4 0 0 1 -6.8 0Z`,'#352922');
   }
   c.restore();
 }

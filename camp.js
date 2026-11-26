@@ -60,20 +60,9 @@ class GreyCamp {
       card.append(icon,name,boss,status);
     }
     game.button(controls,'返回首页',()=>{this.open(game);$('start').focus()});
-    const move=direction=>track.scrollBy({left:direction*track.clientWidth*.85,behavior:'smooth'});
-    const prev=game.button(controls,'上一组',()=>move(-1)),next=game.button(controls,'下一组',()=>move(1));
-    for(const button of [prev,next])button.setAttribute('aria-controls',track.id);
-    const sync=()=>{
-      prev.disabled=track.scrollLeft<=1;
-      next.disabled=track.scrollLeft+track.clientWidth>=track.scrollWidth-1;
-    };
-    track.addEventListener('scroll',sync,{passive:true});
-    const observer=new ResizeObserver(()=>{if(track.isConnected)sync();else observer.disconnect()});
-    observer.observe(track);
     const last=track.children[stageOrder.indexOf(game.stageKey)];
     const focusCard=last&&!last.disabled?last:track.firstElementChild;
     focusCard.focus({preventScroll:true});track.scrollLeft=focusCard.offsetLeft-track.firstElementChild.offsetLeft;
-    sync();
   }
   open(game,section=null){
     game.mode='camp';game.hud();$('wave').textContent='';

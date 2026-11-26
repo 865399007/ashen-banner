@@ -209,7 +209,7 @@ function installCoop(scene){
    const fresh=state.effects.filter(f=>f.id>lastEffect);
    const nearestHit=(x,y)=>fresh.reduce((best,f)=>!best||Math.hypot(f.x-x,f.y-y)<Math.hypot(best.x-x,best.y-y)?f:best,null);
    for(const e of state.enemies){
-     const s=draw('e'+e.id,e.x,e.y,'man'+e.skin,e.boss?.7:.33);
+     const s=draw('e'+e.id,e.x,e.y,'man'+e.skin+(e.boss?'boss':''),e.boss?.7:.33);
      const lost=(s.lastHp??e.max)-e.hp;
      if(lost>0&&!reset)localEnemyHit(s,lost,e.boss,false,nearestHit(e.x,e.y));
      s.lastHp=e.hp;s.wasBoss=e.boss;

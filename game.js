@@ -261,7 +261,7 @@ class Battle extends Phaser.Scene{
    const pace=infantry>=0?[47,24,33,58,29,38,32,54][infantry]:skin===23?54:31+baseType*8;
    const toughness=infantry>=0?[2,15,7,-2,12,6,9,0][infantry]:skin===23?9:baseType*3;
    let hp=boss?this.campaign.bossHP:(13+this.wave*4+toughness)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
- const enemy={s:this.add.image(x,y,'man'+skin).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
+ const enemy={s:this.add.image(x,y,'man'+skin+(boss?'boss':'')).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
  enemy.move=boss?this.campaign.bossMove:({5:'bow',23:'bolt',13:'hammer',14:'hammer',15:'hammer'})[skin];
  enemy.reload=.25+Math.random()*.55;
  if(skin===8)enemy.charge={phase:"ready",remaining:.45};
@@ -319,7 +319,7 @@ class Battle extends Phaser.Scene{
  }
  animateWalk(unit,dx,dy,stepLength){
    const s=unit.s,travel=Math.hypot(dx,dy);
-   let key='man'+unit.skin;
+   let key='man'+unit.skin+(unit.boss?'boss':'');
    if(travel>.001){
      const next=unit.stride+travel/stepLength;
      if(Math.floor(next*2)>Math.floor(unit.stride*2)){

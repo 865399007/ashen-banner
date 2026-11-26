@@ -236,6 +236,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];
 function troopSkin(id,q=0){const skin=mercSkins[id];return q?skin+"tier"+q:skin}
+const enemyCloth={shadow:'#8c591d',base:'#cf8f26',light:'#e9ad3f'};
 function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   const step=Math.sin(phase);
   const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
@@ -249,25 +250,36 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M10 22 Q5 20 3 26 L1 34 Q6 33 9 28 Z','#48332c');
   fill('M8 23 Q14 18 25 22 Q30 21 32 14 L35 11 L36 7 L39 11 L41 9 L41 14 L46 20 Q45 24 41 23 L36 20 Q36 29 31 32 Q24 35 13 32 Q6 32 8 23 Z','#98683f');
   fill('M28 23 Q31 13 35 11 L38 12 L34 17 L32 26 Z','#49342c');
-  fill('M13 21 L26 21 L25 31 L16 29 L12 30 Z',ally?'#416879':'#943f32');
+  fill('M13 21 L26 21 L25 31 L16 29 L12 30 Z',ally?'#416879':enemyCloth.base);
   fill('M14 27 L24 29 L24 31 L14 29 Z','#d4aa6c');
-  fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z',ally?'#537775':'#824436');
+  fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z',ally?'#537775':enemyCloth.base);
   fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
   oval(c,22,9,4,5,'#e2bb90');
   fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
   fill('M16 7 Q17 1 22 2 Q26 3 27 7 L29 8 L18 9 L18 13 L14 14 Z',ally?'#556b6d':'#6a554d');
-  fill('M18 3 Q15 0 11 2 L7 4 Q12 4 14 3 L19 5 Z',ally?'#47857b':'#ab5340');
+  fill('M18 3 Q15 0 11 2 L7 4 Q12 4 14 3 L19 5 Z',ally?'#47857b':enemyCloth.base);
   fill('M16 15 L24 13 L26 19 L17 21 Z','#74786c');
   fill('M16 17 L25 15 L25 16 L17 18 Z M17 20 L26 18 L26 19 L17 21 Z','#43483f');
   fill('M35 12 L40 13 L44 19 L41 20 L36 16 Z',ally?'#b39864':'#a07854');
   fill('M12 23 L15 24 L14 29 L11 28 Z M24 23 L27 22 L26 29 L23 30 Z','#715741');
+  if(!ally){
+    // Overlapping neck plates and a forked lance pennon identify the hostile cavalry.
+    fill('M28 21 L34 14 L38 16 L35 21 L32 25 L27 27 Z','#424647');
+    fill('M30 21 L34 17 L37 17 L34 19 Z M28 24 L32 20 L35 20 L32 23 Z','#918779');
+    fill('M12 22 L24 24 L22 34 L18 31 L15 33 L13 30 Z',enemyCloth.base);
+    fill('M17 24 L21 25 L18 28 L15 26 Z','#dbac6b');
+    fill('M14 14 L19 12 L23 15 L20 19 L12 20 Z','#383f42');
+    fill('M13 16 L20 14 L22 15 L13 18 Z','#af9980');
+    fill('M16 6 L27 5 L29 7 L21 8 L18 12 L15 12 Z','#343b3c');
+    fill('M39 9 L45 5 L42 10 L37 14 L38 11 L34 13 Z',enemyCloth.base);
+  }
   c.save();c.translate(21,20);c.rotate(pose*.55);c.translate(-21,-20);
   if(q){c.strokeStyle=ink;c.lineWidth=3.4;if(q===3){c.shadowColor=ink;c.shadowBlur=4}c.stroke(new Path2D('M21 20 L49 2'))}
   c.strokeStyle='#68472d';c.lineWidth=1.35;c.beginPath();c.moveTo(21,20);c.lineTo(45,5);c.stroke();
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,boss=false){
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
   const recruit=id>=17&&id<=22;
   const recruitSkin=id;
@@ -275,8 +287,9 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
   if(recruit)id=({17:10,18:2,19:14,20:9,21:11})[id];
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
-  const coat=recruit?'#506975':['#615175','#923e32','#787044','#69503e','#873f34','#5a5141',null,'#875039',null,'#635273','#864437','#853d32','#615366','#92483b','#916b42','#844939','#63474a'][id];
-  const trim=recruit?'#384957':['#40354f','#662d28','#514f34','#943f34','#582d29','#703e36',null,'#603727',null,'#473649','#55372e','#58332c','#423a49','#65352d','#674c35','#5b3930','#443137'][id];
+  const allied=recruit||!enemy;
+  const coat=recruit?'#506975':allied?({0:'#615175',1:'#923e32',2:'#787044',7:'#875039'})[id]:enemyCloth.base;
+  const trim=recruit?'#384957':allied?({0:'#40354f',1:'#662d28',2:'#514f34',7:'#603727'})[id]:enemyCloth.shadow;
   const paint=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   const stroke=(path,color,width)=>{
     c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
@@ -290,6 +303,11 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
   }
   c.translate(step*.65,-Math.abs(step)*1.1);
+  if(boss){
+    stroke('M12 23 L8 2','#514132',1.2);
+    paint('M8 2 L2 4 L1 14 L4 12 L6 15 L10 12 Z',enemyCloth.light);
+    stroke('M3 6 L7 5 M3 8 L7 7','#eac278',1.1);
+  }
   if(q>=2){
     const hem=3+step*1.4;
     paint('M12 14 Q7 15 7 19 L'+hem+' 31 Q7 33 11 30 L15 17 Z',q===3?'#913e30':'#685381');
@@ -314,8 +332,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
   paint('M11 7 Q14 4.2 21 6.8 L21 13.5 Q18 16.2 13 14.8 L10.8 13 Z',wash(11,21,'#ba9167','#ebc79a'));
   // Cloth wraps and tied hair give light troops a different silhouette from armored ranks.
   const lightTroop=[0,2,3,5,9,12,16].includes(id);
-  const allied=recruit||!enemy;
-  const binding=allied?'#476b6a':'#8b4638';
+  const binding=allied?'#476b6a':enemyCloth.base;
   const brass=q===3?'#ebc789':'#bc9b66';
   if(lightTroop){
     paint('M9 10 Q8 4 14 3 Q20 2 22 7 L21 9 L14 9 L12 13 L9 14 Z',wash(8,22,'#3a302d','#625048'));
@@ -340,6 +357,24 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
     for(const x of [13,18.4]){
       oval(c,x,18.9,2.3,2.6,'#514635');
       oval(c,x+.15,18.5,1.8,1.95,brass);
+    }
+  }
+  if(!allied){
+    // The iron shoulder silhouette and ochre waist tab read even on the smallest sprites.
+    paint('M5.5 15.4 L10.5 12.6 L15.4 15 L13.3 19.3 L5 20.4 Z',wash(5,15,'#343839','#646966'));
+    stroke('M6.5 16.1 L10.6 14.3 L14 15.8','#b9ab8e',1.05);
+    paint('M8 23 L22 21.6 L22.5 24 L17 25 L15.7 31.5 L12.4 29.7 L10.8 31 L11 25 L7.6 25 Z',enemyCloth.light);
+    paint('M13.3 22.7 L16.8 22.1 L17 24 L13.5 24.7 Z','#d0ad70');
+    if(lightTroop){
+      paint('M8 8.5 Q13 6 22 6 L22.8 8.8 L11.8 10.5 L7.5 14.5 L3 16 L5.6 12.8 L2 13.2 Z',enemyCloth.light);
+      paint('M10.5 7.8 L19 6.4 L21 8.1 L12.5 9.6 Z','#535956');
+      paint('M12 12 L16.2 13.2 L21.4 12 L20.8 15.2 L16 17.1 L11.8 15 Z','#483e3a');
+      stroke('M12 17 L21 20.4 M12.7 19.5 L20.8 22','#666763',1.4);
+    }else{
+      paint('M7.4 9 Q8 3.4 15.4 2 L18 2.5 Q22 4 23 7 L25 8.7 L15 9.8 L13.5 15 L8 16.2 Z',wash(7,23,'#343a3d','#717875'));
+      paint('M13.3 4 Q9 1 4 3 L1.6 5.7 L6 4.9 L3 8.4 Q10 7.8 15 4.7 Z',enemyCloth.light);
+      stroke('M9 9 Q15 7 22.8 7.8','#c7a572',1);
+      paint('M10 24.8 L14 25.2 L12.5 30.4 L7.2 29 Z M17.3 25 L21.7 24 L24 28.7 L17 30 Z','#464746');
     }
   }
   if(recruitSkin===23){
@@ -431,7 +466,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
     paint('M3 19 L1 10 L4 13 L7 21 Z M23 20 L33 7 L32 13 L26 22 Z',wash(1,32,'#ada3aa','#f4dfbe'));
   }else if(id===10){
     paint('M18 12 L32 10 L33 29 L25 34 L17 30 Z','#aea097');
-    paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z',recruit?'#496477':'#8d4835');
+    paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z',recruit?'#496477':enemyCloth.shadow);
     stroke('M21 20 Q21 17 24 18 Q28 20 28 16 M22 25 Q26 26 28 22','#e3bf86',1.3);
   }else if(id===11){
     stroke('M20 34 L29 5','#654826',2);
@@ -530,13 +565,16 @@ function makeArt(scene){
       c.scale(2,2);bannerCommander(c,0,null,TAU*frame/COMMANDER_CLOTH_FRAMES);
     });
   }
+  const leaderSkins=new Set(Object.values(campaigns).map(stage=>stage.bossSkin));
   for(let id=0;id<=23;id++){
     const tiers=mercSkins.includes(id)?4:1;
-    for(let q=0;q<tiers;q++){
-      const key='man'+id+(q?'tier'+q:'');
+    const variants=leaderSkins.has(id)?['','boss']:Array.from({length:tiers},(_,q)=>q?'tier'+q:'');
+    for(const [rank,variant] of variants.entries()){
+      const boss=variant==='boss',q=boss?0:rank;
+      const key='man'+id+variant;
       for(let frame=-1;frame<WALK_FRAMES;frame++){
         paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:(id===8||id===22)?100:72,id===6?112:(id===8||id===22)?96:80,(c,p)=>{
-          c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q]);c.restore();
+          c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q],0,boss);c.restore();
         });
       }
     }

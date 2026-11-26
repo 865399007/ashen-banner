@@ -17,7 +17,7 @@ function installCoop(scene){
  const panel=(title,info,homePage=false)=>scene.panel(title,info,homePage);
  function stop(){
    exit.hidden=true;clearTimeout(timer);session=null;pending=null;state=null;menuKey='';lastEffect=0;
-   sessionStorage.removeItem(key);for(const s of sprites.values())s.destroy();sprites.clear();
+   scene.fallenEnemies.clear(true,true);sessionStorage.removeItem(key);for(const s of sprites.values())s.destroy();sprites.clear();
    status.hidden=true;scene.resetStick();scene.hero=null;scene.mode='title';scene.hud();
    $('modal').hidden=true;$('cover').hidden=false;$('wave').textContent='';
    $('field').classList.remove('cooperative');scene.cameras.main.centerOn(480,300);
@@ -161,10 +161,12 @@ function installCoop(scene){
    s.hitGhost?.destroy();s.hitGhost=ghost;s.setVisible(false);
    const victim={s:ghost,boss};
    const attacker=hit?{x:hit.fromX,y:hit.fromY}:(scene.hero||s);
-   impact(scene,attacker,victim,lost);
+   if(dead&&boss)victim.nameOffset=attachBossName(scene,ghost,campaigns.border.boss);
+   const damageLabel=impact(scene,attacker,victim,lost);
+   if(dead){fadeDefeatedEnemy(scene,victim,damageLabel);return}
    const dir=Math.atan2(ghost.y-attacker.y,ghost.x-attacker.x);
    const push=boss?2:5;
-   scene.tweens.addCounter({from:0,to:1,duration:dead?145:180,onUpdate:tween=>{
+   scene.tweens.addCounter({from:0,to:1,duration:180,onUpdate:tween=>{
      if(!ghost.active)return;
      const t=tween.getValue(),k=Math.sin(Math.PI*t)*push;
      if(s.active)ghost.setPosition(s.x,s.y);
@@ -173,7 +175,6 @@ function installCoop(scene){
      const squeeze=victim.hit.amplitude*Math.cos(t*2*Math.PI)*(1-t);
      ghost.setScale(victim.hitBase*(1+squeeze),victim.hitBase*(1-squeeze));
      if(t>.4)ghost.setTexture(victim.normalTexture);
-     if(dead)ghost.setAlpha(1-t);
    },onComplete:()=>{
      if(s.hitGhost===ghost){s.hitGhost=null;if(s.active)s.setVisible(true)}
      if(ghost.active)ghost.destroy();
@@ -181,7 +182,8 @@ function installCoop(scene){
  }
  function drawWorld(){
    const now=performance.now(),gap=now-received;
-   const reset=!local||gap>400;
+   const continuingFight=!!local;
+   const reset=!continuingFight||gap>400;
    if(!reset)interval=Math.min(160,Math.max(35,interval*.75+gap*.25));
    received=now;
    const keys=new Set();
@@ -216,7 +218,7 @@ function installCoop(scene){
      if(l.box)s.setTint(0xffbd52);
    }
    for(const [k,s] of sprites)if(!keys.has(k)){
-     if(k.startsWith('e')&&!reset&&s.lastHp>0)localEnemyHit(s,s.lastHp,s.wasBoss,true,nearestHit(s.toX,s.toY));
+     if(k.startsWith('e')&&continuingFight&&s.lastHp>0)localEnemyHit(s,s.lastHp,s.wasBoss,true,nearestHit(s.toX,s.toY));
      s.destroy();sprites.delete(k);
    }
    for(const f of state.effects){
@@ -240,8 +242,11 @@ function installCoop(scene){
      if(p.down||other?.down){const down=p.down?p:other;status.textContent=(p.down?'等待队友救援':'靠近倒地队友救援')+' · '+Math.ceil(down.down)+' 秒 · '+Math.floor(down.rescue/3*100)+'%'}
      drawWorld();return;
    }
+   if(state.phase==='won'&&local)drawWorld();
+   local=null;
+   if((state.phase==='won'||state.phase==='refit')&&scene.fallenEnemies.getLength())return;
    for(const s of sprites.values())s.bossName?.setVisible(false);
-   local=null;scene.mode='coopMenu';$('battle-hud').hidden=true;$('wave').textContent='';
+   scene.mode='coopMenu';$('battle-hud').hidden=true;$('wave').textContent='';
    const id=[state.phase,state.wave,state.revision,state.players.length,other?.ready,other?.online,p.ready].join('/');
    if(state.phase==='refit'&&state.players.every(p=>!p.pending)&&!me.boxes.length&&other?.online)status.textContent+=' · 整备 '+Math.ceil(state.refitTime)+' 秒';
    if(menuKey===id)return;menuKey=id;

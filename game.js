@@ -50,7 +50,7 @@ class Battle extends Phaser.Scene{
  makeArt(this);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
- this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
+ this.fallenEnemies=this.add.group();this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
  // Browsers allow the camp theme to start after the first tap or keyboard action.
  const wakeAudio=()=>{if(this.sfx.ctx?.state!=='running')this.sfx.unlock()};
  const syncMusic=()=>this.sfx.updateMusic(this.mode);
@@ -135,13 +135,13 @@ class Battle extends Phaser.Scene{
  this.closeSettings=()=>{
    preferences.hidden=true;this.mode=previousMode;$('settings').setAttribute('aria-expanded','false');
    for(const id of ['modal','cover','pause'])$(id).inert=false;
-   if(previousMode==='fight')this.tweens.resumeAll();
+   if(previousMode==='fight'||previousMode==='finishing')this.tweens.resumeAll();
    $('settings').focus({preventScroll:true});
  };
  $('settings').onclick=()=>{
    if(!preferences.hidden){this.closeSettings();return}
    previousMode=this.mode;this.resetStick();this.mode='settings';preferences.hidden=false;
-   if(previousMode==='fight')this.tweens.pauseAll();
+   if(previousMode==='fight'||previousMode==='finishing')this.tweens.pauseAll();
    for(const id of ['modal','cover','pause'])$(id).inert=true;
    $('settings').setAttribute('aria-expanded','true');
    $('sound').focus({preventScroll:true});
@@ -270,7 +270,7 @@ class Battle extends Phaser.Scene{
  });
    Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.souls.some(s=>s.count===6&&s.id===id))));
  }
- clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){this.finishBattleTransition=null;this.fallenEnemies.clear(true,true);clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawnWaveElites(){
    spawnDueElite(this.eliteArrivals,this.timeLeft,this.enemies,()=>this.spawn(false,true));
  }
@@ -645,10 +645,15 @@ class Battle extends Phaser.Scene{
    shieldSpark(this,e.s);return true;
  }
  dealHit(a,e,power){
+ if(e.hp<=0)return;
  const critical=Math.random()<.05+this.critBonus+(a.hero?this.soulBonus('crit'):0);
  if(e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
- const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
- if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
+ const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
+ const damageLabel=impact(this,a.s,e,damage,false,critical);
+ if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
+ const {x,y}=e.s;
+ this.enemies.splice(this.enemies.indexOf(e),1);
+ fadeDefeatedEnemy(this,e,damageLabel);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
  if(e.elite){delayNextElite(this.eliteArrivals,this.timeLeft);if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;
@@ -661,8 +666,13 @@ class Battle extends Phaser.Scene{
    this.killsUntilHeal=healDropInterval();
  }
  this.hud()}}
+ afterEnemyDefeats(complete){
+   if(!this.fallenEnemies.getLength()){complete();return}
+   this.mode='finishing';this.finishBattleTransition=complete;
+ }
  update(_,ms){
  this.sfx?.updateMusic(this.mode);
+ if(this.mode==='finishing'){if(!this.fallenEnemies.getLength())this.finishBattleTransition();return}
  if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
  let x=Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),y=Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);
  if(!x&&!y){x=this.stickX;y=this.stickY}
@@ -731,7 +741,14 @@ class Battle extends Phaser.Scene{
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}
  $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败'+this.campaign.boss:this.campaign.army+' · '+Math.ceil(this.timeLeft)+' 秒');
- if(this.timeLeft<=0&&this.wave<finalWave){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.freeRefreshes=this.bag[12];this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
+ if(this.timeLeft<=0&&this.wave<finalWave){
+   this.cleared=this.wave;
+   this.afterEnemyDefeats(()=>{
+     this.clearField();this.hud();this.mode='refit';this.refreshes=0;
+     this.freeRefreshes=this.bag[12];this.offers=this.offers.map(o=>o?.lock?o:null);this.reward();
+   });
+ }
+ }
  enemyHit(source,raw){
    if(this.invul>0)return;
    const edict=this.bag[19]&&this.bondCounts[4]>=2;
@@ -921,13 +938,16 @@ class Battle extends Phaser.Scene{
    this.button(modal,'继续战斗',()=>this.pauseRun()).focus();
  }
  end(win){
-   if(this.mode==='over')return;
-   this.mode='over';this.clearField();this.hud();
+   if(this.mode==='over'||this.mode==='finishing')return;
    const reward=this.camp.settle(this,win);
-   const m=this.panel(win?this.campaign.name+' · 告捷':'灰旗倒下',(win?'击败'+this.campaign.boss:this.campaign.name)+' · '+'完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
-   const receipt=document.createElement('p');receipt.textContent=reward;m.append(receipt);
-   this.button(m,'返回首页',()=>this.camp.open(this)).className='primary';
-   this.button(m,'再次出征',()=>this.startRun());
+   const showResult=()=>{
+     this.mode='over';this.clearField();this.hud();
+     const m=this.panel(win?this.campaign.name+' · 告捷':'灰旗倒下',(win?'击败'+this.campaign.boss:this.campaign.name)+' · '+'完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
+     const receipt=document.createElement('p');receipt.textContent=reward;m.append(receipt);
+     this.button(m,'返回首页',()=>this.camp.open(this)).className='primary';
+     this.button(m,'再次出征',()=>this.startRun());
+   };
+   if(win)this.afterEnemyDefeats(showResult);else showResult();
  }
 }
 const game = new Phaser.Game({type:Phaser.CANVAS,input:{touch:false},loader:{imageLoadType:'HTMLImageElement'},parent:'game',width:960,height:600,pixelArt:false,audio:{noAudio:true},scene:Battle});

@@ -1,12 +1,14 @@
-const keepTower={x:358,y:245};
+const towerPositions={
+ keep:{x:358,y:245},fancheng:{x:605,y:298},jiange:{x:521,y:208}
+};
 
 function setupStage(scene){
  scene.stageObjects=[];scene.stageTick=5;scene.stageEvent=0;
- scene.back.setTint(scene.campaign.tint);
+ showBattlefield(scene,scene.stageKey);
  if(scene.campaign.event!=='tower')return;
 
  // The active archer tower marks the source of the keep's volley.
- const {x,y}=keepTower;
+ const {x,y}=towerPositions[scene.stageKey];
  const g=scene.add.graphics().setPosition(x,y).setDepth(y);
  g.fillStyle(0x775631,.28).fillEllipse(-4,1,39,8);
  g.fillStyle(0x755436).fillRect(-11,-32,4,32).fillRect(9,-32,4,32);
@@ -50,7 +52,8 @@ function stepStage(scene,dt){
    scene.fire={x,y,g,life:4};
    return;
  }
- const tower=event==='tower',x=tower?keepTower.x:h.x-10,y=tower?keepTower.y:h.y;
+ const tower=event==='tower',origin=tower?towerPositions[scene.stageKey]:h;
+ const x=tower?origin.x:h.x-10,y=origin.y;
  // Towers fire from their actual platform, only while the commander is in range.
  if(tower&&Math.hypot(h.x-x,h.y-y)>enemyMoves.volley.reach){scene.stageTick=.5;return}
  const baseTexture=enemyTexture(scene,scene.stageKey,tower?5:14);

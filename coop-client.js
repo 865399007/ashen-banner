@@ -232,6 +232,7 @@ function installCoop(scene){
    status.hidden=state.phase==='lobby';exit.hidden=!['lobby','fight','refit'].includes(state.phase);
    showText(status,'房间 '+state.code+' · '+(state.you+1)+'P'+(other&&!other.online?' · 等待队友重连':''));
    if(state.phase==='fight'){
+     showBattlefield(scene,'border');
      scene.mode='coopFight';$('modal').hidden=true;$('cover').hidden=true;$('battle-hud').hidden=false;menuKey='';
      showText($('level'),'Lv. '+state.level);showText($('money'),String(p.gold));
      $('life').style.width=100*p.hp/p.max+'%';$('experience').style.width=100*state.xp/(8+3*state.level)+'%';

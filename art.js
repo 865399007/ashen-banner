@@ -768,8 +768,8 @@ function campaignGeneral(c,stageKey,phase){
   const line=(d,color,width)=>{c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(d))};
   c.lineJoin='round';c.lineCap='round';
   const priest=stageKey==='border';
-  const helmet=['keep','xiapi','tongguan','dingjun','fancheng'].includes(stageKey);
-  const armored=helmet||stageKey==='camp';
+  const helmet=['keep','xiapi','tongguan','dingjun','fancheng','changban','shiting'].includes(stageKey);
+  const armored=helmet||['camp','bailang','jiange'].includes(stageKey);
   shadow(c,16,34,8);
   for(const side of [-1,1]){
     c.save();c.translate(side*(3+step*1.6),side*step);
@@ -802,6 +802,10 @@ function campaignGeneral(c,stageKey,phase){
     }else if(stageKey==='fancheng'){
       fill('M8 8 L12 9 L11 15 L7 15Z M20 7 L23 7 L24 13 L22 13Z','#68798b');
       line('M14 3 L17 2 L19 6','#c5ab72',1.3);
+    }else if(stageKey==='changban'){
+      fill('M10 5 L8 1 L13 3 L18 2 L20 .8 L21 6Z','#a78456');
+    }else if(stageKey==='shiting'){
+      fill('M15 4 Q12 -1 8 0 L6 4 L9 3 L7 6Z',cloth.light);
     }else if(stageKey==='dingjun'){
       fill('M9 6 Q5 6 3 11 L7 10 L5 14 Q11 11 12 7Z',cloth.light);
     }else{
@@ -814,6 +818,14 @@ function campaignGeneral(c,stageKey,phase){
       fill('M11 6 L12.5 2 Q13.5 .3 15 .5 L19 1.4 L20.5 5.6Z','#ba9057');
       line('M14 2 L13.3 5 M16.8 2 L16 5 M9.5 5.3 L22.3 4.6','#efcb88',.8);
       line('M11 6 L21 5.5','#ffe09b',1.2);
+    }else if(stageKey==='bailang'){
+      fill('M8 8 Q8 2 15 2 Q19 1 22 5 L23 8 Q15 6 8 10Z','#b69876');
+      fill('M12 4 Q6 3 4 0 Q10 0 14 3Z','#5b4939');
+    }else if(stageKey==='jiange'){
+      fill('M10 7 L10 2 L15 3 L17 0 L20 1 L22 6Z','#414857');
+      line('M11 6 L21 5 M16 1.5 L17 5','#d3bd8b',1);
+    }else if(stageKey==='jieting'){
+      fill('M9 7 Q9 2 13 2 L20 3 L22 6 L14 6 L8 10 L5 9Z',cloth.base);
     }else if(stageKey==='wuzhang'){
       fill('M9 7 L10 2 L13 3 L14 .5 L20 1 L22 7Z','#35313e');
       line('M10 6 L21 5 M15 2 L15 5','#aa9c99',.8);
@@ -836,11 +848,11 @@ function campaignGeneral(c,stageKey,phase){
     line('M-4 13 L9 -16','#734c37',1.6);
     fill('M7 -12 L11 -20 L10 -13 L8 -10Z M7 -10 Q12 -11 11 -16 Q16 -11 8 -8Z','#d7dfd8');
     line('M6 -9 L10 -8','#d6ab62',1);
-  }else if(stageKey==='tongguan'){
+  }else if(stageKey==='tongguan'||stageKey==='changban'){
     line('M-4 13 L8 -14','#695047',1.5);
     fill('M6 -12 L8 -17 L11 -20 L10 -14 L8 -11Z','#f0eeea');
     fill('M7 -12 Q4 -10 3 -6 L6 -8 L5 -5 L9 -11Z','#b75644');
-  }else if(stageKey==='dingjun'){
+  }else if(['dingjun','shiting','bailang'].includes(stageKey)){
     line('M1 -11 Q13 -2 7 10','#ad804a',1.8);
     line('M1 -11 L2 -1 L7 10','#e4ceab',.65);
     line('M-1 1 L11 -3','#d8cbb3',.9);
@@ -848,6 +860,9 @@ function campaignGeneral(c,stageKey,phase){
     fill('M0 -7 L9 -8 L12 -5 L10 3 L6 7 L0 3 L-2 -3Z','#b79a65');
     fill('M1 -5 L8 -6 L10 -4 L8 2 L6 4 L2 2Z','#455773');
     line('M4 -4 L7 1 M7 -4 L4 1','#b9bbc0',.9);
+  }else if(stageKey==='jieting'){
+    fill('M-1 -2 L6 -9 L9 -6 L2 1Z','#d3b887');
+    line('M1 -3 L6 -7 M2 -2 L7 -6','#896848',.7);
   }else if(stageKey==='wuzhang'){
     line('M0 2 L5 -6','#78593c',1.3);
     fill('M4 -4 Q0 -8 2 -12 L5 -10 Q5 -15 8 -16 L9 -12 L12 -14 Q13 -8 6 -4Z','#d9d6c7');

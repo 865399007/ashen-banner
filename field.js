@@ -1,36 +1,16 @@
 function placeField(scene){
-  scene.back=scene.add.image(0,0,'ember-arena').setOrigin(0).setDisplaySize(960,600).setDepth(-10);
-  drawGroundDetails(scene);
+  scene.groundTexture=scene.textures.createCanvas('campaign-ground',960,600);
+  scene.back=scene.add.image(0,0,'campaign-ground').setOrigin(0).setDepth(-10);
   scene.obstacles=[];
+  showBattlefield(scene,scene.stageKey);
 }
 
-function drawGroundDetails(scene){
-  const ink=scene.add.graphics().setDepth(-9);
-  const pebbles=[
-    [112,98,9,4],[255,76,6,3],[428,139,8,4],[672,89,10,5],[845,136,7,3],
-    [191,241,7,4],[761,233,9,4],[94,337,8,4],[343,302,6,3],[862,350,10,4],
-    [214,449,9,5],[535,418,7,3],[718,467,8,4],[377,535,8,4],[889,518,7,3]
-  ];
-  for(const [x,y,w,h] of pebbles){
-    const outline=[
-      {x,y},{x:x+w*.24,y:y-h*.76},{x:x+w*.61,y:y-h},
-      {x:x+w,y:y-h*.28},{x:x+w*.77,y:y+h*.24}
-    ];
-    ink.fillStyle(0x796149,.16).fillEllipse(x+w*.54,y+.7,w+2,h*.65);
-    ink.fillStyle(0xb29a7e,.62).fillPoints(outline,true);
-    ink.lineStyle(.85,0x64523e,.48).strokePoints(outline,true);
-    ink.lineStyle(.7,0xe2c9a3,.55).lineBetween(x+w*.25,y-h*.55,x+w*.6,y-h*.76);
-  }
-
-  const ridges=[[155,158,12],[345,116,10],[575,184,14],[817,189,10],
-    [155,376,13],[471,353,9],[646,303,12],[320,473,11],[620,526,14],[809,434,10]];
-  for(const [x,y,w] of ridges){
-    ink.lineStyle(.85,0x74593e,.36).strokePoints([
-      {x,y},{x:x+w*.24,y:y-1.5},{x:x+w*.48,y:y-2.5},
-      {x:x+w*.73,y:y-1.7},{x:x+w,y:y-.2}
-    ]);
-    ink.lineStyle(.75,0xead0a5,.48).lineBetween(x+w*.34,y+.25,x+w*.73,y+.55);
-  }
+function showBattlefield(scene,key){
+  if(scene.groundKey===key)return;
+  const paper=scene.textures.get('ember-arena').getSourceImage();
+  paintBattlefield(scene.groundTexture.context,paper,key);
+  scene.groundTexture.refresh();
+  scene.groundKey=key;
 }
 
 function resolveFootprint(scene,sprite,fromX,fromY,steer=false){

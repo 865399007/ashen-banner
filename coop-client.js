@@ -130,6 +130,7 @@ function installCoop(scene){
    let tex=s.baseTexture;
    if(moving&&tex.startsWith('man'))tex+='walk'+Math.floor(now/90)%WALK_FRAMES;
    else if(s.bannerCommander&&s.angle===0)tex=commanderIdleTexture(now,tex);
+   if(now<s.redFlashUntil)tex=hitTexture(scene,tex,true);
    if(s.texture.key!==tex)s.setTexture(tex);
    if(moving){s.setPosition(x,y);if(Math.abs(dx)>.025)s.setFlipX(dx<0)}
    if(s.depth!==y)s.setDepth(y);
@@ -188,6 +189,7 @@ function installCoop(scene){
      const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,state.level),COMMANDER_BATTLE_SCALE);
      u.bannerCommander=true;
      if(u.previousHealth!==undefined&&p.hp>u.previousHealth)showHealing(scene,u,p.hp-u.previousHealth);
+     if(!reset&&p.hp<u.previousHealth)u.redFlashUntil=now+hitFlashMs;
      u.previousHealth=p.hp;
      u.setAlpha(p.down>0?.5:1).setAngle(p.down>0?70:0);
      if(p.index===state.you){scene.hero=u;

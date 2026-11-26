@@ -35,14 +35,15 @@ function showCommanderPromotion(scene,sprite){
     onUpdate:tween=>draw(tween.getValue()),onComplete:()=>light.destroy()});
 }
 
-function hitTexture(scene,key){
-  const hitKey='hit-'+key;
+const hitFlashMs=95;
+function hitTexture(scene,key,hero=false){
+  const hitKey=(hero?'hit-red-':'hit-white-')+key;
   if(!scene.textures.exists(hitKey)){
     const source=scene.textures.get(key).getSourceImage();
     const flash=scene.textures.createCanvas(hitKey,source.width,source.height);
     flash.context.drawImage(source,0,0);
     flash.context.globalCompositeOperation='source-in';
-    flash.context.fillStyle='#ff4842';
+    flash.context.fillStyle=hero?'#ff4842':'#ffffff';
     flash.context.fillRect(0,0,source.width,source.height);
     flash.refresh();
   }
@@ -205,7 +206,7 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
   }
   const amplitude=victim.boss ? 0.15 : victim.elite ? 0.18 : 0.23;
   victim.hit={amplitude,age:0,dx:Math.cos(angle),dy:Math.sin(angle),last:0,force:hero?3:victim.boss?4:10};
-  sprite.setTexture(hitTexture(scene,victim.normalTexture));
+  sprite.setTexture(hitTexture(scene,victim.normalTexture,hero));
   sprite.setScale(victim.hitBase*(1+amplitude),victim.hitBase*(1-amplitude));
 }
 
@@ -223,6 +224,6 @@ function advanceImpact(victim,dt){
   hit.last=displacement;
   const squeeze=hit.amplitude*Math.cos(t*Math.PI*2)*(1-t);
   sprite.setScale(victim.hitBase*(1+squeeze),victim.hitBase*(1-squeeze));
-  if(hit.age>=.095)sprite.setTexture(victim.normalTexture);
+  if(hit.age>=hitFlashMs/1000)sprite.setTexture(victim.normalTexture);
   if(t===1)victim.hit=null;
 }

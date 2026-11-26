@@ -684,7 +684,7 @@ class Battle extends Phaser.Scene{
      hero.baseTexture=commanderTexture(this,this.level);
      const key=hero.baseTexture+pose.slice(oldBase.length);
      if(hero.hit)hero.normalTexture=key;
-     hero.s.setTexture(hero.hit&&hero.hit.age<.095?hitTexture(this,key):key);
+     hero.s.setTexture(hero.hit&&hero.hit.age<hitFlashMs/1000?hitTexture(this,key,true):key);
      showCommanderPromotion(this,hero.s);
    }
  }

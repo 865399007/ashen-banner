@@ -1,7 +1,7 @@
 // Coordinates are world-space landmark centres. The middle remains open for combat.
 const stageOrder=['border','camp','pass','keep','pursuit'];
 const stageScenery={
- border:[['house',312,212],['cart',630,388],['tree',720,165]],
+ border:[['cart',630,388],['tree',720,165]],
  camp:[['tent',348,201],['tower',650,250],['tent',560,423]],
  pass:[['boulder',325,215],['tree',585,182],['boulder',620,385],['tree',380,406]],
  keep:[['tower',358,245],['wall',655,225],['wall',580,408]],
@@ -11,11 +11,7 @@ function drawLandmark(scene,key,x,y){
  const g=scene.add.graphics().setPosition(x,y).setDepth(y);
  const poly=(color,points)=>g.fillStyle(color).fillPoints(points.map(([x,y])=>({x,y})),true);
  g.fillStyle(0x775631,.28).fillEllipse(-4,1,39,8);
- if(key==='house'){
-   poly(0xdbc39c,[[-17,-1],[-17,-22],[1,-34],[17,-22],[17,0]]);
-   poly(0x984e38,[[-21,-20],[-2,-39],[11,-38],[22,-20],[16,-19],[0,-30],[-13,-18]]);
-   g.fillStyle(0x694c36).fillRect(-6,-15,7,15).fillRect(9,-17,4,6);
- }else if(key==='tower'){
+ if(key==='tower'){
    g.fillStyle(0x755436).fillRect(-11,-32,4,32).fillRect(9,-32,4,32);
    g.lineStyle(3,0x98714b).lineBetween(-9,-4,10,-26).lineBetween(10,-4,-9,-26);
    g.fillStyle(0xa67b4e).fillRect(-15,-35,31,11);

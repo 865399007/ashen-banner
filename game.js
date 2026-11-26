@@ -325,6 +325,8 @@ class Battle extends Phaser.Scene{
      unit.stride=next%1;
      key+='walk'+Math.floor(unit.stride*WALK_FRAMES);
      if(Math.abs(dx)>.001)s.setFlipX(dx<0);
+   }else if(unit.hero&&unit.skin===6){
+     key=commanderIdleTexture(this.elapsed*1000);
    }
    if(s.texture.key!==key)s.setTexture(key);
  }

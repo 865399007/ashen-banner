@@ -156,7 +156,11 @@ function meadow(c,p,cover) {
 }
 const WALK_FRAMES=12;
 const commanderSwingAngles=[-.8,-.52,.15,.98,1.38,1.08,.7];
-function bannerCommander(c,phase,swing=null){
+const COMMANDER_CLOTH_FRAMES=12;
+function commanderIdleTexture(ms){
+  return 'man6cloth'+(Math.floor(ms/100)%COMMANDER_CLOTH_FRAMES);
+}
+function bannerCommander(c,phase,swing=null,clothPhase=phase){
   // Draw in portrait coordinates; the feet remain the animation pivot.
   c.save();c.scale(.21875,.21875);
   const step=Math.sin(phase);
@@ -179,15 +183,23 @@ function bannerCommander(c,phase,swing=null){
   shape('M146 120 Q157 120 166 132 L185 128 L191 146 Q172 154 151 149 Z','#503629','#38271e');
   c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);
   shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
-  const tail=Math.sin(phase-.3)*4;
-  shape('M170 22 L219 30 L'+(213+tail)+' 120 Q198 116 189 103 L186 83 L182 111 L166 104 Z','#803a2c','#aa5239');
+  const flagWave=Math.sin(clothPhase-.54);
+  const flagTip=Math.sin(clothPhase-1.1);
+  shape(`M170 22 L219 30 Q${219+flagWave*7} 66 ${213+flagTip*11} ${120+flagWave*4}
+    Q${198+flagTip*7} 116 ${189+flagTip*5} 103 L186 83 L${182+flagWave*4} ${111+flagTip*3}
+    L${166+flagWave*5} 104 Q${167+flagWave*3} 64 170 22 Z`,'#803a2c','#aa5239');
+  shape(`M207 34 Q${215+flagWave*5} 63 ${207+flagTip*7} 103
+    Q${215+flagTip*7} 83 ${213+flagWave*5} 53 Z`,'#a4523a','#b46144');
   shape('M190 40 L199 42 L198 56 L208 57 L207 66 L197 65 L195 84 L185 81 L187 64 L178 62 L179 53 L188 55 Z','#cc9660','#e7bb7c');
   shape('M164 13 Q167 10 172 14 L222 26 Q228 28 224 36 L165 24 Q160 22 164 13 Z','#583827','#6e4932');
   shape('M174 15 L187 18 L187 26 L172 23 Z M202 22 L216 24 L215 32 L201 29 Z','#a9583d','#b66d4a');
   c.restore();
   shape('M183 127 Q194 124 198 131 L196 147 Q190 155 180 149 L179 137 Z','#493024','#37261e');
-  const hem=34+step*6;
-  shape('M79 110 Q99 111 105 123 L94 215 Q66 214 '+hem+' 205 Q48 174 55 139 Z','#97483c','#622d29');
+  const capeWave=Math.sin(clothPhase+.8);
+  const capeTip=Math.sin(clothPhase+.13);
+  shape(`M79 110 Q99 111 105 123 Q102 173 ${94+capeWave*4} 215
+    Q${66+capeWave*5} ${214+capeWave*4} ${34+capeTip*11} ${205-capeTip*6}
+    Q${48+capeWave*8} 174 55 139 Z`,'#97483c','#622d29');
   shape('M94 107 Q99 115 108 119 L98 169 L92 209 Q96 155 88 146 Z','#78382f','#4c2724');
   c.save();
   c.translate(78,121);
@@ -458,9 +470,14 @@ function makeArt(scene){
   });
   commanderSwingAngles.forEach((angle,frame)=>{
     paintTexture(scene,'commanderSwing'+frame,112,112,c=>{
-      c.scale(2,2);bannerCommander(c,0,angle);
+      c.scale(2,2);bannerCommander(c,0,angle,frame*.55);
     });
   });
+  for(let frame=0;frame<COMMANDER_CLOTH_FRAMES;frame++){
+    paintTexture(scene,'man6cloth'+frame,112,112,c=>{
+      c.scale(2,2);bannerCommander(c,0,null,TAU*frame/COMMANDER_CLOTH_FRAMES);
+    });
+  }
   for(let id=0;id<=23;id++){
     const tiers=mercSkins.includes(id)?4:1;
     for(let q=0;q<tiers;q++){

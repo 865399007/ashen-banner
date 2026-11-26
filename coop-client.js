@@ -135,7 +135,9 @@ function installCoop(scene){
  }
  function stepVisual(s,x,y,now){
    const dx=x-s.x,dy=y-s.y,moving=Math.abs(dx)+Math.abs(dy)>.025;
-   const tex=moving&&s.baseTexture.startsWith('man')?s.baseTexture+'walk'+Math.floor(now/90)%WALK_FRAMES:s.baseTexture;
+   let tex=s.baseTexture;
+   if(moving&&tex.startsWith('man'))tex+='walk'+Math.floor(now/90)%WALK_FRAMES;
+   else if(tex==='man6'&&s.angle===0)tex=commanderIdleTexture(now);
    if(s.texture.key!==tex)s.setTexture(tex);
    if(moving){s.setPosition(x,y);if(Math.abs(dx)>.025)s.setFlipX(dx<0)}
    if(s.depth!==y)s.setDepth(y);

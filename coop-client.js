@@ -134,6 +134,7 @@ function installCoop(scene){
    if(s.texture.key!==tex)s.setTexture(tex);
    if(moving){s.setPosition(x,y);if(Math.abs(dx)>.025)s.setFlipX(dx<0)}
    if(s.depth!==y)s.setDepth(y);
+   s.bossName?.setPosition(s.x,s.y-s.nameOffset);
  }
  scene.coopFrame=(ms)=>{
    if(!state||!local)return;
@@ -205,6 +206,7 @@ function installCoop(scene){
    const nearestHit=(x,y)=>fresh.reduce((best,f)=>!best||Math.hypot(f.x-x,f.y-y)<Math.hypot(best.x-x,best.y-y)?f:best,null);
    for(const e of state.enemies){
      const s=draw('e'+e.id,e.x,e.y,enemyTexture(scene,'border',e.skin,e.boss),e.boss?.7:.33);
+     if(e.boss&&!s.bossName)s.nameOffset=attachBossName(scene,s,campaigns.border.boss);
      const lost=(s.lastHp??e.max)-e.hp;
      if(lost>0&&!reset)localEnemyHit(s,lost,e.boss,false,nearestHit(e.x,e.y));
      s.lastHp=e.hp;s.wasBoss=e.boss;
@@ -237,6 +239,7 @@ function installCoop(scene){
      if(p.down||other?.down){const down=p.down?p:other;status.textContent=(p.down?'等待队友救援':'靠近倒地队友救援')+' · '+Math.ceil(down.down)+' 秒 · '+Math.floor(down.rescue/3*100)+'%'}
      drawWorld();return;
    }
+   for(const s of sprites.values())s.bossName?.setVisible(false);
    local=null;scene.mode='coopMenu';$('battle-hud').hidden=true;$('wave').textContent='';
    const id=[state.phase,state.wave,state.revision,state.players.length,other?.ready,other?.online,p.ready].join('/');
    if(state.phase==='refit'&&state.players.every(p=>!p.pending)&&!me.boxes.length&&other?.online)status.textContent+=' · 整备 '+Math.ceil(state.refitTime)+' 秒';
@@ -268,8 +271,10 @@ function installCoop(scene){
          const emblem=node('i','');emblem.setAttribute('aria-hidden','true');
          emblem.append(o.merc?mercenaryPortrait(scene,o):itemIcon(o.id));
          c.append(cardRank(o.q),emblem,name);
+         const target=purchaseMergeTarget(p.army,o);
+         if(target)c.append(node('small','','购买合成 '+roman[o.q+1]+' 阶'));
          const price=node('span','offer-price');price.textContent=o.price+' 银币';c.append(price);
-         const buy=button(c,'','buy',i,p.gold<o.price||(o.merc?p.army.length>=6:(me.bag[o.id]||0)>=6));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent);
+         const buy=button(c,'','buy',i,p.gold<o.price||(o.merc?p.army.length>=armyCapacity&&!target:(me.bag[o.id]||0)>=6));buy.className='buy';buy.setAttribute('aria-label',(target?'购买合成':'购买')+name.textContent);
          button(c,o.lock?'解锁':'锁定','lock',i).setAttribute('aria-pressed',String(o.lock));
        });
        p.army.forEach((u,i)=>{

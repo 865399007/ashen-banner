@@ -1,4 +1,14 @@
 const healDropInterval=()=>Phaser.Math.Between(18,36);
+function attachBossName(scene,sprite,name){
+ const label=scene.add.text(0,0,name,{
+   fontFamily:'"Noto Sans CJK SC", "Microsoft YaHei", sans-serif',fontSize:'12px',fontStyle:'bold',
+   color:'#ffe7aa',stroke:'#36251c',strokeThickness:3,resolution:3
+ }).setOrigin(.5,1).setDepth(1001);
+ const offset=sprite.displayHeight*sprite.originY;
+ sprite.bossName=label.setPosition(sprite.x,sprite.y-offset);
+ sprite.once('destroy',()=>label.destroy());
+ return offset;
+}
 function mercenaryPortrait(scene,unit){
  const source=scene.textures.get('man'+troopSkin(unit.id,unit.q)).getSourceImage();
  const canvas=document.createElement('canvas');
@@ -259,11 +269,13 @@ class Battle extends Phaser.Scene{
  if(skin===8)enemy.charge={phase:"ready",remaining:.45};
  this.enemies.push(enemy);if(boss||elite){
    enemy.footBar=this.add.graphics().setDepth(1000);
+   if(boss)enemy.nameOffset=attachBossName(this,enemy.s,this.campaign.boss);
    this.showEnemyHealth(enemy);
  }
  }
  positionFootBar(enemy){
    const sprite=enemy.s;
+   sprite.bossName?.setPosition(sprite.x,sprite.y-enemy.nameOffset);
    enemy.footBar.setPosition(sprite.x,sprite.y+sprite.displayHeight*(1-sprite.originY)+2);
  }
  showEnemyHealth(enemy){
@@ -756,12 +768,20 @@ class Battle extends Phaser.Scene{
  c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';emblem.append(o.merc?mercenaryPortrait(this,o):itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');
  name.textContent=o.merc?troops[o.id][0]:items[o.id][0];
- detail.textContent=o.merc?'佣兵':items[o.id][2];
- c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=6:this.bag[o.id]>=itemCap(o.id);
+ const target=purchaseMergeTarget(this.army,o);
+ detail.textContent=target?'购买合成 '+roman[o.q+1]+' 阶':o.merc?'佣兵':items[o.id][2];
+ c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=armyCapacity&&!target:this.bag[o.id]>=itemCap(o.id);
  const reason=full?(o.merc?'满编':'已满'):this.gold<o.price?'差 '+(o.price-this.gold)+' 银币':'';
  const price=document.createElement('span');
  price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);if(reason){price.textContent+=' · '+reason;}
- const buy=this.button(c,'',()=>{if(this.offers[i]!==o)return;this.gold-=o.price;if(o.merc)this.army.push({id:o.id,q:o.q});else this.applyItem(o.id);this.offers[i]=null;this.shop(false)},Boolean(reason));buy.className='buy';buy.setAttribute('aria-label','购买'+name.textContent+' '+roman[o.q]+'阶，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
+ const buy=this.button(c,'',()=>{
+   if(this.offers[i]!==o||this.gold<o.price)return;
+   if(o.merc){
+     if(!recruitMercenary(this.army,o))return;
+   }else this.applyItem(o.id);
+   this.gold-=o.price;this.offers[i]=null;this.shop(false);
+ },Boolean(reason));
+ buy.className='buy';buy.setAttribute('aria-label',(target?'购买合成':'购买')+name.textContent+' '+roman[o.q]+'阶，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
  const inventory=document.createElement('div');
  inventory.className='refit-inventory';
  for(const label of ['佣兵','道具']){
@@ -771,7 +791,7 @@ class Battle extends Phaser.Scene{
      grid.setAttribute('aria-label',label);
      grid.classList.add('mercenary-slots');
      const actions=document.createElement('div');actions.className='mercenary-actions';
-     for(let i=0;i<6;i++){
+     for(let i=0;i<armyCapacity;i++){
        const unit=this.army[i];
        if(!unit){
          const empty=document.createElement('span');

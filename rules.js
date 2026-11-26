@@ -13,23 +13,23 @@ const startingSpeed=90;
 const campaigns={
   border:{
     name:'黄巾之乱',army:'黄巾军',boss:'张角',colors:{shadow:'#8c591d',base:'#cf8f26',light:'#f1bf4e'},
-    bossMove:'rocks',bossSkin:5,elites:[4,8],pace:1,march:1,bossHP:1200
+    bossMove:'rocks',bossSkin:5,elites:[4,8],pace:1,march:1,bossHP:4800
   },
   camp:{
     name:'官渡之战',army:'袁绍军',boss:'袁绍',colors:{shadow:'#6b3547',base:'#a55363',light:'#da8b83'},
-    bossMove:'volley',bossSkin:23,elites:[4,9],pace:.95,march:1,bossHP:1400
+    bossMove:'volley',bossSkin:23,elites:[4,9],pace:.95,march:1,bossHP:5600
   },
   pass:{
     name:'赤壁之战',army:'曹军水师',boss:'曹操',colors:{shadow:'#343e55',base:'#596785',light:'#96adc1'},
-    bossMove:'rocks',bossSkin:14,elites:[3,6,9],pace:1.15,march:.95,bossHP:1650
+    bossMove:'rocks',bossSkin:14,elites:[3,6,9],pace:1.15,march:.95,bossHP:6600
   },
   keep:{
     name:'合肥之战',army:'合肥守军',boss:'张辽',colors:{shadow:'#374944',base:'#607565',light:'#a0af89'},
-    bossMove:'cleave',bossSkin:10,elites:[4,8,12],pace:1,march:.95,bossHP:1850
+    bossMove:'cleave',bossSkin:10,elites:[4,8,12],pace:1,march:.95,bossHP:7400
   },
   pursuit:{
     name:'夷陵之战',army:'东吴军',boss:'陆逊',colors:{shadow:'#783c2b',base:'#b65b3c',light:'#e39a62'},
-    bossMove:'cleave',bossSkin:13,elites:[5,8],pace:.84,march:1.22,bossHP:1100
+    bossMove:'cleave',bossSkin:13,elites:[5,8],pace:.84,march:1.22,bossHP:4400
   }
 };
 function campaignOpposition(campaign){
@@ -109,10 +109,27 @@ function villageEnemy(wave){
   const patrol=villagePatrols.reduce((current,row)=>wave>=row[0]?row:current,villagePatrols[0]);
   return pick(patrol[1]);
 }
+const armyCapacity=6;
+function purchaseMergeTarget(army,offer){
+  if(!offer.merc||offer.q>=3)return null;
+  if(army.length<armyCapacity && !(army.length===armyCapacity-1 && offer.q===2))return null;
+  for(let i=army.length-1;i>=0;i--){
+    const unit=army[i];
+    if(unit.id===offer.id && unit.q===offer.q)return unit;
+  }
+  return null;
+}
+function recruitMercenary(army,offer,position){
+  const target=purchaseMergeTarget(army,offer);
+  if(target)target.q++;
+  else if(army.length<armyCapacity)army.push({id:offer.id,q:offer.q,...position});
+  else return false;
+  return true;
+}
 function recruitOffer(pool,army){
    const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse'];
    const weights=pool.map(id=>army.some(a=>a.id===id)?4:army.some(a=>classes[a.id]===classes[id])?1.35:1);
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -21,7 +21,7 @@ function start(r){
 function spawn(r,boss=false){
   const h=pick(r.players.filter(p=>p.hp>0));if(!h)return;
   const angle=Math.random()*Math.PI*2;
-  const hp=boss?1750:14+4*r.wave;
+  const hp=boss?Math.round(campaigns.border.bossHP*1.5):14+4*r.wave;
   r.enemies.push({id:++r.serial,skin:boss?campaigns.border.bossSkin:villageEnemy(r.wave),x:clamp(h.x+140*Math.cos(angle),10,950),y:clamp(h.y+140*Math.sin(angle),20,585),hp,max:hp,boss});
 }
 function hand(p){p.choices=['体魄','力量','步法','幸运','恢复'];for(let i=4;i>0;i--){let j=Math.floor(Math.random()*(i+1));[p.choices[i],p.choices[j]]=[p.choices[j],p.choices[i]]}p.choices.length=4}
@@ -129,8 +129,14 @@ function action(r,p,a){
    const o=p.offers[i];if(!o)return;
    if(a.type==='lock')o.lock=!o.lock;
    else if(a.type==='buy'){
-     if(p.gold<o.price||(o.merc?p.army.length>=6:(p.bag[o.id]||0)>=6))return;
-     p.gold-=o.price;if(o.merc)p.army.push({id:o.id,q:o.q,x:p.x,y:p.y,cd:.2});else item(p,o.id);p.offers[i]=null;
+     if(p.gold<o.price)return;
+     if(o.merc){
+       if(!recruitMercenary(p.army,o,{x:p.x,y:p.y,cd:.2}))return;
+     }else{
+       if((p.bag[o.id]||0)>=6)return;
+       item(p,o.id);
+     }
+     p.gold-=o.price;p.offers[i]=null;
    }else return;
  }
  p.revision++;

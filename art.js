@@ -229,7 +229,8 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
   oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
   c.restore();
-  c.save();c.translate(9,0);
+  // Lift the chin slightly around the collar and keep the helmet over the shoulders.
+  c.save();c.translate(122,102);c.rotate(-.055);c.translate(-120,-103);
   shape('M96 62 Q112 43 138 56 L147 76 L145 99 Q134 110 114 104 L96 93 Z','#614539','#48352c');
   shape('M114 72 Q128 67 145 73 L145 96 Q142 106 120 103 Q114 99 114 92 Z','#dfb78b','#f0cda2');
   shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');

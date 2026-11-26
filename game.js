@@ -232,11 +232,11 @@ class Battle extends Phaser.Scene{
  if(this.soul){
    this.soulStrike=0;
    const {type,count}=this.soul;
-   this.soulFrames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,type,frame));
-   this.soulImage=this.add.image(this.hero.x,this.hero.y,this.soulFrames[0]).setOrigin(.5,96/140)
+   this.updateSoulFrames();
+   this.soulImage=this.add.image(this.hero.x,this.hero.y,this.soulFrames[0]).setOrigin(.5,soulBeltOriginY)
      .setScale(.36+.02*(count-4)).setAlpha(.86);
    if(type.general==='lvbu'){
-     const plumes=this.add.image(0,0,lvbuPlumeFrame(this,0)).setOrigin(.5,96/140)
+     const plumes=this.add.image(0,0,lvbuPlumeFrame(this,0)).setOrigin(.5,soulBeltOriginY)
        .setScale(this.soulImage.scaleX).setAlpha(this.soulImage.alpha);
      this.soulImage.plumes=plumes;
      this.soulImage.once('destroy',()=>plumes.destroy());
@@ -480,6 +480,12 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:fx,rotation:facing+.45,alpha:0,duration:180,onComplete:()=>fx.destroy()});
    }
  }
+ updateSoulFrames(){
+   const tier=soulWeaponTier(this.level);
+   const pose=this.soulImage?this.soulFrames.indexOf(this.soulImage.texture.key):0;
+   this.soulFrames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,this.soul.type,frame,tier));
+   this.soulImage?.setTexture(this.soulFrames[Math.max(0,pose)]);
+ }
  positionSoul(){
    const h=this.hero;
    const back=h.displayWidth*.14*(h.flipX?1:-1);
@@ -716,9 +722,10 @@ class Battle extends Phaser.Scene{
  need(){return 8+this.level*3}
  collect(d){
    if(d.heal){this.healCommander(d.heal);return}
-   const previousForm=commanderForm(this.level);
+   const previousLevel=this.level;
    this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}
-   if(commanderForm(this.level)!==previousForm){
+   if(this.soulImage&&soulWeaponTier(this.level)!==soulWeaponTier(previousLevel))this.updateSoulFrames();
+   if(commanderForm(this.level)!==commanderForm(previousLevel)){
      const hero=this.actors[0],oldBase=hero.baseTexture;
      const pose=hero.hit?hero.normalTexture:hero.s.texture.key;
      hero.baseTexture=commanderTexture(this,this.level);

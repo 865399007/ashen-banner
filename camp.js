@@ -130,6 +130,7 @@ class GreyCamp {
         }],
         ['名将战魂',()=>{
           row('触发条件','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，对应名将的战魂将随主角出招，射程增加 25%，并叠加对应兵种加成。');
+          row('战魂武器光色','随指挥官等级变化：1 级白光，5 级蓝光，10 级紫光，15 级起红光。');
           for(const [i,type] of soulTypes.entries()){
             const entry=row(troops[i][0]+' · '+type.name,type.weapon+'　'+type.label+' +'+type.values.join(' / ')+'%');
             const portrait=document.createElement('canvas');

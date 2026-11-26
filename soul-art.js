@@ -1,5 +1,8 @@
+const soulRimColors=['#ffffff','#49aaff','#bb72ff','#ff514c'];
+function soulWeaponTier(level){return Math.min(3,commanderForm(level))}
+
 // The codex and the battlefield share a bust, drawn around its belt at (40, 48).
-function drawGeneralSoul(c,general,pose=0){
+function drawGeneralSoul(c,general,pose=0,tier=0){
   const colors={
     liubei:['#478a70','#294f53'],zhaoyun:['#abc8d2','#54768e'],
     huangzhong:['#b08a52','#65503e'],xuhuang:['#698aa1','#3b5269'],
@@ -80,8 +83,15 @@ function drawGeneralSoul(c,general,pose=0){
   }
 
   // All weapon coordinates are relative to the front hand. Rotation keeps the grip attached.
-  const metal=(d)=>shape(d,steel);
-  const haft=(d)=>{line(d,ink,3.4);line(d,'#a78660',1.8)};
+  // Bake the halo behind each outside edge; keep the grip and surface details crisp.
+  const rim=soulRimColors[tier];
+  function weaponEdge(d,width){
+    c.save();c.shadowColor=rim;c.shadowBlur=4;
+    line(d,rim,width+1.8);c.restore();
+  }
+  function metal(d,fill=steel){weaponEdge(d,.9);shape(d,fill)}
+  function weaponLine(d,color,width){weaponEdge(d,width);line(d,color,width)}
+  const haft=(d)=>{weaponLine(d,ink,3.4);line(d,'#a78660',1.8)};
   const grip=()=>shape('M-3 -1 Q-1 -3 1 -2 L3 -1 L3 2 L0 3 L-3 2Z',skin);
   function sword(short=false){
     const tip=short?15:23;
@@ -111,7 +121,7 @@ function drawGeneralSoul(c,general,pose=0){
     case 'guanyu':
       haft('M0 21 L0 -15');
       // A single deep notch breaks the concave spine below the upswept tip.
-      shape('M-1.4 -14 Q.3 -18.8 -1.8 -23.9 C-2.6 -26 -6.4 -28.5 -5.4 -30.9 Q.6 -29.7 -.9 -35.8 Q-2.2 -40.2 -8.8 -43.9 C-3.2 -44 3.8 -39.3 6.9 -34 C10.2 -28.4 6.9 -21.8 3.5 -16 Q2.4 -14.6 1.4 -14Z','#76a9a3');
+      metal('M-1.4 -14 Q.3 -18.8 -1.8 -23.9 C-2.6 -26 -6.4 -28.5 -5.4 -30.9 Q.6 -29.7 -.9 -35.8 Q-2.2 -40.2 -8.8 -43.9 C-3.2 -44 3.8 -39.3 6.9 -34 C10.2 -28.4 6.9 -21.8 3.5 -16 Q2.4 -14.6 1.4 -14Z','#76a9a3');
       shape('M-8.8 -43.9 C-3.2 -44 3.8 -39.3 6.9 -34 C10.2 -28.4 6.9 -21.8 3.5 -16 Q7.5 -26.6 4.9 -32.9 Q1.4 -39.6 -8.8 -43.9Z',edge,null);
       line('M1.2 -20.1 Q4 -25 2.9 -29.8','#46786f',1);
       shape('M-2.2 -12.6 L-3.4 -16.4 L-5 -19.4 L-1.6 -18 L-2.6 -21.4 L1.5 -18.8 L3.8 -19 L5.4 -16.6 L2 -15.5 L1.6 -12.6Z',brass);
@@ -133,7 +143,7 @@ function drawGeneralSoul(c,general,pose=0){
     case 'huangzhong':{
       c.rotate(-.13);
       const nock=-5-pose*9;
-      line('M4 -20 Q16 -12 12 0 Q17 9 4 20','#5e5550',3.3);
+      weaponLine('M4 -20 Q16 -12 12 0 Q17 9 4 20','#5e5550',3.3);
       line('M4 -20 Q16 -12 12 0 Q17 9 4 20',brass,1.7);
       line('M4 -20 L'+nock+' 0 L4 20',edge,.85);
       line('M'+nock+' 0 L'+(nock+28)+' 0','#e2d5a5',1.3);
@@ -142,10 +152,10 @@ function drawGeneralSoul(c,general,pose=0){
     }
     case 'zhugeliang':
       c.rotate(-.23-pose*.11);c.translate(-pose*2,0);
-      shape('M-8 1 L7 -1 L21 -1 L22 1 L4 3 L-7 7Z','#ac875a');
-      shape('M-1 -7 L11 -7 L13 -1 L0 0Z',shadow);
+      metal('M-8 1 L7 -1 L21 -1 L22 1 L4 3 L-7 7Z','#ac875a');
+      metal('M-1 -7 L11 -7 L13 -1 L0 0Z',shadow);
       line('M1 -5 L10 -5 M2 -3 L11 -3',brass,.9);
-      line('M13 -12 Q22 -1 15 11',brass,2.4);line('M13 -12 L3 1 L15 11',edge,.8);
+      weaponLine('M13 -12 Q22 -1 15 11',brass,2.4);line('M13 -12 L3 1 L15 11',edge,.8);
       line('M2 0 L25 -1',steel,1.2);break;
     case 'caoren':
       sword(true);break;
@@ -158,7 +168,7 @@ function drawGeneralSoul(c,general,pose=0){
   c.save();c.translate(32,45);
   if(general==='caoren'){
     c.rotate(pose*-.22);
-    shape('M-8 -9 Q-2 -13 6 -10 L7 2 Q5 8 0 12 Q-6 9 -8 4Z',steel);
+    metal('M-8 -9 Q-2 -13 6 -10 L7 2 Q5 8 0 12 Q-6 9 -8 4Z');
     shape('M-6 -8 Q0 -10 4 -8 L5 2 Q3 7 0 9 Q-4 6 -6 2Z',shadow);
     shape('M0 -5 L3 0 L0 5 L-3 0Z',brass);
   }else if(general==='liubei'||general==='dianwei'){
@@ -171,14 +181,18 @@ function drawGeneralSoul(c,general,pose=0){
   c.restore();c.restore();
 }
 
-function generalSoulFrame(scene,type,frame){
-  const key='soul-'+type.general+'-'+frame;
+// Pad both layers equally for the halo at full reach. The belt stays at (120,104).
+const soulBeltOriginY=104/156;
+function paintSoulTexture(scene,key,draw){
+  paintTexture(scene,key,240,156,c=>{
+    c.scale(2,2);c.translate(20,4);draw(c);
+  });
+}
+function generalSoulFrame(scene,type,frame,tier=0){
+  const key='soul-'+type.general+'-'+tier+'-'+frame;
   if(!scene.textures.exists(key)){
     const poses=type.general==='huangzhong'?[0,.4,.85,1,-.35,-.1,0]:[0,-.22,-.42,.35,1,.55,0];
-    paintTexture(scene,key,224,140,c=>{
-      // Center the belt horizontally so a flipped weapon pose uses the same attachment.
-      c.scale(2,2);c.translate(16,0);drawGeneralSoul(c,type.general,poses[frame]);
-    });
+    paintSoulTexture(scene,key,c=>drawGeneralSoul(c,type.general,poses[frame],tier));
   }
   return key;
 }
@@ -189,8 +203,8 @@ function lvbuPlumeFrame(scene,frame){
   const key='lvbu-plumes-'+frame;
   if(scene.textures.exists(key))return key;
   const phase=frame*TAU/plumeFrameCount;
-  paintTexture(scene,key,224,140,c=>{
-    c.scale(2,2);c.translate(16,0);c.lineJoin='round';c.lineCap='round';
+  paintSoulTexture(scene,key,c=>{
+    c.lineJoin='round';c.lineCap='round';
     // Both shafts are clamped at the crown. The wave travels toward the flexible tips.
     function feather(rootX,rootY,controlX,controlY,bendX,bendY,tipX,tipY,width,lag,base,light){
       const shaft=t=>{

@@ -86,8 +86,8 @@ function drawGeneralSoul(c,general,pose=0){
   const thrust=general==='zhaoyun';
   c.translate(48+(thrust?pose*4:0),43+(bow?0:pose));
   if(!bow&&!crossbow){
-    const readyAngle=rider?.94:thrust?.69:.48;
-    c.rotate(readyAngle+pose*(thrust?.71:.95));
+    const readyAngle=rider?.88:thrust?.69:.48;
+    c.rotate(readyAngle+pose*(rider||thrust?.71:.95));
   }
   switch(general){
     case 'zhaoyun':
@@ -96,13 +96,14 @@ function drawGeneralSoul(c,general,pose=0){
       metal('M-2 -26 L-2.8 -29 L0 -43 L3.2 -30 L1.3 -26Z');
       line('M0 -28 L.2 -39',edge,1.1);line('M-1.8 -25 L1.8 -25',brass,1.5);break;
     case 'guanyu':
-      haft('M0 21 L0 -17');
-      // Broad crescent belly, hooked spine and a dragon-head collar.
-      shape('M-1.7 -17 L-4 -20 L-2 -23 L-4 -28 L-.8 -27 Q5 -34 3 -42 Q17 -32 12 -23 Q8 -17 2 -16Z','#8db7af');
-      shape('M3 -42 Q18 -29 10 -20 L2 -16 Q9 -23 10 -27 Q11 -33 3 -42Z',edge,null);
-      line('M.5 -20 Q7 -24 6 -30','#46786f',1.2);
-      shape('M-2.4 -14 L-3.4 -19 L-.5 -18 L2.6 -22 L4 -21 L3 -18 L6 -18 L3 -15Z',brass);
-      oval(c,1,-17.3,.7,.7,ink);break;
+      haft('M0 21 L0 -15');
+      // A single deep notch breaks the concave spine below the upswept tip.
+      shape('M-1.4 -14 Q.3 -18.8 -1.8 -23.9 C-2.6 -26 -6.4 -28.5 -5.4 -30.9 Q.6 -29.7 -.9 -35.8 Q-2.2 -40.2 -8.8 -43.9 C-3.2 -44 3.8 -39.3 6.9 -34 C10.2 -28.4 6.9 -21.8 3.5 -16 Q2.4 -14.6 1.4 -14Z','#76a9a3');
+      shape('M-8.8 -43.9 C-3.2 -44 3.8 -39.3 6.9 -34 C10.2 -28.4 6.9 -21.8 3.5 -16 Q7.5 -26.6 4.9 -32.9 Q1.4 -39.6 -8.8 -43.9Z',edge,null);
+      line('M1.2 -20.1 Q4 -25 2.9 -29.8','#46786f',1);
+      shape('M-2.2 -12.6 L-3.4 -16.4 L-5 -19.4 L-1.6 -18 L-2.6 -21.4 L1.5 -18.8 L3.8 -19 L5.4 -16.6 L2 -15.5 L1.6 -12.6Z',brass);
+      oval(c,2,-17.6,.65,.65,ink);
+      shape('M-2 -12.8 Q-5 -11 -6 -7 L-4.4 -8 Q-5 -5 -7 -3 Q-1.8 -5 -1.2 -12Z','#b96050',null);break;
     case 'lvbu':
       haft('M0 20 L0 -29');metal('M-1.5 -24 L-1.8 -28 L0 -38 L2 -28 L1.4 -24Z');
       metal('M0 -18 Q9 -20 8 -32 Q14 -20 6 -17 L1 -15Z M0 -20 Q-8 -22 -7 -31 Q-13 -21 -6 -18 L0 -16Z');

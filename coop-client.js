@@ -14,7 +14,7 @@ function installCoop(scene){
      body:JSON.stringify({...session,action}),keepalive:true}).catch(()=>{});
    stop();
  };
- const panel=(title,info)=>scene.panel(title,info);
+ const panel=(title,info,homePage=false)=>scene.panel(title,info,homePage);
  function stop(){
    exit.hidden=true;clearTimeout(timer);session=null;pending=null;state=null;menuKey='';lastEffect=0;
    sessionStorage.removeItem(key);for(const s of sprites.values())s.destroy();sprites.clear();
@@ -46,7 +46,7 @@ function installCoop(scene){
    canvas.setAttribute('aria-hidden','true');return canvas;
  }
  function partyRoom(){
-   const m=panel('出征备战','双人合作 · 15 波突围');
+   const m=panel('出征备战','双人合作 · 15 波突围',true);
    const hall=node('div','party-hall');
    const seats=node('div','party-seats');hall.append(seats);
    const tools=node('div','party-tools'),code=node('b','party-code',state.code);
@@ -87,13 +87,13 @@ function installCoop(scene){
  }
  function showLobby(message=''){
    scene.mode='coopMenu';$('field').classList.add('cooperative');
-   const m=panel('双人合作',message||'创建房间，或输入队友的六位房间号。');
+   const m=panel('双人合作',message||'创建房间，或输入队友的六位房间号。',true);
    const choice=node('select','party-choice');
    choice.setAttribute('aria-label','出征指挥官');
    for(const [id,c] of Object.entries(commanders))choice.add(new Option(c.name,id));
    choice.value=$('hero-choice').value;
    m.append(choice);
-   const input=document.createElement('input');input.value=new URLSearchParams(location.search).get('room')?.match(/^\d{6}$/)?.[0]||'';input.maxLength=6;input.inputMode='numeric';input.placeholder='六位房间号';input.setAttribute('aria-label','房间号');m.append(input);
+   const input=document.createElement('input');input.value=new URLSearchParams(location.search).get('room')?.match(/^\d{6}$/)?.[0]||'';input.className='party-room-code';input.maxLength=6;input.inputMode='numeric';input.placeholder='六位房间号';input.setAttribute('aria-label','房间号');m.append(input);
    async function enter(op){
      if(running)return;scene.sfx.unlock();
      if(op==='join'&&!/^\d{6}$/.test(input.value)){m.querySelector('p').textContent='请输入六位数字';return}
@@ -104,13 +104,13 @@ function installCoop(scene){
        state=r.state;paint();poll();
      }catch(e){showLobby(e.message)}finally{running=false}
    }
-   scene.button(m,'创建房间',()=>enter('create'));
+   scene.button(m,'创建房间',()=>enter('create')).className='party-create';
    scene.button(m,'加入房间',()=>enter('join'));
    scene.button(m,'返回',()=>{if(!running)stop()});
  }
  $('coop-entry').onclick=()=>{
    if(location.hostname.endsWith('.github.io')){
-     const m=panel('局域网合作','两台设备连接同一路由器后，请打开房主电脑的局域网地址，端口为 8767。');
+     const m=panel('局域网合作','两台设备连接同一路由器后，请打开房主电脑的局域网地址，端口为 8767。',true);
      scene.button(m,'返回',stop);return;
    }
    if(location.port!=='8767'){location.href=location.protocol+'//'+location.hostname+':8767/?coop=1';return}

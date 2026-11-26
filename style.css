@@ -228,8 +228,6 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 #commander-passives{font-size:clamp(12px,2vw,15px);line-height:1.5;margin:8px auto 14px;max-width:34em}
 
-.loadout{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 16px}
-.loadout select{font:inherit;padding:4px;color:#382b20;background:#efe1c5;border:1px solid #977852;border-radius:4px}
 #campaign-brief{margin:6px auto;font-size:13px}
 #cover{overflow-y:auto}
 
@@ -320,12 +318,45 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .camp-orders h2{margin:0;color:#f7e6c9;font-size:26px}
 .camp-orders .loadout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .camp-orders .loadout label{display:grid;gap:5px;margin:0;color:#e1d0b7}
-.camp-orders .loadout select{width:100%;min-height:38px;padding:5px 8px}
+.camp-orders .loadout select{
+  appearance:none;color-scheme:dark;width:100%;min-width:0;min-height:44px;
+  padding:7px 32px 7px 11px;border:1px solid #877965;border-radius:5px;
+  color:#fff2da;font:inherit;cursor:pointer;text-overflow:ellipsis;
+  background:
+    linear-gradient(45deg,transparent 50%,#e4c599 50%) right 17px center/5px 5px no-repeat,
+    linear-gradient(135deg,#e4c599 50%,transparent 50%) right 12px center/5px 5px no-repeat,
+    linear-gradient(165deg,#464447,#322f32);
+}
+.camp-orders .loadout select:hover{border-color:var(--refit-primary)}
+.camp-orders .loadout option{background:#302d31;color:#fff2da}
+.camp-orders .loadout option:disabled{color:#a99f94}
+@supports (appearance:base-select) and selector(::picker(select)){
+  .camp-orders .loadout select,.camp-orders .loadout select::picker(select){appearance:base-select}
+  .camp-orders .loadout select{padding-inline-end:11px;background:linear-gradient(165deg,#464447,#322f32)}
+  .camp-orders .loadout select::picker-icon{color:var(--refit-primary);margin-inline-start:auto}
+  .camp-orders .loadout select:open{border-color:var(--refit-primary)}
+  .camp-orders .loadout select:open::picker-icon{rotate:180deg}
+  .camp-orders .loadout select::picker(select){
+    margin-block:4px;padding:4px;min-inline-size:anchor-size(width);
+    border:1px solid #877965;border-radius:5px;background:#302d31;
+    color:#fff2da;box-shadow:0 6px 16px #171618b3
+  }
+  .camp-orders .loadout option{min-height:40px;padding:8px 10px;border-radius:3px}
+  .camp-orders .loadout option:checked{background:#504335;color:#ffe7b9}
+  .camp-orders .loadout option:enabled:is(:hover,:focus-visible){background:#63513c;color:#fff4df}
+  .camp-orders .loadout option::checkmark{color:var(--refit-primary)}
+}
 .camp-orders #campaign-brief{margin:0;color:#e2d3ba;line-height:1.55}
 .camp-passives{border-top:1px solid #66584a;color:#d9c7a9;font-size:13px}
 .camp-passives summary{cursor:pointer;padding:10px 0 3px}
 .camp-orders #commander-passives{margin:5px 0;max-width:none}
-#cover .camp-orders #start{width:100%;min-height:46px;margin:0;display:flex;justify-content:space-between;align-items:center;color:var(--refit-primary-ink);border-color:#bfa27c;background:var(--refit-primary)}
+#cover .camp-orders #start{
+  width:100%;min-height:56px;margin:2px 0 0;padding:9px 14px;border:1px solid #f4d9a5;
+  border-radius:5px;background:linear-gradient(#f2d49d,#dbad66);color:#2b1b12;
+  box-shadow:inset 0 1px #fff0ce,0 3px 0 #201815;text-align:center;
+  font-size:clamp(18px,2.4vw,22px);font-weight:800;letter-spacing:.08em
+}
+#cover .camp-orders #start:active{transform:translateY(1px)}
 #camp-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 #cover #camp-actions button{
   display:grid;justify-items:center;align-content:start;gap:5px;min-height:112px;margin:0;padding:9px 4px 8px;
@@ -426,3 +457,34 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 @media(max-width:420px) {
   #cards button[aria-pressed] {padding-inline:4px;width:100%}
 }
+
+#field:not(.pause-screen) #modal.home-subpage:not([hidden]){
+  --page-gutter:clamp(16px,4vw,32px);
+  --page-side:max(var(--page-gutter),calc((100% - 840px)/2));
+  inset:0;width:100%;height:100%;max-height:none;margin:0;
+  padding:max(54px,env(safe-area-inset-top))
+    max(var(--page-side),env(safe-area-inset-right))
+    max(24px,env(safe-area-inset-bottom))
+    max(var(--page-side),env(safe-area-inset-left));
+  border:0;border-radius:0;box-shadow:none;backdrop-filter:none;
+  background:var(--refit-surface);color:#eadfca;text-align:left
+}
+#field #modal.home-subpage>h2{margin:0;color:#ffedcb;font-size:clamp(30px,5vw,48px)}
+#field #modal.home-subpage>p{margin:8px 0 16px;padding-bottom:12px;border-bottom:1px solid var(--refit-rule);color:#e5c794;line-height:1.5}
+#modal.home-subpage :is(button,input,select){
+  min-height:44px;padding:7px 12px;border:1px solid #877965;border-radius:5px;
+  background:#363437;color:#fff2da
+}
+#modal.home-subpage :is(input,select){max-width:100%;color-scheme:dark}
+#modal.home-subpage>button{margin:0 8px 8px 0}
+#modal.home-subpage .camp-rows{max-width:none;display:grid;gap:10px;margin:10px 0 0}
+#modal.home-subpage :is(.camp-rows>div,.party-seat){
+  padding:12px;border:1px solid #756b5f;border-top:3px solid #b9a589;border-radius:5px;
+  background:linear-gradient(165deg,#464447,#322f32);box-shadow:0 3px 0 #171618
+}
+#modal.home-subpage .camp-rows strong{color:#fff2da}
+#modal.home-subpage :is(.camp-rows button,.party-ready,button.party-create){
+  background:var(--refit-primary);color:var(--refit-primary-ink)
+}
+#modal.home-subpage .party-hall{max-width:600px;margin-inline:auto;text-align:center}
+#modal.home-subpage .party-choice,#modal.home-subpage .party-room-code{margin:0 8px 8px 0}

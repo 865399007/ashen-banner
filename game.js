@@ -44,7 +44,7 @@ class Battle extends Phaser.Scene{
    button.onclick=()=>this.camp.open(this,button.dataset.campSection);
  }
  makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
- this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
+ this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC',false);this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{
    if(event.code!=='Space'||(this.mode!=='fight'&&this.mode!=='paused'))return;
    event.preventDefault();
@@ -154,7 +154,7 @@ class Battle extends Phaser.Scene{
  $('life').style.width=100*this.hp/this.maxHP+'%';
 
 }
- panel(title,desc){this.resetStick();$('cover').hidden=true;let m=$('modal');m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
+ panel(title,desc,homePage=false){this.resetStick();$('cover').hidden=true;let m=$('modal');m.classList.toggle('home-subpage',homePage);m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
  syncStages(){
    for(const option of $('campaign-choice').options){

@@ -47,7 +47,7 @@ class GreyCamp {
       game.mode='title';game.hud();$('modal').hidden=true;$('cover').hidden=false;
       return;
     }
-    const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals);
+    const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals,true);
     game.button(m,'← 首页',()=>this.open(game));
     const body=document.createElement('div');body.className='camp-rows';m.append(body);
     const row=(title,info)=>{

@@ -170,6 +170,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
     gradient.addColorStop(0,left);gradient.addColorStop(1,right||left);
     c.fillStyle=gradient;c.fill(outline);
   }
+  const handSkin='#ddb58b',knuckleLight='#edc9a0',fingerShade='#b98865';
   shadow(c,124,221,28);
   for(const [x,side] of [[138,1],[102,-1]]){
     c.save();c.translate(x+step*side*9,step*side*6);
@@ -190,7 +191,8 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
   shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z','#ad8652','#d6b478');
   shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z','#b27b3c','#a16c35');
-  shape('M146 120 Q157 120 166 132 L185 128 L191 146 Q172 154 151 149 Z','#503629','#38271e');
+  shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z','#614738','#49372d');
+  shape('M174 131 L181 129 L184 146 L177 148 Z','#596361','#798178');
   c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);
   shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
   const flagWave=Math.sin(clothPhase-.54);
@@ -203,14 +205,19 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M178 60 Q183 48 193 52 Q190 42 200 43 Q207 44 204 51 Q201 55 197 51 Q203 52 201 47 Q197 45 197 52 Q200 61 190 61 Q182 60 178 69 Z M181 72 Q194 64 204 67 L201 72 Q191 71 180 78 Z','#cc9660','#e7bb7c');
   shape('M164 13 Q167 10 172 14 L222 26 Q228 28 224 36 L165 24 Q160 22 164 13 Z','#583827','#6e4932');
   shape('M174 15 L187 18 L187 26 L172 23 Z M202 22 L216 24 L215 32 L201 29 Z','#a9583d','#b66d4a');
+  // The fingers wrap in front of the pole and move with it.
+  shape('M180 134 Q180 129 185 128 L188 129 Q195 126 198 132 L197 143 Q196 150 189 150 L182 148 Q179 146 179 141 Z',handSkin);
+  shape('M181 135 Q182 129 186 130 L190 133 L189 136 L185 134 L181 138 Z',knuckleLight);
+  shape('M192 138 L197 137 L197 139 L192 140 Z M192 143 L197 142 L196 144 L192 145 Z',fingerShade);
   c.restore();
-  shape('M183 127 Q194 124 198 131 L196 147 Q190 155 180 149 L179 137 Z','#493024','#37261e');
   const capeWave=Math.sin(clothPhase+.8);
   const capeTip=Math.sin(clothPhase+.13);
   shape(`M87 110 Q99 111 105 123 Q101 168 ${94+capeWave*3} 203
     Q${75+capeWave*4} ${202+capeWave*3} ${56+capeTip*9} ${196-capeTip*5}
     Q${67+capeWave*5} 169 70 138 Z`,'#97483c','#622d29');
   shape('M94 107 Q99 115 108 119 L98 164 L92 201 Q96 155 88 146 Z','#78382f','#4c2724');
+  // Align the rib cage over the belt. Keep the helmet and saber rigid at their joints.
+  c.save();c.transform(1,0,-.14,1,155*.14,0);
   // Bring the pauldrons closer to the neck while keeping the helmet proportions.
   c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z','#cfb998','#b49a7e');
@@ -221,6 +228,8 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z','#516063','#8b8d7d');
   shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
   oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
+  c.restore();
+  c.save();c.translate(9,0);
   shape('M96 62 Q112 43 138 56 L147 76 L145 99 Q134 110 114 104 L96 93 Z','#614539','#48352c');
   shape('M114 72 Q128 67 145 73 L145 96 Q142 106 120 103 Q114 99 114 92 Z','#dfb78b','#f0cda2');
   shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');
@@ -232,16 +241,20 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
   shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
   shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
+  c.restore();
   // The near arm and saber pass in front of the armor during the swing.
   c.save();
-  c.translate(86,119);
+  c.translate(91,119);
   c.rotate(swing===null?.72:swing);
-  shape('M-7 0 Q0 -9 9 -4 L31 11 L43 8 L47 18 L29 24 L1 15 Z','#674634','#483326');
+  shape('M-7 0 Q0 -9 9 -4 L29 10 L36 9 L38 19 L29 24 L1 15 Z','#614738','#49372d');
+  shape('M26 9 L33 10 L37 21 L30 24 Z','#596361','#798178');
   shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
   shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
   shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');
   c.beginPath();c.arc(42,26,4.1,0,TAU);c.strokeStyle='#c69a56';c.lineWidth=2.5;c.stroke();
-  shape('M37 11 Q41 7 47 12 L46 22 Q40 26 35 20 Z','#684834','#493126');
+  shape('M35 12 Q37 8 42 9 L47 11 Q50 13 48 18 L46 23 Q40 26 35 22 L33 17 Z',handSkin);
+  shape('M35 12 Q38 9 42 10 L46 12 L45 14 L39 13 L35 16 Z',knuckleLight);
+  shape('M44 16 L48 15 L48 17 L44 18 Z M43 20 L47 19 L46 21 L43 22 Z',fingerShade);
   c.restore();
   c.restore();
 }

@@ -172,8 +172,11 @@ const bannerUniforms=[
   {cape:'#773836',lining:'#4c292f',metal:'#414b54',shade:'#242e37',light:'#77828a',trim:'#dfae5e'},
   {cape:'#a03d35',lining:'#692f30',metal:'#d9a246',shade:'#8d612f',light:'#ffe494',trim:'#f6d383'}
 ];
-function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
+function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=false){
   const u=bannerUniforms[rank],step=Math.sin(phase),wind=Math.sin(clothPhase-.55);
+  const torsoX=step*1.3,torsoY=-3.4*step*step;
+  const capeSwing=walking?Math.sin(phase-.75):0;
+  const hairSwing=walking?Math.sin(phase-1.05):0;
   c.save();c.scale(.21875,.21875);c.lineJoin='round';c.lineCap='round';
   function fill(path,color){c.fillStyle=color;c.fill(new Path2D(path))}
   function line(path,color,width){c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(path))}
@@ -188,7 +191,10 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   shadow(c,128,219,32);
 
   // The cape turns about its clasp. Its animated hem stays behind the standing legs.
-  c.save();c.translate(111,98);c.rotate(wind*.022);c.translate(-111,-98);
+  c.save();c.translate(111+torsoX,98+torsoY);
+  c.rotate(wind*.022+capeSwing*.095);
+  c.scale(1,1+capeSwing*.033);
+  c.translate(-111,-98);
   fill('M107 96 Q117 91 147 98 Q152 122 155 146 L163 194 Q146 189 132 195 Q111 204 91 198 Q76 191 52 201 Q73 167 79 134 Q85 107 107 96Z',glaze(u.cape,u.lining,99,204));
   fill('M106 99 Q96 142 76 194 L55 200 Q73 162 80 129 Q87 107 106 99Z',u.cape);
   fill('M141 101 Q146 149 157 192 L147 191 Q137 149 133 112Z',u.lining);
@@ -205,8 +211,8 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     c.restore();
   }
 
-  // Keep the face, sternum and belt on one vertical axis throughout the stride.
-  c.translate(0,-.9*step*step);
+  // Shift weight over the planted foot without pitching the spine.
+  c.translate(torsoX,torsoY);
   fill('M99 135 L147 135 L158 182 Q146 187 134 186 L130 176 L127 187 L86 186 Q90 165 99 135Z',glaze(rank?u.metal:'#a45139',rank?u.shade:'#873e2d',142,188));
   if(rank){
     const skirt=rank===4?'#f1e1bd':u.shade;
@@ -309,10 +315,17 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     }
   }
 
+  if(walking){
+    // The head settles just after the shoulders, with a small nod at the neck.
+    const headBeat=Math.sin(2*phase-.6);
+    c.translate(131,98+headBeat*1.1);
+    c.rotate(headBeat*.018);
+    c.translate(-131,-98);
+  }
   if(!rank){
     fill('M109 68 Q111 53 131 53 Q151 53 155 69 L155 85 Q154 93 145 97 Q138 101 131 99 L118 94 L111 87Z',skin);
     oval(c,111,82,4.2,5.5,'#d9a57c');
-    c.save();c.translate(103,49);c.rotate(.036*wind-.045*step);
+    c.save();c.translate(103,49);c.rotate(.036*wind+hairSwing*.19);
     fill('M4 2 C-4 -15 -16 -17 -23 -8 C-36 8 -23 39 -44 54 Q-37 57 -30 50 Q-34 59 -43 63 Q-23 63 -16 46 C-8 28 -18 8 -9 2 Q-2 -2 3 9Z',glaze('#55423e','#302827',-14,62));
     fill('M-25 9 Q-25 -7 -16 -10 Q-10 -11 -6 -5 Q-19 -9 -25 9Z','#70534b');
     c.restore();
@@ -325,7 +338,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     fill('M103 67 Q102 49 125 48 Q151 46 158 66 L159 87 Q159 99 150 102 Q136 107 117 101 L108 94Z',skin);
     oval(c,107,84,5.4,6.5,'#d9a57c');
     const plume=rank===2?'#fffdf6':'#bc4937';
-    c.save();c.translate(119,48);c.rotate(wind*.025);c.translate(-119,-48);
+    c.save();c.translate(119,48);c.rotate(wind*.025+hairSwing*.14);c.translate(-119,-48);
     if(rank===4){
       fill('M122 49 Q109 27 91 34 Q72 54 56 49 Q70 63 84 53 Q78 61 69 62 Q91 66 103 48 Q113 38 120 53Z',glaze('#ede1c9','#c5ac8a',33,61));
       fill('M123 47 Q112 18 91 22 Q77 24 65 41 Q51 62 36 50 Q47 68 64 58 Q73 54 84 43 Q98 29 119 50Z',glaze('#cb5c42','#933a30',22,58));
@@ -787,14 +800,17 @@ function makeArt(scene){
 function commanderTexture(scene,level){
   const rank=commanderForm(level),base='man'+commanders.banner.skin+(rank?'form'+rank:'');
   if(scene.textures.exists(base))return base;
-  function frame(key,phase,swing=null,cloth=phase){
+  function frame(key,phase,swing=null,cloth=phase,walking=false){
     paintTexture(scene,key,112,112,c=>{
       c.scale(2,2);
-      bannerCommander(c,phase,swing,cloth,rank);
+      bannerCommander(c,phase,swing,cloth,rank,walking);
     });
   }
   frame(base,0);
-  for(let i=0;i<WALK_FRAMES;i++)frame(base+'walk'+i,TAU*i/WALK_FRAMES);
+  for(let i=0;i<WALK_FRAMES;i++){
+    const phase=TAU*i/WALK_FRAMES;
+    frame(base+'walk'+i,phase,null,phase,true);
+  }
   for(let i=0;i<COMMANDER_CLOTH_FRAMES;i++)frame(base+'cloth'+i,0,null,TAU*i/COMMANDER_CLOTH_FRAMES);
   commanderSwingAngles.forEach((angle,i)=>frame(base+'swing'+i,0,angle,i*.55));
   return base;

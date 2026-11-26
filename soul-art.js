@@ -57,7 +57,7 @@ function drawGeneralSoul(c,general,pose=0){
   line('M33 48 Q40 50 47 47','#66504a',2);
   shape('M39 48 L42 47.5 L42.6 50 L39.7 50.5Z',brass,null);
 
-  shape('M34 24 Q39 20 46 23 L47 29 L49 31 L46.5 32 L46 34.5 Q45.4 36.2 43 36.3 L39 36.3 Q33.2 36.2 31.8 32 Q31.4 28.5 34 24Z',rider?'#bf8269':skin);
+  shape('M34 24 Q39 20 46 23 L47 29 L49 31 L46.5 32 L46 34.5 C45.4 36.1 43.4 37.2 41 37.2 C36.7 37.2 33.2 35.9 31.8 32 Q31.4 28.5 34 24Z',rider?'#bf8269':skin);
   if(rider||scholar||general==='liubei'||general==='dianwei'){
     shape('M32 29 Q30 22 35 19 Q41 17 46 22 L48 25 L41 25 L36 27 L34 32Z',rider?'#39735f':shadow);
     if(scholar){

@@ -240,6 +240,9 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['羽林将印',3,'全队暴击率 +4 个百分点']];
 const satchel=7,bandage=8,salvagePermit=9,lastStand=10;
 const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1,[herbPowder]:3,[coinPurse]:2,[scaleVest]:2,[fieldNeedles]:2,[tigerManual]:2,[heartMirror]:2,[guardSeal]:2}[id]??itemStackLimit);
+const equipmentCapacity=12;
+function equippedCount(bag){return Object.values(bag).reduce((total,count)=>total+count,0)}
+function canEquipItem(bag,id){return equippedCount(bag)<equipmentCapacity&&(bag[id]||0)<itemCap(id)}
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const troopBasePrices=[10,12,13,15,11,15,16,12,14,18],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40];
 function refitPrice(merc,id,q,wave){
@@ -295,4 +298,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

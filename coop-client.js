@@ -257,7 +257,8 @@ function installCoop(scene){
    }
    if(state.phase==='refit'){
      const title=me.pending?'战后升级':me.boxes.length?'战利品宝箱':'战地整备';
-     const m=panel(title,'第 '+state.wave+' 波完成 · '+p.gold+' 银币');
+     const equipment='道具 '+equippedCount(me.bag)+' / '+equipmentCapacity;
+     const m=panel(title,'第 '+state.wave+' 波完成 · '+p.gold+' 银币 · '+equipment);
      if(me.pending){
        const hand=document.createElement('div');hand.className='upgrade-hand';m.append(hand);
        const symbols={'体魄':'♥','力量':'⚔','步法':'➶','幸运':'♧','恢复':'✚'};
@@ -267,7 +268,7 @@ function installCoop(scene){
          card.append(icon,node('strong','',choice));
        });return;
      }
-     if(me.boxes.length){const icon=node('div','loot-icon');icon.append(itemIcon(me.boxes[0]));m.querySelector('p').before(icon);m.querySelector('p').textContent=items[me.boxes[0]][0];button(m,'领取','claim',0,(me.bag[me.boxes[0]]||0)>=6);button(m,'回收','recycle',0);return}
+     if(me.boxes.length){const icon=node('div','loot-icon');icon.append(itemIcon(me.boxes[0]));m.querySelector('p').before(icon);m.querySelector('p').textContent=items[me.boxes[0]][0]+' · '+equipment;button(m,'领取','claim',0,!canEquipItem(me.bag,me.boxes[0]));button(m,'回收','recycle',0);return}
      if(!p.ready){
        const cards=document.createElement('div');cards.id='cards';m.append(cards);
        me.offers.forEach((o,i)=>{
@@ -280,7 +281,7 @@ function installCoop(scene){
          const target=purchaseMergeTarget(p.army,o);
          if(target)c.append(node('small','','购买合成 '+roman[o.q+1]+' 阶'));
          const price=node('span','offer-price');price.textContent=o.price+' 银币';c.append(price);
-         const buy=button(c,'','buy',i,p.gold<o.price||(o.merc?p.army.length>=armyCapacity&&!target:(me.bag[o.id]||0)>=6));buy.className='buy';buy.setAttribute('aria-label',(target?'购买合成':'购买')+name.textContent);
+         const buy=button(c,'','buy',i,p.gold<o.price||(o.merc?p.army.length>=armyCapacity&&!target:!canEquipItem(me.bag,o.id)));buy.className='buy';buy.setAttribute('aria-label',(target?'购买合成':'购买')+name.textContent);
          button(c,o.lock?'解锁':'锁定','lock',i).setAttribute('aria-pressed',String(o.lock));
        });
        p.army.forEach((u,i)=>{

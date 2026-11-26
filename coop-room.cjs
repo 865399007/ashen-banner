@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -29,26 +29,35 @@ function spawn(r,boss=false,elite=false,wildlife=null){
 function hand(p){p.choices=['体魄','力量','步法','幸运','恢复'];for(let i=4;i>0;i--){let j=Math.floor(Math.random()*(i+1));[p.choices[i],p.choices[j]]=[p.choices[j],p.choices[i]]}p.choices.length=4}
 const goods=[0,1,2,17];
 function roll(r,p){
+ const available=goods.filter(id=>canEquipItem(p.bag,id));
  const offers=p.offers||[];let m=offers.filter(o=>o?.lock&&o.merc).length;
  let n=offers.filter(o=>o?.lock&&!o.merc).length;
  for(let i=0;i<4;i++){if(offers[i]?.lock)continue;
-   const merc=r.wave<=2?Math.random()<(2-m)/(4-m-n):Math.random()<.35;
-   const id=merc?recruitOffer(troops.map((_,id)=>id),p.army):pick(goods);
+   const merc=!available.length||(r.wave<=2?Math.random()<(2-m)/(4-m-n):Math.random()<.35);
+   const id=merc?recruitOffer(troops.map((_,id)=>id),p.army):pick(available);
    const q=merc?tier(r.wave,p.luck):items[id][1];
    offers[i]={merc,id,q,price:refitPrice(merc,id,q,r.wave),lock:false};if(merc)m++;else n++;
  }
  p.offers=offers;
 }
+function boxValue(id,wave){return Math.max(1,Math.floor(refitPrice(false,id,0,wave)/4))}
+function recycleFullBagBoxes(p,wave){
+ if(equippedCount(p.bag)<equipmentCapacity)return;
+ for(const id of p.boxes)p.gold+=boxValue(id,wave);
+ p.boxes=[];
+}
 function refit(r){
  r.phase='refit';r.refitTime=25;r.enemies=[];r.loot=[];
- for(const p of r.players){p.refresh=0;p.ready=false;p.offers=p.offers.map(o=>o?.lock?o:null);roll(r,p);if(p.pending)hand(p);p.revision++}
+ for(const p of r.players){recycleFullBagBoxes(p,r.wave);p.refresh=0;p.ready=false;p.offers=p.offers.map(o=>o?.lock?o:null);roll(r,p);if(p.pending)hand(p);p.revision++}
 }
 function item(p,id){
+ if(!canEquipItem(p.bag,id))return false;
  p.bag[id]=(p.bag[id]||0)+1;
  if(id===0)p.power+=.08;
  if(id===1)p.speed*=1.06;
  if(id===2)p.luck+=15;
  if(id===17){p.max+=6;p.hp=Math.min(p.max,p.hp+6);p.speed*=.99}
+ return true;
 }
 function hit(r,p,a,e,damage){
  r.effects.push({id:++r.serial,x:e.x,y:e.y,fromX:a.x,fromY:a.y,weapon:a===p?commanders.banner.weapon:a.id,q:a.q||0,until:r.clock+.24});
@@ -122,8 +131,9 @@ function action(r,p,a){
    p.pending--;if(p.pending)hand(p);
  }else if(p.boxes.length){
    if(!['claim','recycle'].includes(a.type))return;
-   const id=p.boxes[0];if(a.type==='claim'&&(p.bag[id]||0)>=6)return;
-   p.boxes.shift();if(a.type==='claim')item(p,id);else p.gold+=Math.max(1,Math.floor(refitPrice(false,id,0,r.wave)/4));
+   const id=p.boxes[0];if(a.type==='claim'&&!item(p,id))return;
+   p.boxes.shift();if(a.type==='recycle')p.gold+=boxValue(id,r.wave);
+   recycleFullBagBoxes(p,r.wave);
  }else if(a.type==='refresh'){
    const price=refreshPrice(r.wave,p.refresh);if(p.gold<price)return;p.gold-=price;p.refresh++;roll(r,p);
  }else if(a.type==='merge'){
@@ -138,8 +148,7 @@ function action(r,p,a){
      if(o.merc){
        if(!recruitMercenary(p.army,o,{x:p.x,y:p.y,cd:.2}))return;
      }else{
-       if((p.bag[o.id]||0)>=6)return;
-       item(p,o.id);
+       if(!item(p,o.id))return;
      }
      p.gold-=o.price;p.offers[i]=null;
    }else return;

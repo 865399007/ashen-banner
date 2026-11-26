@@ -835,7 +835,7 @@ class Battle extends Phaser.Scene{
      continue;
    }
    const fallback=q<chestTier?roman[chestTier]+' 阶已领满 · ':'';
-   const m=this.panel('战利品宝箱',fallback+items[id][0]+' '+roman[q]+' · '+items[id][2]);
+   const m=this.panel('战利品宝箱',fallback+items[id][0]+' '+roman[q]+' · '+items[id][2]+'　·　已装备 '+equippedCount(this.bag)+' / '+equipmentCapacity);
    if(recycled)m.querySelector('p').append('　·　此前宝箱已折合 '+recycled+' 银币');
    const icon=document.createElement('div'),actions=document.createElement('div');
    icon.className='loot-icon';icon.setAttribute('aria-hidden','true');icon.append(itemIcon(id));
@@ -850,6 +850,7 @@ class Battle extends Phaser.Scene{
  if(recycled)$('modal').querySelector('p').append('　·　宝箱已折合 '+recycled+' 银币');
  }
  item(q,bias=false){
+   if(equippedCount(this.bag)>=equipmentCapacity)return -1;
    const pool=items.map((it,i)=>it[1]===q&&this.camp.itemOpen(i)&&this.bag[i]<itemCap(i)?i:-1).filter(i=>i>=0);
    if(q>=2&&pool.length&&this.army.length){
      // Favour weapons the player fields, while keeping off-build cards possible.
@@ -867,11 +868,12 @@ class Battle extends Phaser.Scene{
    }
    return pick(pool)??-1;
  }
- applyItem(id){if(this.bag[id]>=itemCap(id))return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;
+ applyItem(id){if(!canEquipItem(this.bag,id))return false;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;
    if(id===scaleVest)this.armor+=2;
    if(id===tigerManual)this.mercHaste+=.10;
-   if(id===guardSeal)this.critBonus+=.04;}
- roll(){const pool=troops.map((_,id)=>id).filter(id=>this.camp.troopOpen(id));let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=this.wave<=2?(merc<2&&(gear>=2||Math.random()<(2-merc)/(4-merc-gear))):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35;
+   if(id===guardSeal)this.critBonus+=.04;
+   return true;}
+ roll(){const gearFull=equippedCount(this.bag)>=equipmentCapacity;const pool=troops.map((_,id)=>id).filter(id=>this.camp.troopOpen(id));let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=gearFull||(this.wave<=2?(merc<2&&(gear>=2||Math.random()<(2-merc)/(4-merc-gear))):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35);
  let q=tier(this.wave,this.luck),id=isMerc?recruitOffer(pool,this.army):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=recruitOffer(pool,this.army)}
  if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:refitPrice(isMerc,id,q,this.wave),lock:false}}
  if(this.wave<=5&&!merc){let o=this.offers.find(o=>o&&!o.lock);if(o){const id=recruitOffer(pool,this.army);Object.assign(o,{merc:true,id,price:refitPrice(true,id,o.q,this.wave)})}}}
@@ -896,7 +898,7 @@ class Battle extends Phaser.Scene{
  name.textContent=o.merc?troops[o.id][0]:items[o.id][0];
  const target=purchaseMergeTarget(this.army,o);
  detail.textContent=target?'购买合成 '+roman[o.q+1]+' 阶':o.merc?'佣兵':items[o.id][2];
- c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=armyCapacity&&!target:this.bag[o.id]>=itemCap(o.id);
+ c.style.setProperty('--delay',i*45+'ms');c.classList.toggle('locked',o.lock);c.append(cardRank(o.q),emblem,name,detail);const full=o.merc?this.army.length>=armyCapacity&&!target:!canEquipItem(this.bag,o.id);
  const reason=full?(o.merc?'满编':'已满'):this.gold<o.price?'差 '+(o.price-this.gold)+' 银币':'';
  const price=document.createElement('span');
  price.className='offer-price';price.textContent=o.price+' 银币';c.append(price);if(reason){price.textContent+=' · '+reason;}
@@ -904,7 +906,7 @@ class Battle extends Phaser.Scene{
    if(this.offers[i]!==o||this.gold<o.price)return;
    if(o.merc){
      if(!recruitMercenary(this.army,o))return;
-   }else this.applyItem(o.id);
+   }else if(!this.applyItem(o.id))return;
    this.gold-=o.price;this.offers[i]=null;this.shop(false);
  },Boolean(reason));
  buy.className='buy';buy.setAttribute('aria-label',(target?'购买合成':'购买')+name.textContent+' '+roman[o.q]+'阶，'+o.price+'银币');buy.title=reason||buy.getAttribute('aria-label');this.button(c,o.lock?'解锁':'锁定',()=>{o.lock=!o.lock;this.shop(false)}).setAttribute('aria-pressed',String(o.lock))});
@@ -954,6 +956,7 @@ class Battle extends Phaser.Scene{
      }
      group.append(heading,grid,actions);inventory.append(group);continue;
    }else{
+     heading.textContent='道具 '+equippedCount(this.bag)+' / '+equipmentCapacity;
      this.bag.forEach((count,id)=>{
        if(!count)return;
        const slot=document.createElement('span');

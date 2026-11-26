@@ -65,8 +65,6 @@ button:not(.upgrade-card):disabled{opacity:.55;cursor:default}
 #field-controls button{display:grid;place-items:center;width:36px;height:36px;padding:0;color:#493428;background:transparent;border:0;box-shadow:none;font:700 25px/1 Georgia,serif;text-shadow:0 1px 2px #ffe6b3}
 #field-controls button:focus-visible{outline:2px dotted #735333}
 #field:has(#cover:not([hidden])) #pause{visibility:hidden}
-#preferences{min-width:200px;text-align:center;background:#e6cda5;color:#493428;border:1px solid #84694d;border-radius:8px}
-#preferences label{color:inherit;margin:16px 0}
 .coin-readout{display:flex;align-items:center;gap:7px;margin-top:5px;width:max-content;font:bold 21px/1.15 Georgia,serif;color:#ffe6a2;text-shadow:1px 1px 1px #50391f,-1px -1px 1px #715331}
 .coin-readout i{display:block;width:16px;height:19px;transform:rotate(-32deg);border:2px solid #5e6770;border-radius:50%;background:linear-gradient(110deg,#abb6bf,#f5f8fa 60%,#939fa9);box-shadow:inset 0 0 0 2px #e9eef2,inset 0 0 0 3px #87929c,-2px 1px #9da7b0,-3px 2px #55616b}
 
@@ -81,7 +79,6 @@ h1,h2,.upgrade-card strong,#cards strong{font-weight:800;letter-spacing:.025em}
 #joystick i{position:relative;width:42%;aspect-ratio:1;border-radius:50%;background:#dce5dce6;border:2px solid #536d65}
 #field-controls{gap:4px;top:6px;right:8px}
 #field-controls button{width:42px;height:42px;color:#fbefd6;font:700 27px/1 "Segoe UI Symbol",sans-serif;text-shadow:1px 1px 2px #463b2b,-1px -1px 1px #685640}
-#preferences[open]{position:fixed;inset:8vh 5vw auto auto;margin:0}
 html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
 #field{position:fixed;inset:0;width:100%;height:100%;height:100dvh;aspect-ratio:auto}
 #battle-hud{left:max(8px,env(safe-area-inset-left));top:max(6px,env(safe-area-inset-top))}
@@ -97,8 +94,6 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 @media(max-width:520px) and (orientation:portrait){}
 #settings svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;filter:drop-shadow(0 1px 1px #493725)}
-#preferences:not([hidden]){position:absolute;z-index:4;top:calc(max(4px,env(safe-area-inset-top)) + 44px);right:max(8px,env(safe-area-inset-right));display:grid;gap:8px;padding:12px;width:180px;min-width:0;background:#e9d3b1}
-#preferences label{margin:0}#volume{width:100%;accent-color:#85634c}
 
 
 
@@ -168,12 +163,30 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #field:has(#modal:not([hidden])) #pause{visibility:hidden}
 #field.pause-screen #modal button{max-width:calc(100% - var(--edge-l) - var(--edge-r))}
 #settings-backdrop{display:none}
-#field:has(#preferences:not([hidden])) #settings-backdrop{position:absolute;inset:0;z-index:3;display:block;touch-action:manipulation}
+#field:has(#preferences:not([hidden])) #settings-backdrop{position:absolute;inset:0;z-index:3;display:block;background:#17161880;touch-action:manipulation}
 #field:has(#preferences:not([hidden])) #field-controls{z-index:4}
 #preferences:not([hidden]){
-  z-index:5;right:var(--edge-r);top:calc(var(--edge-t) + 46px);
+  position:absolute;z-index:5;right:var(--edge-r);top:calc(var(--edge-t) + 46px);
+  display:grid;gap:12px;width:min(320px,calc(100% - var(--edge-l) - var(--edge-r)));
+  padding:14px;border:1px solid #877965;border-top:3px solid #b9a589;border-radius:6px;
+  background:var(--refit-surface);color:#eadfca;box-shadow:0 7px 22px #171618b3;
   max-height:calc(var(--usable-height) - 46px);overflow:auto;overscroll-behavior:contain;
 }
+#preferences .settings-heading,#preferences .settings-volume{
+  display:flex;align-items:center;justify-content:space-between;gap:8px
+}
+#preferences h2{margin:0;color:#ffedcb;font-size:28px}
+#preferences button{
+  min-width:0;min-height:44px;padding:6px 8px;border:1px solid #877965;border-radius:5px;
+  background:linear-gradient(165deg,#464447,#322f32);color:#fff2da
+}
+#preferences #close-settings{min-width:44px;font-size:24px;line-height:1}
+#preferences .settings-audio{display:grid;gap:6px;padding-top:10px;border-top:1px solid var(--refit-rule)}
+#preferences .settings-volume label{margin:0;color:#eadfca}
+#volume-value{color:#f4d9a5;font-variant-numeric:tabular-nums}
+#volume{width:100%;min-height:32px;margin:0;accent-color:var(--refit-primary)}
+#preferences .settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#preferences #restart{background:var(--refit-primary);color:var(--refit-primary-ink)}
 #joystick{width:clamp(76px,19vmin,116px)}
 
 

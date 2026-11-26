@@ -96,13 +96,18 @@ class Battle extends Phaser.Scene{
    $('settings').setAttribute('aria-expanded','true');
    $('sound').focus({preventScroll:true});
  };
- $('settings-backdrop').onclick=()=>this.closeSettings();
+ $('settings-backdrop').onclick=$('close-settings').onclick=()=>this.closeSettings();
  $('sound').onclick=()=>{
    this.sfx.muted=!this.sfx.muted;this.sfx.refreshGain();
    $('sound').textContent=this.sfx.muted?'声音：关':'声音：开';
    $('sound').setAttribute('aria-pressed',String(this.sfx.muted));
  };
- $('volume').oninput=()=>{this.sfx.volume=Number($('volume').value)/100;this.sfx.refreshGain()};
+ $('volume').oninput=event=>{
+   const value=event.currentTarget.value;
+   $('volume-value').value=value+'%';
+   this.sfx.volume=Number(value)/100;
+   this.sfx.refreshGain();
+ };
  const leaveRun=()=>{
    this.closeSettings();this.clearField();this.resetRun();this.hero=null;
    $('pause').setAttribute('aria-pressed','false');$('pause').setAttribute('aria-label','暂停');$('pause').title='暂停 / Esc';

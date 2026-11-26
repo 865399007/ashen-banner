@@ -647,8 +647,8 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
     2:'M25.5 9 Q36.5 17 26.6 28',
     7:'M31 12 Q30 15 34 15 Q33 19 28 20'
   })[id]:null;
-  if(recruit&&q){
-    const outline={17:'M18 12 L32 10 L33 29 L25 34 L17 30 Z',18:'M18 25 L33 14 M22 12 Q33 14 35 25',19:'M20 13 L27 6 L34 12 L28 19 Z',20:'M3 14 L7 21 M23 20 L32 12',21:'M26 10 L31 1 L34 7 L30 14'};
+  if(recruit&&q&&id!==11){
+    const outline={17:'M18 12 L32 10 L33 29 L25 34 L17 30 Z',18:'M18 25 L33 14 M22 12 Q33 14 35 25',19:'M20 13 L27 6 L34 12 L28 19 Z',20:'M3 14 L7 21 M23 20 L32 12'};
     c.save();
     if(q===3){c.shadowColor=weaponInk;c.shadowBlur=5}
     stroke(outline[recruitSkin],weaponInk,3.1);c.restore();
@@ -708,9 +708,27 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
     paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z',recruit?'#496477':enemyCloth.shadow);
     stroke('M21 20 Q21 17 24 18 Q28 20 28 16 M22 25 Q26 26 28 22','#e3bf86',1.3);
   }else if(id===11){
-    stroke('M20 34 L29 5','#654826',2);
-    paint('M26 9 L30 1 L32 1 L31 7 L34 5 Q36 11 30 14 L30 10 Z',wash(26,35,'#938782','#e7d3b4'));
-    paint('M27 10 L18 11 L17 16 L25 13 Z','#ad4e37');
+    c.save();c.translate(22,22);c.rotate(.15);
+    const spike='M0 -20.5 L2 -14.6 L1 -9 L-1.2 -9 L-2 -14 Z';
+    const crescent='M7.8 -16.4 Q10.7 -10.2 7.2 -5.1 Q4.7 -2.6 .3 -3.3 L.2 -5.8 Q4.5 -5.8 5.6 -8.6 Q7.6 -12 7.8 -16.4 Z';
+    stroke('M0 12.5 L0 -11','#503b30',2.5);
+    stroke('M.25 12 L.25 -11','#98704b',1.1);
+    // Leave open sky between the point and the crescent, even at battle scale.
+    if(q){
+      c.save();
+      if(q===3){c.shadowColor=weaponInk;c.shadowBlur=4}
+      stroke(spike,weaponInk,2);stroke(crescent,weaponInk,2);c.restore();
+    }
+    stroke('M0 -10 L7 -9','#574536',1.8);
+    stroke('M0 -10 L7 -9','#d5ad66',.9);
+    for(const blade of [spike,crescent]){
+      stroke(blade,'#414249',1.1);paint(blade,'#8499a0');
+    }
+    paint('M0 -20.5 L2 -14.6 L1 -9 L.1 -10 Z','#f1ebd7');
+    paint('M7.8 -16.4 Q10.7 -10.2 7.2 -5.1 Q5.4 -3.2 2.7 -3.2 Q8.7 -7.2 7.8 -16.4 Z','#f4e8ce');
+    paint('M-.7 -3.8 Q-4.1 -3.7 -5.7 1.7 L-3.5 .4 L-3.7 2.8 Q-.8 .7 .5 -2.3Z','#a84132');
+    stroke('M-1.1 -3 L1.2 -3','#d6ae68',1.5);
+    oval(c,0,.6,1.9,1.55,'#d8b18a');c.restore();
   }else if(id===12){
     paint('M9 7 L21 6 L22 8 L10 10 L4 13 L6 10 L3 10 Z','#514956');
     paint('M10 15 Q6 20 2 27 L7 25 L5 29 L14 23 Z','#776272');

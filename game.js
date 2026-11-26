@@ -487,6 +487,10 @@ class Battle extends Phaser.Scene{
        if(rank>=2)fx.lineStyle(body*.045,edge).lineBetween(-length,-body*.14,-length*.35,-body*.09);
        if(rank===3)fx.lineBetween(-length,body*.14,-length*.35,body*.09).fillStyle(edge).fillTriangle(body*.1,0,-body*.24,-body*.12,-body*.16,0);
      }
+     if(unit.id===8){
+       const crescent=[[-.13,-.022],[-.14,-.16],[-.085,-.22],[-.23,-.20],[-.31,-.13],[-.34,0],[-.28,0],[-.25,-.09],[-.2,-.13],[-.16,-.14],[-.17,-.022]];
+       fx.fillStyle(rank?edge:0xe1dbc6).fillPoints(crescent.map(([x,y])=>({x:x*body,y:y*body})),true);
+     }
      this.tweens.add({targets:fx,x:enemy.s.x,y:targetY,duration:75,yoyo:true,onComplete:()=>fx.destroy()});
    }else{
      const axe=unit.id===3;

@@ -326,6 +326,13 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .camp-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--refit-rule)}
 .camp-home h1{font-size:clamp(32px,6vw,56px);margin:0;color:#ffedcb}
 #camp-wallet{color:#e5c794;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+.camp-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px;align-items:stretch}
+.camp-orders{display:grid;gap:12px;border:1px solid #776858;border-radius:6px;padding:clamp(12px,2.5vw,24px);background:#363437}
+.camp-passives{color:#e2d3ba;display:grid;align-content:center;grid-template-columns:auto 1fr;gap:4px 12px}
+.camp-passives h2{margin:0;color:#ffedcb;font-size:20px;align-self:end}
+#home-commander{grid-row:span 2;align-self:center;width:clamp(66px,7vw,94px)!important;height:auto!important;image-rendering:auto}
+#commander-passives{display:grid;gap:4px;margin:5px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5}
+#commander-passives strong{color:#f4d9a5}
 #cover #start{
   width:100%;min-height:56px;margin:18px 0 0;padding:9px 14px;border:1px solid #f4d9a5;
   border-radius:5px;background:linear-gradient(#f2d49d,#dbad66);color:#2b1b12;
@@ -347,6 +354,9 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #camp-actions button strong{font:400 clamp(15px,2vw,20px) "Ma Shan Zheng",var(--game-type)}
 #camp-actions button span{font-size:12px;color:#d8cdbb}
 #cover :is(button,select,summary):focus-visible{outline:2px solid #ffe0a1;outline-offset:2px}
+@media(max-width:660px){
+  .camp-layout{grid-template-columns:1fr}
+}
 @media(max-width:370px){
   .camp-heading{margin-bottom:12px}
   #camp-actions{grid-template-columns:repeat(2,minmax(0,1fr))}

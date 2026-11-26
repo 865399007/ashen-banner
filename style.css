@@ -132,7 +132,6 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   #cards strong,.upgrade-card strong{font-size:15px}
   #cards small,.upgrade-card span,.camp-rows small{font-size:var(--caption)}
   #cards .offer-price{font-size:14px}
-  #cards button[aria-pressed]{min-height:var(--touch);min-width:var(--touch);font-size:13px}
 
   #field.pause-screen #modal{inset:0;max-height:none;padding:0}
 }
@@ -262,7 +261,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #cards .item-icon{width:78%;height:78%}
 #cards strong{font-size:clamp(13px,1.5vw,16px)}
 #cards small,#cards .offer-price{color:#f1e2ca}
-#cards button[aria-pressed]{border:1px solid #97816d;border-radius:5px;box-shadow:none;min-height:44px}
+#cards button[aria-pressed]{border:1px solid #97816d;border-radius:5px;box-shadow:none}
 #cards button[aria-pressed=true]{background:#e1ceb2;color:#403739}
 
 .upgrade-card .card-rank,#cards .card-rank{font:700 12px/1.2 var(--game-type);color:#fff1d4;white-space:nowrap}
@@ -448,7 +447,10 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #cards strong {color:#fff2da;font-size:clamp(15px,2vw,20px)}
 #cards small {font-size:12px;line-height:1.35;color:#d8cdbb}
 #cards .offer-price {margin-top:auto;padding:5px 0;color:#f7dca4;font-size:13px;font-weight:bold}
-#cards button[aria-pressed] {margin:0;padding:3px 8px;background:#302e31;color:#ecdfc9;border-color:#807468}
+#cards button[aria-pressed] {
+  align-self:center;min-width:38px;min-height:28px;margin:0;padding:3px 7px;
+  background:#302e31;color:#ecdfc9;border-color:#807468;font-size:12px;line-height:1.25
+}
 #cards button[aria-pressed=true] {background:#dfcba4;color:#302d29}
 .refit-inventory {max-width:none;margin:0 auto 12px;gap:16px}
 .refit-inventory section {width:50%;max-width:none;padding:0}
@@ -465,9 +467,6 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #modal:has(#cards) .commander-stats {max-width:none;margin-top:12px;padding:0;background:transparent}
 #modal:has(#cards) .commander-stats dl {gap:0 12px}
 #modal:has(#cards) .commander-stats dl div {padding:6px 0;border-bottom:1px solid #484549}
-@media(max-width:420px) {
-  #cards button[aria-pressed] {padding-inline:4px;width:100%}
-}
 
 #field:not(.pause-screen) #modal.home-subpage:not([hidden]){
   --page-gutter:clamp(16px,4vw,32px);

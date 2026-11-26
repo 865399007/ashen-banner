@@ -213,6 +213,7 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
 
 function fadeDefeatedEnemy(scene,victim,hitBurst){
   const sprite=victim.s;
+  victim.hit.force*=0.8;
   scene.fallenEnemies.add(sprite);
   scene.tweens.addCounter({from:0,to:.2,duration:200,onUpdate:tween=>{
     if(!sprite.active||!victim.hit)return;

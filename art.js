@@ -198,7 +198,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     gradient.addColorStop(0,left);gradient.addColorStop(1,right||left);
     c.fillStyle=gradient;c.fill(outline);
   }
-  const sleeveLight='#b9474a',sleeveShade='#92313e',cuff='#682838',cuffEdge='#c69a60';
+  const sleeveLight='#bf964e',sleeveShade='#a17a40',fold='#856333',cuff='#785a38',thread='#d6b475';
   const handSkin='#ddb58b',knuckleLight='#edc9a0',fingerShade='#b98865';
   shadow(c,124,221,28);
   for(const [x,side] of [[138,1],[102,-1]]){
@@ -232,8 +232,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   }
   shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z',rank?'#b27b3c':'#5e4440',rank?'#a16c35':'#765549');
   shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z',sleeveLight,sleeveShade);
+  shape('M155 127 Q161 135 167 135 L163 137 Q158 135 155 127 Z M159 146 Q164 139 172 137 Q166 141 164 146 Z',fold);
   shape('M174 131 L181 129 L184 146 L177 148 Z',cuff);
-  shape('M174 131 L176 130.5 L179 147.5 L177 148 Z',cuffEdge);
+  shape('M175 132 L177 132 L178 137 L176 138 Z M177 141 L179 140 L180 145 L178 146 Z',thread);
   c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);
   shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
   const flagWave=Math.sin(clothPhase-.54);
@@ -267,6 +268,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',sleeveLight,sleeveShade);
   shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',sleeveLight,sleeveShade);
+  shape('M62 118 Q72 99 89 98 Q74 103 66 118 Z M139 101 Q151 100 158 109 Q150 104 141 105 Z',fold);
   if(rank){
     shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
     shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z',form.edge);
@@ -319,8 +321,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   c.translate(91,119);
   c.rotate(swing===null?.72:swing);
   shape('M-7 0 Q0 -9 9 -4 L29 10 L36 9 L38 19 L29 24 L1 15 Z',sleeveLight,sleeveShade);
+  shape('M0 0 Q6 2 12 9 L9 8 Q4 6 0 0 Z M13 17 Q18 11 24 11 Q20 13 17 18 Z',fold);
   shape('M26 9 L33 10 L37 21 L30 24 Z',cuff);
-  shape('M26 9 L28 9.3 L32 23.1 L30 24 Z',cuffEdge);
+  shape('M27 10 L29 10.5 L30.5 14.5 L28.5 15 Z M29.5 18 L31.5 17.5 L33 21.5 L31 22.5 Z',thread);
   shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
   shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
   shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');

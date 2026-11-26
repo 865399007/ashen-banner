@@ -198,7 +198,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     gradient.addColorStop(0,left);gradient.addColorStop(1,right||left);
     c.fillStyle=gradient;c.fill(outline);
   }
-  const sleeveLight='#bf964e',sleeveShade='#a17a40',fold='#856333',cuff='#785a38',thread='#d6b475';
+  const sleeveLight='#946749',sleeveShade='#785038',fold='#5c3d2c',cuff='#51382c',thread='#be9875';
   const handSkin='#ddb58b',knuckleLight='#edc9a0',fingerShade='#b98865';
   shadow(c,124,221,28);
   for(const [x,side] of [[138,1],[102,-1]]){

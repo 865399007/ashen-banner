@@ -40,13 +40,49 @@ class GreyCamp {
     d.best=Math.max(d.best,run.cleared);if(win)d.victories++;this.save();
     return '营地银币 +'+silver+'　铁料 +'+iron+'　军功章 +'+medals;
   }
+  chooseCampaign(game){
+    const openCount=stageOrder.filter(key=>this.stageOpen(key)).length;
+    const menu=game.panel('选择战役','可出征 '+openCount+' / '+stageOrder.length+'　·　点选战役即可出征',true);
+    const track=document.createElement('div'),controls=document.createElement('div');
+    track.className='campaign-track';track.id='campaign-track';
+    track.setAttribute('role','group');track.setAttribute('aria-label','战役列表');
+    controls.className='campaign-nav';menu.append(track,controls);
+    for(const [i,key] of stageOrder.entries()){
+      const campaign=campaigns[key],open=this.stageOpen(key);
+      const card=game.button(track,'',()=>game.startRun(key),!open);
+      card.className='campaign-card';card.style.setProperty('--army-color',campaign.colors.base);
+      const icon=document.createElement('canvas'),name=document.createElement('strong');
+      const boss=document.createElement('span'),status=document.createElement('small');
+      icon.width=112;icon.height=112;icon.setAttribute('aria-hidden','true');
+      const ctx=icon.getContext('2d');ctx.translate(6,7);ctx.scale(2.75,2.75);campaignGeneral(ctx,key,0);
+      name.textContent=campaign.name;boss.textContent=campaign.army+' · '+campaign.boss;
+      status.textContent=open?'出征':'通关「'+campaigns[stageOrder[i-1]].name+'」解锁';
+      card.append(icon,name,boss,status);
+    }
+    game.button(controls,'返回首页',()=>{this.open(game);$('start').focus()});
+    const move=direction=>track.scrollBy({left:direction*track.clientWidth*.85,behavior:'smooth'});
+    const prev=game.button(controls,'上一组',()=>move(-1)),next=game.button(controls,'下一组',()=>move(1));
+    for(const button of [prev,next])button.setAttribute('aria-controls',track.id);
+    const sync=()=>{
+      prev.disabled=track.scrollLeft<=1;
+      next.disabled=track.scrollLeft+track.clientWidth>=track.scrollWidth-1;
+    };
+    track.addEventListener('scroll',sync,{passive:true});
+    const observer=new ResizeObserver(()=>{if(track.isConnected)sync();else observer.disconnect()});
+    observer.observe(track);
+    const last=track.children[stageOrder.indexOf(game.stageKey)];
+    const focusCard=last&&!last.disabled?last:track.firstElementChild;
+    focusCard.focus({preventScroll:true});track.scrollLeft=focusCard.offsetLeft-track.firstElementChild.offsetLeft;
+    sync();
+  }
   open(game,section=null){
     game.mode='camp';game.hud();$('wave').textContent='';
     const d=this.data;
     if(!section){
-      game.mode='title';game.syncStages(true);game.hud();$('modal').hidden=true;$('cover').hidden=false;
+      game.mode='title';game.hud();$('modal').hidden=true;$('cover').hidden=false;
       return;
     }
+    if(section==='选择战役'){this.chooseCampaign(game);return}
     const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals,true);
     game.button(m,'← 首页',()=>this.open(game));
     const body=document.createElement('div');body.className='camp-rows';m.append(body);
@@ -87,10 +123,7 @@ class GreyCamp {
       for(const [index,key] of stageOrder.entries()){
         const record=d.stages[key],open=this.stageOpen(key);
         const progress=open?'最佳 '+(record?.best||0)+' 波 · 通关 '+(record?.wins||0)+' 次':'通关「'+campaigns[stageOrder[index-1]].name+'」解锁';
-        const box=row(campaigns[key].name,campaignOpposition(campaigns[key])+'　·　'+progress);
-        game.button(box,game.stageKey===key?'已选择':'选择',()=>{
-          $('campaign-choice').value=key;$('campaign-choice').onchange();this.open(game,section);
-        },!open||game.stageKey===key);
+        row(campaigns[key].name,campaignOpposition(campaigns[key])+'　·　'+progress);
       }
       row('战役记录','最佳 '+d.best+'/'+finalWave+' 波　·　通关 '+d.victories+' 次。所有战役均在第 '+finalWave+' 波迎战统帅。');
       const box=row('老兵难度','通关后可消耗 1 枚军功章解锁。敌军生命 +25%，结算银币翻倍。');

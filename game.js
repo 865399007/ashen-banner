@@ -34,13 +34,7 @@ class Battle extends Phaser.Scene{
  create(){
  this.camp=new GreyCamp();
  this.commander=commanders.banner;
- const campaignChoice=$('campaign-choice');
- for(const key of stageOrder)campaignChoice.add(new Option(campaigns[key].name,key));
- campaignChoice.onchange=()=>{
-   this.stageKey=campaignChoice.value;this.campaign=campaigns[this.stageKey];
-   $('campaign-opposition').textContent=campaignOpposition(this.campaign);
- };
- campaignChoice.onchange();
+ this.stageKey=stageOrder[0];this.campaign=campaigns[this.stageKey];
  const skills=$('commander-passives');
  skills.replaceChildren();
  for(const {name,description} of this.commander.passives){
@@ -50,11 +44,11 @@ class Battle extends Phaser.Scene{
    skills.append(line);
  }
 
- this.syncStages();
  for(const button of $('camp-actions').querySelectorAll('[data-camp-section]')){
    button.onclick=()=>this.camp.open(this,button.dataset.campSection);
  }
  makeArt(this);
+ $('home-commander').getContext('2d').drawImage(this.textures.get(commanderTexture(this,1)).getSourceImage(),0,0);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
  this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
@@ -70,7 +64,7 @@ class Battle extends Phaser.Scene{
    document.removeEventListener('visibilitychange',syncMusic);
    this.sfx.updateMusic('over');
  });
- this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC',false);this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
+ this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC',false);this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else if(this.mode==='camp'&&$('modal').querySelector('.campaign-track')){this.camp.open(this);$('start').focus()}else this.pauseRun()});
  window.addEventListener('keydown',event=>{
    if(event.code!=='Space'||(this.mode!=='fight'&&this.mode!=='paused'))return;
    event.preventDefault();
@@ -117,9 +111,11 @@ class Battle extends Phaser.Scene{
    const visible=$('test-army').hidden;
    showDebugButtons(visible);
    this.camp.data.showDebugButtons=visible;this.camp.save();
-   this.syncStages(previousMode==='title'||previousMode==='camp');
-   if(previousMode==='camp'&&$('modal').querySelector('h2')?.textContent==='战役记录'){
-     this.camp.open(this,'战役记录');this.mode='settings';
+   if(previousMode==='camp'){
+     const section=$('modal').querySelector('h2')?.textContent;
+     if(section==='战役记录'||section==='选择战役'){
+       this.camp.open(this,section);this.mode='settings';
+     }
    }
  };
  $('debug-final-wave').onclick=()=>{
@@ -157,12 +153,12 @@ class Battle extends Phaser.Scene{
  const leaveRun=()=>{
    this.closeSettings();this.clearField();this.resetRun();this.hero=null;
    $('pause').setAttribute('aria-pressed','false');$('pause').setAttribute('aria-label','暂停');$('pause').title='暂停 / Esc';
-   $('modal').hidden=true;$('wave').textContent='';this.mode='title';this.syncStages(true);this.hud();
+   $('modal').hidden=true;$('wave').textContent='';this.mode='title';this.hud();
    this.cameras.main.centerOn(480,300);$('cover').hidden=false;
  };
  $('restart').onclick=()=>{leaveRun();this.startRun()};
  $('return-lobby').onclick=leaveRun;
- $('pause').onclick=()=>this.pauseRun();$('start').onclick=()=>this.startRun();this.resetRun();this.hud()}
+ $('pause').onclick=()=>this.pauseRun();$('start').onclick=()=>this.camp.open(this,'选择战役');this.resetRun();this.hud()}
  bindJoystick(){
    const surface=$('game'),pad=$('joystick'),knob=pad.firstElementChild;
    let finger=null,originX=0,originY=0;
@@ -208,17 +204,11 @@ class Battle extends Phaser.Scene{
 }
  panel(title,desc,homePage=false){this.resetStick();$('cover').hidden=true;let m=$('modal');m.classList.toggle('home-subpage',homePage);m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
- syncStages(resetSelection=false){
-   const choice=$('campaign-choice');
-   for(const option of choice.options){
-     const open=this.camp.stageOpen(option.value);
-     option.disabled=!open;option.textContent=campaigns[option.value].name+(open?'':' · 未解锁');
-   }
-   if(resetSelection&&!this.camp.stageOpen(choice.value)){
-     choice.value=stageOrder[0];choice.onchange();
-   }
+ startRun(key=this.stageKey){
+   if(!this.camp.stageOpen(key)){this.camp.open(this,'选择战役');return}
+   this.stageKey=key;this.campaign=campaigns[key];
+   this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin();
  }
- startRun(){if(!this.camp.stageOpen(this.stageKey)){this.camp.open(this);return}this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
  begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
@@ -907,7 +897,7 @@ class Battle extends Phaser.Scene{
  end(win){
    if(this.mode==='over')return;
    this.mode='over';this.clearField();this.hud();
-   const reward=this.camp.settle(this,win);this.syncStages();
+   const reward=this.camp.settle(this,win);
    const m=this.panel(win?this.campaign.name+' · 告捷':'灰旗倒下',(win?'击败'+this.campaign.boss:this.campaign.name)+' · '+'完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
    const receipt=document.createElement('p');receipt.textContent=reward;m.append(receipt);
    this.button(m,'返回首页',()=>this.camp.open(this)).className='primary';

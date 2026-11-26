@@ -326,51 +326,20 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .camp-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--refit-rule)}
 .camp-home h1{font-size:clamp(32px,6vw,56px);margin:0;color:#ffedcb}
 #camp-wallet{color:#e5c794;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
-.camp-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+.camp-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px;align-items:stretch}
 .camp-orders{display:grid;gap:12px;border:1px solid #776858;border-radius:6px;padding:clamp(12px,2.5vw,24px);background:#363437}
-.camp-orders h2{margin:0;color:#f7e6c9;font-size:26px}
-.camp-orders .loadout{display:grid;gap:6px}
-#campaign-opposition{color:#e1d0b7;font-size:14px}
-.camp-orders .loadout label{display:grid;gap:5px;margin:0;color:#e1d0b7}
-.camp-orders .loadout select{
-  appearance:none;color-scheme:dark;width:100%;min-width:0;min-height:44px;
-  padding:7px 32px 7px 11px;border:1px solid #877965;border-radius:5px;
-  color:#fff2da;font:inherit;cursor:pointer;text-overflow:ellipsis;
-  background:
-    linear-gradient(45deg,transparent 50%,#e4c599 50%) right 17px center/5px 5px no-repeat,
-    linear-gradient(135deg,#e4c599 50%,transparent 50%) right 12px center/5px 5px no-repeat,
-    linear-gradient(165deg,#464447,#322f32);
-}
-.camp-orders .loadout select:hover{border-color:var(--refit-primary)}
-.camp-orders .loadout option{background:#302d31;color:#fff2da}
-.camp-orders .loadout option:disabled{color:#a99f94}
-@supports (appearance:base-select) and selector(::picker(select)){
-  .camp-orders .loadout select,.camp-orders .loadout select::picker(select){appearance:base-select}
-  .camp-orders .loadout select{padding-inline-end:11px;background:linear-gradient(165deg,#464447,#322f32)}
-  .camp-orders .loadout select::picker-icon{color:var(--refit-primary);margin-inline-start:auto}
-  .camp-orders .loadout select:open{border-color:var(--refit-primary)}
-  .camp-orders .loadout select:open::picker-icon{rotate:180deg}
-  .camp-orders .loadout select::picker(select){
-    margin-block:4px;padding:4px;min-inline-size:anchor-size(width);
-    border:1px solid #877965;border-radius:5px;background:#302d31;
-    color:#fff2da;box-shadow:0 6px 16px #171618b3
-  }
-  .camp-orders .loadout option{min-height:40px;padding:8px 10px;border-radius:3px}
-  .camp-orders .loadout option:checked{background:#504335;color:#ffe7b9}
-  .camp-orders .loadout option:enabled:is(:hover,:focus-visible){background:#63513c;color:#fff4df}
-  .camp-orders .loadout option::checkmark{color:var(--refit-primary)}
-}
-.camp-passives{border-top:1px solid var(--refit-rule);padding-top:10px;color:#e2d3ba}
-.camp-passives h3{margin:0;color:#ffedcb;font-size:18px}
+.camp-passives{color:#e2d3ba;display:grid;align-content:center;grid-template-columns:auto 1fr;gap:4px 12px}
+.camp-passives h2{margin:0;color:#ffedcb;font-size:20px;align-self:end}
+#home-commander{grid-row:span 2;align-self:center;width:clamp(66px,7vw,94px)!important;height:auto!important;image-rendering:auto}
 #commander-passives{display:grid;gap:4px;margin:5px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5}
 #commander-passives strong{color:#f4d9a5}
-#cover .camp-orders #start{
-  width:100%;min-height:56px;margin:2px 0 0;padding:9px 14px;border:1px solid #f4d9a5;
+#cover #start{
+  width:100%;min-height:56px;margin:18px 0 0;padding:9px 14px;border:1px solid #f4d9a5;
   border-radius:5px;background:linear-gradient(#f2d49d,#dbad66);color:#2b1b12;
   box-shadow:inset 0 1px #fff0ce,0 3px 0 #201815;text-align:center;
   font-size:clamp(18px,2.4vw,22px);font-weight:800;letter-spacing:.08em
 }
-#cover .camp-orders #start:active{transform:translateY(1px)}
+#cover #start:active{transform:translateY(1px)}
 #camp-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 #cover #camp-actions button{
   display:grid;justify-items:center;align-content:start;gap:5px;min-height:112px;margin:0;padding:9px 4px 8px;
@@ -514,3 +483,43 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #modal.home-subpage .codex-entries{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}
 
 .codex-entries .general-portrait{width:84px;height:auto;flex:none}
+
+/* The campaign gallery stays in a single row, including on portrait screens. */
+#field #modal.home-subpage:has(.campaign-track){
+  display:flex;flex-direction:column;justify-content:safe center;
+  --page-side:max(var(--page-gutter),calc((100% - 1080px)/2))
+}
+.campaign-track{
+  display:flex;flex:none;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+  padding:4px 3px 12px;scrollbar-color:#ad926d #312e2e
+}
+#modal .campaign-track .campaign-card{
+  flex:0 0 clamp(164px,19vw,192px);display:grid;justify-items:center;gap:9px;scroll-snap-align:start;
+  min-width:0;margin:0;padding:20px 8px 13px;border:1px solid #887660;border-top:4px solid var(--army-color);
+  background:linear-gradient(155deg,#494346,#333035);color:#f7e6c8;box-shadow:0 3px 0 #201d1d;
+  white-space:normal;text-align:center
+}
+.campaign-card canvas{
+  width:90px!important;height:90px!important;border:2px solid #cdad79;border-radius:50%;
+  background:radial-gradient(ellipse at 38% 28%,#f4e5ca,#c0a47b);image-rendering:auto
+}
+.campaign-card strong{font:600 22px/1.25 var(--game-type)}
+.campaign-card span{font-size:13px;color:#e1d4bf}
+.campaign-card small{width:100%;border-top:1px solid #75695a;padding-top:9px;color:#ffdda1;font:600 12px/1.4 var(--game-type);letter-spacing:0}
+#modal .campaign-track .campaign-card:disabled{filter:grayscale(1);opacity:.65;cursor:not-allowed}
+#modal .campaign-track .campaign-card:enabled:hover{background:#50453c;border-color:#d7b780}
+#modal .campaign-track .campaign-card:focus-visible{outline:2px solid #ffe0a1;outline-offset:1px}
+.campaign-nav{display:flex;gap:8px;align-items:center;margin-top:6px}
+#modal .campaign-nav button{margin:0}
+#modal .campaign-nav button:first-child{margin-right:auto}
+#field:has(.campaign-track):has(#modal:not([hidden])) #preferences .settings-actions{display:none}
+@media (max-height:530px) and (min-width:661px){
+  .camp-home{padding-block:18px 12px}
+  .camp-heading{margin-bottom:10px;padding-bottom:7px}
+  .camp-home h1{font-size:34px}
+  #cover #start{margin-top:12px;min-height:48px}
+  #field #modal.home-subpage:has(.campaign-track){padding-block:16px}
+  #field #modal.home-subpage:has(.campaign-track)>h2{font-size:32px}
+  #modal .campaign-track .campaign-card{padding-block:12px 9px;gap:6px}
+  .campaign-card canvas{width:74px!important;height:74px!important}
+}

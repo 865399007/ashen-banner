@@ -259,7 +259,7 @@ class Battle extends Phaser.Scene{
    const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
    const baseTexture=unit.hero?commanderTexture(this,this.level):'man'+skin;
    const s=this.add.image(480,300,baseTexture).setOrigin(.5,.85).setScale(unit.hero?COMMANDER_BATTLE_SCALE:1/3);
-   return {...unit,skin,baseTexture,stride:0,shots:0,cd:index*.12,s};
+   return {...unit,skin,baseTexture,stride:0,shots:0,followUps:[],wounds:new WeakMap(),cd:index*.12,s};
  }
  deployMercenaries(){
    for(const unit of this.actors.splice(1))unit.s.destroy();
@@ -469,7 +469,7 @@ class Battle extends Phaser.Scene{
    }
    this.animateWalk(unit,unit.s.x-oldX,unit.s.y-oldY,unit.stepLength);
  }
- weaponEffect(unit,enemy){
+ weaponEffect(unit,enemy,{heavy=false,golden=false,offset=0}={}){
    const body=unit.s.height*(unit.hit?unit.hitBase:unit.s.scaleY);
    const x=unit.s.x,y=unit.s.y-body*.4;
    const targetHeight=enemy.s.height*(enemy.hit?enemy.hitBase:enemy.s.scaleY);
@@ -490,7 +490,9 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:wave,scaleX:1,scaleY:1,alpha:0,duration:150,onComplete:()=>wave.destroy()});
    }
    if(unit.id===2||unit.id===5){
-     fx.setScale(body*.028);
+     fx.setPosition(x-Math.sin(angle)*offset,y+Math.cos(angle)*offset);
+     fx.setScale(body*(heavy?.042:.028));
+     if(golden)strikeShard(fx,-38,0,40,0,3.6,0xffd063);
      fx.lineStyle(2,0x795035).lineBetween(-13,0,0,0);
      fx.fillStyle(0xe6e0c7).fillTriangle(3,0,-2,-2,-2,2);
      fx.fillStyle(0xd6ae72).fillTriangle(-9,0,-15,-3,-13,0).fillTriangle(-9,0,-15,3,-13,0);
@@ -579,26 +581,13 @@ class Battle extends Phaser.Scene{
    return;
  }
  const count=this.bondCounts[a.id];
- if(a.id===9){
-   const angle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
-   a.rush={x:e.s.x+4*Math.cos(angle),y:e.s.y+4*Math.sin(angle),time:.20};return;
+ a.shots++;
+ if(a.id===9){startCavalryRush(this,a,e);return}
+ if(a.id===2||a.id===5){rangedRound(this,a,e);return}
+ meleeRound(this,a,e);
+ if(this.mode==='fight'&&a.id===0&&count===6&&++this.swordHits%4===0)this.groupStrike(0);
  }
- if(a.id===2||a.id===5){
-   a.shots++;
-   const arrows=1+(a.id===5?this.bag[20]:0)+Number(a.id===2&&count>=4)+(a.shots%5===0?this.bag[5]:0);
-   for(let i=0;i<arrows&&this.mode==='fight';i++){
-     const target=i===0?e:this.closestInRange(a);
-     if(target)this.weaponStrike(a,target);
-   }
- }else{
-   this.weaponStrike(a,e);
-   if(a.id===7&&this.mode==='fight'){
-     const second=e.hp>0?e:this.closestInRange(a);
-     if(second)this.weaponStrike(a,second);
-   }
-   if(this.mode==='fight'&&a.id===0&&count===6&&++this.swordHits%4===0)this.groupStrike(0);
- }
- }
+
  attackInterval(a){
    if(a.hero)return troops[a.id][2]/(1+this.soulBonus('haste')+.05*this.bag[16]);
    const count=this.bondCounts[a.id];
@@ -610,7 +599,7 @@ class Battle extends Phaser.Scene{
  }
  mercRange(a){
    const count=this.bondCounts[a.id];
-   return troops[a.id][3]*(equippedFor(this.bag,poleFerrule,a.id)?1.18:1)*([1,8].includes(a.id)?1+.15*this.bag[13]:1)*(a.id===1&&count>=2?1.1:a.id===3&&count>=2?1.08:1);
+   return troops[a.id][3]*(a.id===1&&a.q>=1?1.15:1)*(equippedFor(this.bag,poleFerrule,a.id)?1.18:1)*([1,8].includes(a.id)?1+.15*this.bag[13]:1)*(a.id===1&&count>=2?1.1:a.id===3&&count>=2?1.08:1);
  }
  closestInRange(a){
    let target=null,limit=this.mercRange(a);
@@ -628,13 +617,17 @@ class Battle extends Phaser.Scene{
      if(enemy)this.weaponStrike(unit,enemy);
    }
  }
- weaponStrike(a,e){
-   const count=this.bondCounts[a.id],r=this.mercRange(a);
+ weaponStrike(a,e,strength=1,longThrust=false){
+   if(a.id===2||a.id===5){
+     const pierce=Number(this.bag[3]>0)+Number(a.id===2&&a.q>=2);
+     fireRankedArrow(this,a,e,strength,pierce);return;
+   }
+   const count=this.bondCounts[a.id],r=this.mercRange(a)*(longThrust?1.6:1);
    const angle=Math.atan2(e.s.y-a.s.y,e.s.x-a.s.x);
    const dx=Math.cos(angle),dy=Math.sin(angle);
-   const hits=[e],piercing=[2,5].includes(a.id)&&this.bag[3]>0;
+   const hits=[e];
    const sweeping=[3,6,8,9].includes(a.id);
-   if(a.id===1||sweeping||piercing){
+   if(a.id===1||sweeping){
      const extra=[];
      for(const other of this.enemies){
        if(other===e)continue;
@@ -642,16 +635,16 @@ class Battle extends Phaser.Scene{
        const along=x*dx+y*dy,side=Math.abs(x*dy-y*dx);
        if(sweeping){
          const radius=a.id===9?(this.bag[chargeStandard]?28.5:19):a.id===3&&count===6?r*1.4:r;
-         if(a.id===9||a.id===6){if(distance(other.s,e.s)<=(a.id===6?17:radius))extra.push(other);continue}
-         if(along>=Math.hypot(x,y)*.5&&Math.hypot(x,y)<=radius)extra.push(other);
-       }else if(along>0&&along<=r&&side<=6&&(!piercing||along>=distance(a.s,e.s)))extra.push(other);
+         if(a.id===9||a.id===6){if(distance(other.s,e.s)<=(a.id===6?(a.q>=2?21.25:17):radius))extra.push(other);continue}
+         if(along>=Math.hypot(x,y)*(a.id===8&&a.q>=2?Math.cos(80*Math.PI/180):.5)&&Math.hypot(x,y)<=radius)extra.push(other);
+       }else if(along>0&&along<=r&&side<=6)extra.push(other);
      }
      extra.sort((l,h)=>distance(a.s,l.s)-distance(a.s,h.s));
-     hits.push(...(sweeping?extra:extra.slice(0,piercing?1:count>=4?2:1)));
+     hits.push(...(sweeping?extra:extra.slice(0,longThrust?5:1+Number(count>=4)+Number(a.q>=1))));
    }
-   this.weaponEffect(a,piercing?hits[hits.length-1]:e);
+   if(longThrust)skillMark(this,a,a.s,angle,r,'spear');
+   this.weaponEffect(a,e);
    for(const victim of hits){
-     if(this.arrowBlocked(a,victim))break;
      if(this.mode!=='fight')break;
      if(a.id===1&&count===6&&victim.charge?.phase==='dash'){
        victim.charge.phase='recover';victim.charge.remaining=.75;
@@ -662,19 +655,31 @@ class Battle extends Phaser.Scene{
        victim.s.x=Phaser.Math.Clamp(victim.s.x+dx*5,8,952);
        victim.s.y=Phaser.Math.Clamp(victim.s.y+dy*5,8,592);
      }
-     const heavy=victim.boss||victim.elite||[4,8,10,13].includes(victim.skin);
-     let power=(piercing?.9:1)*(a.id===5&&heavy?1.25:a.id===3&&count>=4?1.15:1);
-     if(equippedFor(this.bag,heavyGrip,a.id))power*=1.15;
-     if(equippedFor(this.bag,finishingBlade,a.id)&&victim.hp<=victim.max*.5)power*=1.35;
-     if(equippedFor(this.bag,formationSpike,a.id)&&victim!==e)power*=1.45;
-     if(equippedFor(this.bag,siegeHead,a.id)&&(victim.elite||victim.boss))power*=1.35;
-     this.dealHit(a,victim,power);
-     if(this.mode==='fight'&&victim.hp>0&&this.bag[6]){
-       victim.comboHits=(victim.comboHits||0)+1;
-       if(victim.comboHits%5===0)this.dealHit(a,victim,power);
+     this.mercHit(a,victim,e,strength*(a.id===6&&a.q>=2&&victim===e?1.35:1));
+   }
+ }
+ mercHit(a,victim,primary,strength){
+   if(this.mode!=='fight'||victim.hp<=0)return;
+   const heavy=victim.boss||victim.elite||[4,8,10,13].includes(victim.skin);
+   let power=strength*(a.id===5&&heavy?1.25:a.id===3&&this.bondCounts[3]>=4?1.15:1);
+   if(equippedFor(this.bag,heavyGrip,a.id))power*=1.15;
+   if(equippedFor(this.bag,finishingBlade,a.id)&&victim.hp<=victim.max*.5)power*=1.35;
+   if(equippedFor(this.bag,formationSpike,a.id)&&victim!==primary)power*=1.45;
+   if(equippedFor(this.bag,siegeHead,a.id)&&(victim.elite||victim.boss))power*=1.35;
+   this.dealHit(a,victim,power);
+   if(this.mode==='fight'&&victim.hp>0&&this.bag[6]){
+     victim.comboHits=(victim.comboHits||0)+1;
+     if(victim.comboHits%5===0)this.dealHit(a,victim,power);
+   }
+   if(a.id===7&&a.q>=2&&victim.hp>0&&this.mode==='fight'){
+     const n=(a.wounds.get(victim)||0)+1;a.wounds.set(victim,n%4);
+     if(n===4){
+       skillMark(this,a,victim.s,0,8,'cross');
+       this.dealHit(a,victim,.9*(power/strength));
      }
    }
  }
+
  arrowBlocked(a,e){
    if((a.id!==2&&a.id!==5)||e.skin!==10||!shieldFront(e,a.s))return false;
    shieldSpark(this,e.s);return true;
@@ -747,17 +752,11 @@ class Battle extends Phaser.Scene{
  const defending=!x&&!y;
  const nearby=defending?this.enemies.filter(e=>distance(e.s,h)<105):[];
  for(let [i,a] of this.actors.entries()){
+   runFollowUps(this,a);
+   if(this.mode!=='fight')return;
    if(a.rush){
-     const rush=a.rush,ox=a.s.x,oy=a.s.y;
-     this.move(a.s,rush.x,rush.y,360*dt);rush.time-=dt;
-     this.animateWalk(a,a.s.x-ox,a.s.y-oy,12);
-     a.s.setDepth(a.s.y+1);
-     if(distance(a.s,rush)<1||rush.time<=0){
-       a.rush=null;
-       const victim=this.closestInRange(a);
-       if(victim&&distance(victim.s,a.s)<22)this.weaponStrike(a,victim);
-       if(this.mode!=='fight')return;
-     }
+     stepCavalryRush(this,a,dt);
+     if(this.mode!=='fight')return;
      continue;
    }
    const candidates=i&&![2,5].includes(a.id)&&nearby.length?nearby:this.enemies;
@@ -798,7 +797,16 @@ class Battle extends Phaser.Scene{
    const damage=Math.max(1,Math.round(raw*15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18])*(guarded?(edict?.80:.88):1)));
    this.takeCommanderDamage(damage);this.invul=.65+.15*this.bag[heartMirror];this.showInvulFade=true;
    impact(this,source,this.actors[0],damage,true);this.hud();
-   if(!this.hp)this.end(false);
+   if(!this.hp){this.end(false);return}
+   if(guarded){
+     for(const guard of this.actors){
+       if(guard.hero||guard.id!==4||guard.q<2||distance(guard.s,this.hero)>=(edict?70:50)||this.elapsed<(guard.counterAt||0))continue;
+       guard.counterAt=this.elapsed+2;
+       const ring=guard.q===3,origin=pointOf(ring?this.hero:guard.s);
+       skillArea(this,guard,null,origin,heading(origin,source),ring?50:this.mercRange(guard),1,ring?'ring':'cone',ring?1.4:.75,ring?'ring':'sweep');
+       if(this.mode!=='fight')break;
+     }
+   }
  }
  takeCommanderDamage(amount){
    this.hp=Math.max(0,this.hp-amount);

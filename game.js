@@ -453,7 +453,7 @@ class Battle extends Phaser.Scene{
  positionSoul(){
    const h=this.hero;
    const back=h.displayWidth*.14*(h.flipX?1:-1);
-   this.soulImage.setPosition(h.x+back,h.y-h.displayHeight*.32).setFlipX(h.flipX).setDepth(h.depth-.5);
+   this.soulImage.setPosition(h.x+back,h.y-h.displayHeight*.44).setFlipX(h.flipX).setDepth(h.depth-.5);
  }
  soulBonus(stat){return this.soul?.type.stat===stat?this.soul.bonus:0}
  attack(a,e){

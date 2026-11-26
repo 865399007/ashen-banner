@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {eliteArrivalTimes,spawnDueElites,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -17,12 +17,14 @@ function start(r){
   r.phase='fight';r.time=30+5*(r.wave-1);r.spawn=0;r.enemies=[];r.loot=[];r.effects=[];
   for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;p.revision++}
   if(r.wave===finalWave)spawn(r,true);
+  r.eliteArrivals=eliteArrivalTimes(r.wave,r.time);
+  spawnDueElites(r.eliteArrivals,r.time,()=>spawn(r,false,true));
 }
-function spawn(r,boss=false){
+function spawn(r,boss=false,elite=false){
   const h=pick(r.players.filter(p=>p.hp>0));if(!h)return;
   const angle=Math.random()*Math.PI*2;
-  const hp=boss?Math.round(campaigns.border.bossHP*1.5):14+4*r.wave;
-  r.enemies.push({id:++r.serial,skin:boss?campaigns.border.bossSkin:villageEnemy(r.wave),x:clamp(h.x+140*Math.cos(angle),10,950),y:clamp(h.y+140*Math.sin(angle),20,585),hp,max:hp,boss});
+  const hp=boss?Math.round(campaigns.border.bossHP*1.5):(14+4*r.wave)*(elite?5:1);
+  r.enemies.push({id:++r.serial,skin:boss?campaigns.border.bossSkin:elite?pick([3,4,5]):villageEnemy(r.wave),x:clamp(h.x+140*Math.cos(angle),10,950),y:clamp(h.y+140*Math.sin(angle),20,585),hp,max:hp,boss,elite});
 }
 function hand(p){p.choices=['体魄','力量','步法','幸运','恢复'];for(let i=4;i>0;i--){let j=Math.floor(Math.random()*(i+1));[p.choices[i],p.choices[j]]=[p.choices[j],p.choices[i]]}p.choices.length=4}
 const goods=[0,1,2,17];
@@ -63,6 +65,7 @@ function tick(r,dt,now=Date.now()){
  }
  if(r.phase!=='fight')return;
  r.clock+=dt;r.time-=dt;r.spawn-=dt;r.effects=r.effects.filter(f=>f.until>r.clock);
+ spawnDueElites(r.eliteArrivals,r.time,()=>spawn(r,false,true));
  if(r.spawn<=0&&r.enemies.length<75){spawn(r);r.spawn=Math.max(.32,.85-r.wave*.035)}
  for(const p of r.players){
    if(p.hp<=0)continue;

@@ -227,7 +227,9 @@ class Battle extends Phaser.Scene{
  this.deployMercenaries();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);
  $('debug-final-wave').disabled=this.wave>=finalWave;
- if(this.wave===finalWave)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);
+ if(this.wave===finalWave)this.spawn(true);
+ this.eliteArrivals=eliteArrivalTimes(this.wave,this.timeLeft);
+ this.spawnWaveElites();
  this.hud()
  }
  createActor(unit,index){
@@ -271,6 +273,9 @@ class Battle extends Phaser.Scene{
    Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.souls.some(s=>s.count===6&&s.id===id))));
  }
  clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ spawnWaveElites(){
+   spawnDueElites(this.eliteArrivals,this.timeLeft,()=>this.spawn(false,true));
+ }
  spawn(boss=false,elite=false,forcedSkin=null){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
@@ -295,7 +300,7 @@ class Battle extends Phaser.Scene{
    const toughness=infantry>=0?[2,15,7,-2,12,6,9,0][infantry]:skin===23?9:baseType*3;
    let hp=boss?this.campaign.bossHP:(13+this.wave*4+toughness)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
  const baseTexture=enemyTexture(this,this.stageKey,skin,boss);
- const enemy={baseTexture,s:this.add.image(x,y,baseTexture).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
+ const enemy={baseTexture,s:this.add.image(x,y,baseTexture).setOrigin(.5,.85).setScale(boss?BOSS_BATTLE_SCALE:elite?ELITE_BATTLE_SCALE:1/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
  enemy.move=boss?this.campaign.bossMove:({5:'bow',23:'bolt',13:'hammer',14:'hammer',15:'hammer'})[skin];
  enemy.reload=.25+Math.random()*.55;
  if(skin===8)enemy.charge={phase:"ready",remaining:.45};
@@ -311,7 +316,7 @@ class Battle extends Phaser.Scene{
    enemy.footBar.setPosition(sprite.x,sprite.y+sprite.displayHeight*(1-sprite.originY)+2);
  }
  showEnemyHealth(enemy){
-   const width=enemy.boss?54:34;
+   const width=enemy.boss?36:30;
    const fill=(width-2)*Phaser.Math.Clamp(enemy.hp/enemy.max,0,1);
    const bar=enemy.footBar;
    bar.clear().fillStyle(0x231818).fillRoundedRect(-width/2,0,width,6,3);
@@ -632,7 +637,7 @@ class Battle extends Phaser.Scene{
  const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
  if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
- if(e.elite){if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
+ if(e.elite){if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});
@@ -661,6 +666,7 @@ class Battle extends Phaser.Scene{
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
+ this.spawnWaveElites();
  for(const e of this.enemies){
    advanceImpact(e,dt);
    if(!e.hit)this.walkEnemy(e,dt);

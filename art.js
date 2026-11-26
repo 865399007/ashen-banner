@@ -309,18 +309,21 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     }
   }
 
-  // Broad exposed forehead and a compact jaw under the same brow in all five forms.
-  fill('M103 67 Q102 49 125 48 Q151 46 158 66 L159 87 Q159 99 150 102 Q136 107 117 101 L108 94Z',skin);
-  oval(c,107,84,5.4,6.5,'#d9a57c');
   if(!rank){
-    c.save();c.translate(104,53);c.rotate(.036*wind-.045*step);c.scale(.76,1.02);
-    fill('M2 3 Q-10 -13 -22 0 C-36 15 -22 38 -41 54 Q-50 62 -61 56 Q-54 67 -39 64 Q-23 61 -16 42 Q-17 56 -28 66 Q-9 60 -6 42 C-3 29 -9 8 1 9Z',glaze('#534039','#302927',-3,66));
-    fill('M-12 0 C-25 3 -24 22 -28 33 Q-22 25 -19 13 Q-17 6 -12 5Z','#674d42');
+    fill('M109 68 Q111 53 131 53 Q151 53 155 69 L155 85 Q154 93 145 97 Q138 101 131 99 L118 94 L111 87Z',skin);
+    oval(c,111,82,4.2,5.5,'#d9a57c');
+    c.save();c.translate(103,49);c.rotate(.036*wind-.045*step);
+    fill('M4 2 C-4 -15 -16 -17 -23 -8 C-36 8 -23 39 -44 54 Q-37 57 -30 50 Q-34 59 -43 63 Q-23 63 -16 46 C-8 28 -18 8 -9 2 Q-2 -2 3 9Z',glaze('#55423e','#302827',-14,62));
+    fill('M-25 9 Q-25 -7 -16 -10 Q-10 -11 -6 -5 Q-19 -9 -25 9Z','#70534b');
     c.restore();
-    fill('M100 73 Q94 56 106 48 Q125 36 144 48 Q156 54 156 73 L151 69 L147 64 L148 73 Q141 70 136 63 L135 70 L127 66 L124 73 L119 70 Q115 77 117 92 L111 88 L109 82 L106 84Z',glaze('#584239',hair,46,93));
-    fill('M109 57 Q116 45 135 48 Q140 49 145 54 Q127 48 116 57Z','#644c41');
-    line('M99 53 Q100 49 106 47','#ac4034',4.6);line('M99 52 L102 49','#de7152',1.6);
+    // A raised crown flows into the high tie, with a swept fringe above the eyes.
+    fill('M99 73 Q92 59 99 47 Q104 37 118 34 L114 31 Q128 28 138 36 Q145 36 152 45 Q159 52 158 65 L156 76 Q152 74 148 67 Q146 72 141 74 L141 68 Q134 72 124 74 L126 69 Q119 74 117 81 L117 89 Q111 86 110 79 L109 73 L103 77Z',glaze('#59453e',hair,32,82));
+    fill('M103 56 Q109 39 121 37 Q130 34 139 41 Q130 38 122 42 Q111 47 103 56Z','#70554a');
+    fill('M122 61 Q133 46 144 46 Q151 47 154 55 Q147 49 141 52 Q134 53 122 61Z','#624b42');
+    line('M97 49 Q99 43 104 41','#a23a30',4.6);line('M97 47 Q99 43 102 42','#dc7050',1.6);
   }else{
+    fill('M103 67 Q102 49 125 48 Q151 46 158 66 L159 87 Q159 99 150 102 Q136 107 117 101 L108 94Z',skin);
+    oval(c,107,84,5.4,6.5,'#d9a57c');
     const plume=rank===2?'#fffdf6':'#bc4937';
     c.save();c.translate(119,48);c.rotate(wind*.025);c.translate(-119,-48);
     if(rank===4){
@@ -355,8 +358,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     oval(c,118,42,4,3,u.trim);line('M116 41 L120 40',u.shade,1.3);
   }
   // At battlefield scale each eye needs its own clear patch of skin.
-  for(const x of [121,141]){
-    fill(`M${x} 81 a4 4 0 0 1 8 0 v6 a4 4 0 0 1 -8 0Z`,'#352922');
+  const eyeXs=rank?[121,141]:[122,140];
+  for(const x of eyeXs){
+    fill(`M${x} 81 a4 4 0 0 1 8 0 v${rank?6:5} a4 4 0 0 1 -8 0Z`,'#352922');
   }
   c.restore();
 }

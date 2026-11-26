@@ -105,6 +105,18 @@ class Battle extends Phaser.Scene{
    });
    btn.title='测试：6 名Ⅳ阶'+name;
  });
+ const debugToggle=$('toggle-debug');
+ const showDebugButtons=visible=>{
+   $('test-army').hidden=!visible;
+   debugToggle.setAttribute('aria-pressed',String(visible));
+   debugToggle.textContent=visible?'调试按钮：显示':'调试按钮：隐藏';
+ };
+ showDebugButtons(this.camp.data.showDebugButtons===true);
+ debugToggle.onclick=()=>{
+   const visible=$('test-army').hidden;
+   showDebugButtons(visible);
+   this.camp.data.showDebugButtons=visible;this.camp.save();
+ };
  const preferences=$('preferences');
  let previousMode;
  this.closeSettings=()=>{
@@ -471,7 +483,10 @@ class Battle extends Phaser.Scene{
  attack(a,e){
  if(a.hero){
    a.s.setFlipX(e.s.x<a.s.x);
-   if(this.soulImage)this.soulStrike=.22;
+   if(this.soulImage){
+     this.soulStrike=.22;this.positionSoul();
+     showSoulStrike(this,this.soulImage,this.soul.type.general,e.s);
+   }
  }
  if(a.hero&&a.skin===6){
    a.swingTime=.21;

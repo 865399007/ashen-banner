@@ -5,7 +5,7 @@ function drawGeneralSoul(c,general,pose=0){
     huangzhong:['#b08a52','#65503e'],xuhuang:['#698aa1','#3b5269'],
     caoren:['#60768a','#344357'],zhugeliang:['#c1ccbb','#708982'],
     wuanguo:['#977767','#594d52'],dianwei:['#826963','#4d4753'],
-    lvbu:['#b9695d','#654552'],guanyu:['#49866a','#2b5549']
+    lvbu:['#a64640','#61363e'],guanyu:['#49866a','#2b5549']
   };
   const [cloth,shadow]=colors[general];
   const ink='#253b47',steel='#a7c8d2',edge='#e2f6ec',brass='#d5af72',skin='#dfbb93';
@@ -26,6 +26,12 @@ function drawGeneralSoul(c,general,pose=0){
   shape('M33 37 L38 42 Q36 48 33 50 L34 46 L30 45Z',shadow,null);
   if(scholar){
     line('M34 36 L41 42 L46 36 M41 42 L38 48',edge,1.8);
+  }else if(general==='lvbu'){
+    shape('M33 36 L38 38 L41 40 L46 36 L48 39 L46 46 L41 48 L34 45Z','#444959');
+    line('M34 38 L40.5 42 L46 38 M35 43 L41 46 L46 42',brass,1.1);
+    shape('M26 39 Q28 34 33 34 L38 36 L35 41 L29 43 L25 42Z','#bd894e');
+    shape('M26 39 Q30 35 35 36 L32 38 L34 39 L29 40Z','#f2d79a',null);
+    line('M37 35 L40.8 38.4 L46 35',cloth,2);
   }else{
     shape('M34 36 Q40 40 46 35 L47 45 L42 49 L35 46Z',shadow);
     line('M35 39 Q41 42 46 38 M35.5 42 Q41 45 46.6 41 M36 45 Q41 47.5 46.8 44',general==='zhaoyun'?edge:brass,1.1);
@@ -47,17 +53,28 @@ function drawGeneralSoul(c,general,pose=0){
     }else{
       shape('M31 23 L44 21 L48 24 L34 26 L28 33 L30 27 L24 29Z',rider?'#65a382':'#7cb2b7');
     }
+  }else if(general==='lvbu'){
+    // Sweep the two feather vanes back from a single crown, clear of the halberd.
+    shape('M32 27 Q28 27 28 33 L24 37 Q30 37 33 33 L35.5 28Z','#34343e');
+    shape('M32 29 Q30 24 33 21 Q38 17 44 20 Q47 21 47 24 L43 24 L38 25 L35 30 L34 32Z','#35343c');
+    shape('M35 19 Q33 16 35 14.8 Q38 12.8 40 15 L41 19Z','#3d3537');
+    shape('M38 18 C32 18 28 11 21 9 Q26 8.3 29 10 L27 7.8 Q34 8.6 37 13 Q39 15 38 18Z','#ac4946');
+    shape('M38 17 C35 12 30 8 25 5.5 Q31 5.2 34 8 L32.8 5.8 Q40 9 40 16.3Z','#c85a46');
+    line('M37.5 15.7 Q34.2 10.6 29.7 8.1','#f3ba79',.8);
+    shape('M32 23 L33 17 L36.8 19 L39.3 14.8 L41.4 18.8 L45 16.6 L45.3 20.5 L47 22.2 L42 22.2 L38 23.6 L34 26Z','#d6a254');
+    line('M33.6 23.2 Q38 20.8 44.9 20.7','#f8d995',1.1);
+    shape('M37.3 21.2 L39.4 18.3 L41 20.5 L39.3 22.8Z','#923c35',null);
   }else{
     shape('M31 26 Q31 20 36 18 L39 16 L42 18 Q47 19 47 23 L50 25 L39 26 L36 32 L31 33Z',cloth);
     line('M32 25 Q39 22 47 23 M33 29 L36 28',general==='zhaoyun'?edge:brass,1.4);
-    if(general==='lvbu'){
-      line('M39 19 Q32 1 15 14 Q10 18 8 23 M41 18 Q43 2 57 8 Q62 11 65 16','#694552',2.8);
-      line('M38 16 Q29 5 18 13 M44 12 Q51 4 60 11','#eed6a0',1.2);
-    }else if(general==='zhaoyun'||general==='huangzhong'){
+    if(general==='zhaoyun'||general==='huangzhong'){
       shape('M40 18 Q33 10 26 16 L21 23 L26 21 L22 27 Q31 26 34 20Z',general==='zhaoyun'?'#e0f1e8':'#d0a465');
     }
   }
-  line('M40 28 L44 27.4',ink,1);
+  if(general==='lvbu'){
+    line('M38.6 26.6 L43.8 28',ink,1.3);
+    line('M43 33.2 L45.5 32.8','#895d50',.8);
+  }else line('M40 28 L44 27.4',ink,1);
   oval(c,43.4,29.6,.9,.85,ink);
   if(rider){
     shape('M35 31 L39 32.8 L43 32 L46 33 L48 32 Q48 39 44 46 L43 42 L39 48 Q40 42 36 38Z','#304342');

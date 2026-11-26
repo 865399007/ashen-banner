@@ -320,7 +320,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     c.translate(0,1.1*Math.sin(2*phase-.6));
   }
   if(!rank){
-    fill('M109 68 Q111 53 131 53 Q151 53 155 69 L154 84 Q153 89 149 93 L139 99 Q135 102 131 99 L121 93 Q117 90 115 84Z',skin);
+    fill('M109 68 Q111 53 131 53 Q151 53 155 69 L154 84 Q153 91 147 95 Q143 98 137 98 L130 98 Q122 98 115 94 Q108 90 107 84 Q106 77 109 68Z',skin);
     oval(c,111,82,4.2,5.5,'#d9a57c');
     // Keep the arch at the tie still. The bend travels down the loose hair.
     const amplitude=walking?.7:.17;
@@ -345,7 +345,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M122 61 Q133 46 144 46 Q151 47 154 55 Q147 49 141 52 Q134 53 122 61Z','#624b42');
     line('M97 49 Q99 43 104 41','#a23a30',4.6);line('M97 47 Q99 43 102 42','#dc7050',1.6);
   }else{
-    fill('M103 67 Q102 49 125 48 Q151 46 158 66 L156 84 Q154 90 150 94 L140 101 Q135 104 130 101 L120 94 Q116 90 114 84Z',skin);
+    fill('M103 67 Q102 49 125 48 Q151 46 158 66 L156 84 Q155 91 148 96 Q143 99 137 99 L129 99 Q120 99 113 94 Q106 90 106 84Z',skin);
     oval(c,107,84,5.4,6.5,'#d9a57c');
     const plume=rank===2?'#fffdf6':'#bc4937';
     c.save();c.translate(119,48);c.rotate(wind*.025+plumeSwing*.14);c.translate(-119,-48);
@@ -438,7 +438,7 @@ function mercenaryUniform(c,rank,coat,trim,step){
   fill('M9.2 22.3 Q15 23.4 21.5 21.5 L22 23.4 Q15 25.3 9 24 Z','#4d3931');
   if(rank)fill('M15 22.8 L17.5 22.5 L17.7 24 L15.2 24.4 Z',guard?'#edc578':'#b5996c');
 
-  fill('M10.8 7 Q14 4.4 21 6.6 L21.4 12.6 Q19 15.8 14 15 L11 13.2 Z','#e2b98f');
+  fill('M10.8 7 Q14 4.4 21 6.6 L21.4 12.6 Q21 15.1 18.2 15.3 L14.5 15.3 Q10.3 15.3 9.7 12.7 Q9.3 10.9 10.8 7Z','#e2b98f');
   if(rank<2){
     fill('M8.7 9.6 Q8 3.8 14.3 3.2 Q20.2 2.6 22 7 L21 8.8 L13 9.6 L11.4 13.5 L8.7 14 Z','#473b34');
     oval(c,14,2.7,2.9,2.2,'#473b34');
@@ -479,7 +479,7 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   }else{
     fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z',enemyCloth.base);
     fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
-    oval(c,22,9,4,5,'#e2bb90');
+    fill('M17 8 Q17.2 4 22 4 Q26 4.2 26 9 Q26 12.9 23.8 13.7 Q21.6 14.2 19.3 13.6 Q16.8 13 16.8 10.2Z','#e2bb90');
     fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
     fill('M16 7 Q17 1 22 2 Q26 3 27 7 L29 8 L18 9 L18 13 L14 14 Z','#6a554d');
     fill('M18 3 Q15 0 11 2 L7 4 Q12 4 14 3 L19 5 Z',enemyCloth.base);
@@ -559,7 +559,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
         stroke('M14 24 L15 28 L18 24',plate[1],1.5);
       }
     }
-    paint('M11 7 Q14 4.2 21 6.8 L21 13.5 Q18 16.2 13 14.8 L10.8 13 Z',wash(11,21,'#ba9167','#ebc79a'));
+    paint('M11 7 Q14 4.2 21 6.8 L21 13.5 Q20.5 15.2 17.8 15.3 L14.2 15.3 Q10.3 15.2 9.6 12.9 Q9.4 10.1 11 7Z',wash(11,21,'#ba9167','#ebc79a'));
     // Cloth wraps and tied hair give light troops a different silhouette from armored ranks.
     const lightTroop=[0,2,3,5,9,12,16].includes(id);
     const binding=allied?'#476b6a':enemyCloth.base;
@@ -598,7 +598,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
       if(lightTroop){
         paint('M8 8.5 Q13 6 22 6 L22.8 8.8 L11.8 10.5 L7.5 14.5 L3 16 L5.6 12.8 L2 13.2 Z',enemyCloth.light);
         paint('M10.5 7.8 L19 6.4 L21 8.1 L12.5 9.6 Z','#535956');
-        paint('M12 12 L16.2 13.2 L21.4 12 L20.8 15.2 L16 17.1 L11.8 15 Z','#483e3a');
+        paint('M11 12 L16.2 13.2 L21.4 12 L20.8 15.2 Q19.6 16.5 17.2 16.5 L15.2 16.5 Q12 16.4 10.8 14.8Z','#483e3a');
         stroke('M12 17 L21 20.4 M12.7 19.5 L20.8 22','#666763',1.4);
       }else{
         paint('M7.4 9 Q8 3.4 15.4 2 L18 2.5 Q22 4 23 7 L25 8.7 L15 9.8 L13.5 15 L8 16.2 Z',wash(7,23,'#343a3d','#717875'));

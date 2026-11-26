@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -40,23 +40,23 @@ function roll(r,p){
  }
  p.offers=offers;
 }
-function boxValue(id,wave){return Math.max(1,Math.floor(refitPrice(false,id,0,wave)/4))}
 function recycleFullBagBoxes(p,wave){
  if(equippedCount(p.bag)<equipmentCapacity)return;
- for(const id of p.boxes)p.gold+=boxValue(id,wave);
+ for(const id of p.boxes)p.gold+=itemSaleValue(id,wave);
  p.boxes=[];
 }
 function refit(r){
  r.phase='refit';r.refitTime=25;r.enemies=[];r.loot=[];
  for(const p of r.players){recycleFullBagBoxes(p,r.wave);p.refresh=0;p.ready=false;p.offers=p.offers.map(o=>o?.lock?o:null);roll(r,p);if(p.pending)hand(p);p.revision++}
 }
-function item(p,id){
- if(!canEquipItem(p.bag,id))return false;
- p.bag[id]=(p.bag[id]||0)+1;
- if(id===0)p.power+=.08;
- if(id===1)p.speed*=1.06;
- if(id===2)p.luck+=15;
- if(id===17){p.max+=6;p.hp=Math.min(p.max,p.hp+6);p.speed*=.99}
+function changeItem(p,id,delta){
+ if(delta>0?!canEquipItem(p.bag,id):!(p.bag[id]>0))return false;
+ const oldSpeedFactor=equipmentSpeedFactor(p.bag);
+ p.bag[id]=(p.bag[id]||0)+delta;
+ p.speed*=equipmentSpeedFactor(p.bag)/oldSpeedFactor;
+ if(id===0)p.power+=.08*delta;
+ if(id===2)p.luck+=15*delta;
+ if(id===17){p.max+=6*delta;p.hp=clamp(p.hp+6*delta,1,p.max)}
  return true;
 }
 function hit(r,p,a,e,damage){
@@ -124,15 +124,21 @@ function action(r,p,a){
    if(r.players.every(p=>p.ready)){if(r.phase==='refit')r.wave++;start(r)}return;
  }
  if(r.phase!=='refit'||p.ready)return;
- const i=a.slot;if(!Number.isInteger(i)||i<0||i>5)return;
+ const i=a.slot;
+ if(!Number.isInteger(i)||i<0)return;
+ if(a.type==='sell'){
+   if(p.pending||p.boxes.length||!goods.includes(i)||!changeItem(p,i,-1))return;
+   p.gold+=itemSaleValue(i,r.wave);p.revision++;return;
+ }
+ if(i>5)return;
  if(p.pending){
    if(a.type!=='choose'||!p.choices[i])return;
-   switch(p.choices[i]){case '体魄':p.max+=10;p.hp+=10;break;case '力量':p.power+=.08;break;case '步法':p.speed+=5;break;case '幸运':p.luck+=8;break;case '恢复':p.hp=Math.min(p.max,p.hp+25);break}
+   switch(p.choices[i]){case '体魄':p.max+=10;p.hp+=10;break;case '力量':p.power+=.08;break;case '步法':p.speed+=5*equipmentSpeedFactor(p.bag);break;case '幸运':p.luck+=8;break;case '恢复':p.hp=Math.min(p.max,p.hp+25);break}
    p.pending--;if(p.pending)hand(p);
  }else if(p.boxes.length){
    if(!['claim','recycle'].includes(a.type))return;
-   const id=p.boxes[0];if(a.type==='claim'&&!item(p,id))return;
-   p.boxes.shift();if(a.type==='recycle')p.gold+=boxValue(id,r.wave);
+   const id=p.boxes[0];if(a.type==='claim'&&!changeItem(p,id,1))return;
+   p.boxes.shift();if(a.type==='recycle')p.gold+=itemSaleValue(id,r.wave);
    recycleFullBagBoxes(p,r.wave);
  }else if(a.type==='refresh'){
    const price=refreshPrice(r.wave,p.refresh);if(p.gold<price)return;p.gold-=price;p.refresh++;roll(r,p);
@@ -148,7 +154,7 @@ function action(r,p,a){
      if(o.merc){
        if(!recruitMercenary(p.army,o,{x:p.x,y:p.y,cd:.2}))return;
      }else{
-       if(!item(p,o.id))return;
+       if(!changeItem(p,o.id,1))return;
      }
      p.gold-=o.price;p.offers[i]=null;
    }else return;

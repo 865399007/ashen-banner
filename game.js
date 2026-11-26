@@ -17,6 +17,28 @@ function mercenaryPortrait(scene,unit){
  canvas.setAttribute('aria-hidden','true');
  return canvas;
 }
+function addItemSaleButtons(scene,grid,bag,wave,onSell){
+ const actions=document.createElement('div');actions.className='item-actions';
+ for(const [key,count] of Object.entries(bag)){
+   if(!count)continue;
+   const id=Number(key),name=items[id][0];
+   const slot=scene.button(grid,'',()=>{
+     const open=slot.getAttribute('aria-pressed')!=='true';
+     for(const other of grid.querySelectorAll('button'))other.setAttribute('aria-pressed','false');
+     actions.replaceChildren();
+     if(!open)return;
+     slot.setAttribute('aria-pressed','true');
+     const detail=document.createElement('small');detail.textContent=name+' · '+items[id][2];
+     actions.append(detail);
+     const sell=scene.button(actions,'卖出 1 件 · +'+itemSaleValue(id,wave)+' 银币',()=>{
+       sell.disabled=true;onSell(id);
+     });
+   });
+   slot.append(itemIcon(id),name+' ×'+count);slot.title=items[id][2];slot.setAttribute('aria-pressed','false');
+ }
+ if(!grid.childElementCount)grid.textContent='暂无道具';
+ return actions;
+}
 function appendCommanderStats(panel,name,rows){
  const section=document.createElement('section'),title=document.createElement('h3'),list=document.createElement('dl');
  section.className='commander-stats';title.textContent=name;
@@ -804,7 +826,7 @@ class Battle extends Phaser.Scene{
    hero.s.setTexture(hero.hit&&hero.hit.age<hitFlashMs/1000?hitTexture(this,key,true):key);
    showCommanderPromotion(this,hero.s);
  }
- reward(keptTier){if(this.pendingLevels.length){let lv=this.pendingLevels[0],q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pendingLevels.length+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],
+ reward(keptTier){if(this.pendingLevels.length){let lv=this.pendingLevels[0],q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pendingLevels.length+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n*equipmentSpeedFactor(this.bag)],['幸运　+'+8*n,()=>this.luck+=8*n],
  ['操练　佣兵攻速 +'+5*n+'%',()=>this.mercHaste+=.05*n],
  ['锐眼　暴击率 +'+(1+2*n)+'%',()=>this.critBonus+=(1+2*n)/100],
  ['铁甲　护甲 +'+n,()=>this.armor+=n]];
@@ -868,11 +890,23 @@ class Battle extends Phaser.Scene{
    }
    return pick(pool)??-1;
  }
- applyItem(id){if(!canEquipItem(this.bag,id))return false;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;
-   if(id===scaleVest)this.armor+=2;
-   if(id===tigerManual)this.mercHaste+=.10;
-   if(id===guardSeal)this.critBonus+=.04;
-   return true;}
+ applyItem(id){
+   if(!canEquipItem(this.bag,id))return false;
+   this.changeItem(id,1);return true;
+ }
+ changeItem(id,delta){
+   const oldSpeedFactor=equipmentSpeedFactor(this.bag);
+   this.bag[id]+=delta;
+   this.speed*=equipmentSpeedFactor(this.bag)/oldSpeedFactor;
+   if(id===0)this.damage+=.08*delta;
+   if(id===2)this.luck+=15*delta;
+   if(id===16)this.armor-=delta;
+   if(id===17){this.maxHP+=6*delta;this.hp=Phaser.Math.Clamp(this.hp+6*delta,1,this.maxHP)}
+   if(id===scaleVest)this.armor+=2*delta;
+   if(id===tigerManual)this.mercHaste+=.10*delta;
+   if(id===guardSeal)this.critBonus+=.04*delta;
+   if(id===12&&delta<0)this.freeRefreshes=Math.min(this.freeRefreshes||0,this.bag[id]);
+ }
  roll(){const gearFull=equippedCount(this.bag)>=equipmentCapacity;const pool=troops.map((_,id)=>id).filter(id=>this.camp.troopOpen(id));let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=gearFull||(this.wave<=2?(merc<2&&(gear>=2||Math.random()<(2-merc)/(4-merc-gear))):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35);
  let q=tier(this.wave,this.luck),id=isMerc?recruitOffer(pool,this.army):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=recruitOffer(pool,this.army)}
  if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:refitPrice(isMerc,id,q,this.wave),lock:false}}
@@ -954,17 +988,16 @@ class Battle extends Phaser.Scene{
        slot.title=name;slot.setAttribute('aria-label',name);
        slot.setAttribute('aria-pressed','false');
      }
-     group.append(heading,grid,actions);inventory.append(group);continue;
+     group.append(heading,grid,actions);inventory.append(group);
    }else{
      heading.textContent='道具 '+equippedCount(this.bag)+' / '+equipmentCapacity;
-     this.bag.forEach((count,id)=>{
-       if(!count)return;
-       const slot=document.createElement('span');
-       slot.append(itemIcon(id),items[id][0]+' ×'+count);slot.title=items[id][2];grid.append(slot);
+     const actions=addItemSaleButtons(this,grid,this.bag,this.wave,id=>{
+       if(!this.bag[id])return;
+       this.changeItem(id,-1);this.gold+=itemSaleValue(id,this.wave);this.shop(false);
      });
-     if(!grid.childElementCount)grid.textContent='暂无道具';
+     group.append(heading,grid,actions);inventory.append(group);
+
    }
-   group.append(heading,grid);inventory.append(group);
  }
  m.append(inventory);
  const controls=document.createElement('div');controls.className='refit-controls';m.append(controls);

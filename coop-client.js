@@ -284,6 +284,10 @@ function installCoop(scene){
          const buy=button(c,'','buy',i,p.gold<o.price||(o.merc?p.army.length>=armyCapacity&&!target:!canEquipItem(me.bag,o.id)));buy.className='buy';buy.setAttribute('aria-label',(target?'购买合成':'购买')+name.textContent);
          button(c,o.lock?'解锁':'锁定','lock',i).setAttribute('aria-pressed',String(o.lock));
        });
+       const inventory=node('div','refit-inventory'),section=document.createElement('section');
+       const grid=node('div','refit-slots');
+       const actions=addItemSaleButtons(scene,grid,me.bag,state.wave,id=>queue('sell',id));
+       section.append(node('strong','',equipment),grid,actions);inventory.append(section);m.append(inventory);
        p.army.forEach((u,i)=>{
          const merge=p.army.some((v,j)=>j!==i&&v.id===u.id&&v.q===u.q)&&u.q<3;
          button(m,(merge?'合成 ':'遣散 ')+troops[u.id][0]+roman[u.q],merge?'merge':'dismiss',i);

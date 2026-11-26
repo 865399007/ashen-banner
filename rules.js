@@ -249,6 +249,10 @@ function refitPrice(merc,id,q,wave){
  const base=merc?troopBasePrices[id]+9*q:itemBasePrices[id];
  return Math.floor(base+wave+base*wave/10);
 }
+function itemSaleValue(id,wave){return Math.max(1,Math.floor(refitPrice(false,id,items[id][1],wave)/4))}
+function equipmentSpeedFactor(bag){
+ return 1.06**(bag[1]||0)*.99**((bag[salvagePermit]||0)+(bag[17]||0))*.98**(bag[11]||0)*.97**(bag[18]||0);
+}
 function refreshPrice(wave,previous){
  return Math.floor(.75*wave)+(previous+1)*Math.max(1,Math.floor(.4*wave));
 }
@@ -298,4 +302,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

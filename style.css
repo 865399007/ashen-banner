@@ -429,7 +429,11 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .refit-inventory section {width:50%;max-width:none;padding:0}
 .refit-inventory section>strong,.commander-stats h3 {display:block;border-bottom:1px solid #605a52;padding-bottom:5px;color:#ead9bc}
 .refit-slots {row-gap:6px;margin-top:6px}
-.refit-slots>span .item-icon {width:32px;height:32px}
+.refit-slots .item-icon {width:32px;height:32px}
+#modal .refit-slots button[aria-pressed=true] .item-icon {filter:drop-shadow(0 0 3px #ffe19a)}
+.item-actions:not(:empty){display:grid;gap:4px;margin-top:8px}
+.item-actions small{color:#dfd1b8}
+#modal .item-actions button{justify-self:start;margin:0;min-height:40px}
 .mercenary-slots small {color:#fff0d6;text-shadow:0 1px 3px #000}
 .refit-controls {display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:10px 0;border-block:1px solid var(--refit-rule)}
 #modal .refit-controls button {margin:0;min-height:44px;padding:6px 16px;border:1px solid #877965;background:#3e3b39;color:#f5e8d0;border-radius:5px}

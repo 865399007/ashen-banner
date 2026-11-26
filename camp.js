@@ -86,7 +86,8 @@ class GreyCamp {
     if(section==='战役记录'){
       for(const [index,key] of stageOrder.entries()){
         const record=d.stages[key],open=this.stageOpen(key);
-        const box=row(campaigns[key].name,open?'最佳 '+(record?.best||0)+' 波 · 通关 '+(record?.wins||0)+' 次':'通关「'+campaigns[stageOrder[index-1]].name+'」解锁');
+        const progress=open?'最佳 '+(record?.best||0)+' 波 · 通关 '+(record?.wins||0)+' 次':'通关「'+campaigns[stageOrder[index-1]].name+'」解锁';
+        const box=row(campaigns[key].name,campaignOpposition(campaigns[key])+'　·　'+progress);
         game.button(box,game.stageKey===key?'已选择':'选择',()=>{
           $('campaign-choice').value=key;$('campaign-choice').onchange();this.open(game,section);
         },!open||game.stageKey===key);

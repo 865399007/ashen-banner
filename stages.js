@@ -40,7 +40,7 @@ function stepStage(scene,dt){
  scene.stageEvent++;scene.stageTick=key==='camp'||key==='pursuit'?14:8;
  if(key==='camp'||key==='pursuit'){
    const guards=key==='pursuit';
-   const label=scene.add.text(h.x,h.y-48,guards?'王城卫队':'警报 · 增援',{fontSize:'10px',color:'#fff0ca',stroke:'#704632',strokeThickness:2}).setOrigin(.5).setDepth(990);
+   const label=scene.add.text(h.x,h.y-48,scene.campaign.army+' · 增援',{fontSize:'10px',color:'#fff0ca',stroke:'#704632',strokeThickness:2}).setOrigin(.5).setDepth(990);
    scene.tweens.add({targets:label,y:label.y-8,alpha:0,duration:1100,onComplete:()=>label.destroy()});
    for(let i=0;i<(guards?2:3)&&scene.enemies.length<90;i++)scene.spawn(false,false,guards?[10,13][i]:null);
    return;
@@ -54,8 +54,9 @@ function stepStage(scene,dt){
  const tower=key==='keep',x=tower?keepTower.x:h.x-10,y=tower?keepTower.y:h.y;
  // Towers fire from their actual platform, only while the commander is in range.
  if(tower&&Math.hypot(h.x-x,h.y-y)>enemyMoves.volley.reach){scene.stageTick=.5;return}
- const s=scene.add.image(x,y,tower?'man5':'man14').setScale(.25).setVisible(tower).setDepth(y+1);
- const caster={s,skin:tower?5:14,move:tower?'volley':'rocks',reload:0,stride:0};
+ const baseTexture=enemyTexture(scene,key,tower?5:14);
+ const s=scene.add.image(x,y,baseTexture).setScale(.25).setVisible(tower).setDepth(y+1);
+ const caster={s,baseTexture,skin:tower?5:14,move:tower?'volley':'rocks',reload:0,stride:0};
  scene.stageCaster=caster;stepEnemyMove(scene,caster,dt);
 }
 function stepStageFire(scene,dt){

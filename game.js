@@ -28,6 +28,7 @@ class Battle extends Phaser.Scene{
  for(const key of stageOrder)campaignChoice.add(new Option(campaigns[key].name,key));
  campaignChoice.onchange=()=>{
    this.stageKey=campaignChoice.value;this.campaign=campaigns[this.stageKey];
+   $('campaign-opposition').textContent=campaignOpposition(this.campaign);
  };
  campaignChoice.onchange();
  const skills=$('commander-passives');
@@ -250,7 +251,8 @@ class Battle extends Phaser.Scene{
    const pace=infantry>=0?[47,24,33,58,29,38,32,54][infantry]:skin===23?54:31+baseType*8;
    const toughness=infantry>=0?[2,15,7,-2,12,6,9,0][infantry]:skin===23?9:baseType*3;
    let hp=boss?this.campaign.bossHP:(13+this.wave*4+toughness)*(elite?5:1);if(this.camp.data.veteran)hp=Math.round(hp*1.25);
- const enemy={s:this.add.image(x,y,'man'+skin+(boss?'boss':'')).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
+ const baseTexture=enemyTexture(this,this.stageKey,skin,boss);
+ const enemy={baseTexture,s:this.add.image(x,y,baseTexture).setOrigin(.5,.85).setScale((boss?1.15:elite?.8:.5)*2/3),skin,stride:Math.random(),hp,max:hp,boss,elite,speed:(boss?42:pace+this.wave*2)*this.campaign.march};
  enemy.move=boss?this.campaign.bossMove:({5:'bow',23:'bolt',13:'hammer',14:'hammer',15:'hammer'})[skin];
  enemy.reload=.25+Math.random()*.55;
  if(skin===8)enemy.charge={phase:"ready",remaining:.45};
@@ -649,7 +651,7 @@ class Battle extends Phaser.Scene{
    const pullRadius=(drop.chest?94:70*(1+.05*this.camp.level('sense')))*(1+.20*this.bag[satchel]);
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}
- $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败敌军统帅':Math.ceil(this.timeLeft)+' 秒');
+ $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败'+this.campaign.boss:this.campaign.army+' · '+Math.ceil(this.timeLeft)+' 秒');
  if(this.timeLeft<=0&&this.wave<finalWave){this.cleared=this.wave;this.clearField();this.hud();this.mode='refit';this.refreshes=0;this.freeRefreshes=this.bag[12];this.offers=this.offers.map(o=>o?.lock?o:null);this.reward()}}
  enemyHit(source,raw){
    if(this.invul>0)return;
@@ -832,7 +834,7 @@ class Battle extends Phaser.Scene{
    if(this.mode==='over')return;
    this.mode='over';this.clearField();this.hud();
    const reward=this.camp.settle(this,win);this.syncStages();
-   const m=this.panel(win?'突围成功':'灰旗倒下','完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
+   const m=this.panel(win?this.campaign.name+' · 告捷':'灰旗倒下',(win?'击败'+this.campaign.boss:this.campaign.name)+' · '+'完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
    const receipt=document.createElement('p');receipt.textContent=reward;m.append(receipt);
    this.button(m,'返回首页',()=>this.camp.open(this)).className='primary';
    this.button(m,'再次出征',()=>this.startRun());

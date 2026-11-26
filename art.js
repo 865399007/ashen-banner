@@ -397,7 +397,6 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];
 function troopSkin(id,q=0){const skin=mercSkins[id];return "merc"+skin+(q?"tier"+q:"")}
-const enemyCloth={shadow:'#8c591d',base:'#cf8f26',light:'#e9ad3f'};
 // Shared by standing soldiers and riders so that each rank has the same silhouette.
 function mercenaryUniform(c,rank,coat,trim,step){
   const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
@@ -464,7 +463,7 @@ function mercenaryUniform(c,rank,coat,trim,step){
   }
   fill('M16.6 10.8 L17.8 10.6 L17.8 12.6 L16.6 12.8 Z M20.1 10.4 L21.1 10.2 L21.1 12 L20.1 12.2 Z','#332a23');
 }
-function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
+function mountedLancer(c,phase,ally,q,ink,pose,enemyCloth){
   const step=Math.sin(phase);
   const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   shadow(c,23,40,13);
@@ -513,9 +512,9 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
-  const boss=variant==='boss',mercenary=variant==='mercenary';
-  if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=campaigns.border.colors){
+  const mercenary=variant==='mercenary';
+  if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose,enemyCloth);return}
   const recruit=id>=17&&id<=22;
   const recruitSkin=id;
   if(id===23)id=5;
@@ -538,11 +537,6 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
   }
   c.translate(step*.65,-Math.abs(step)*1.1);
-  if(boss){
-    stroke('M12 23 L8 2','#514132',1.2);
-    paint('M8 2 L2 4 L1 14 L4 12 L6 15 L10 12 Z',enemyCloth.light);
-    stroke('M3 6 L7 5 M3 8 L7 7','#eac278',1.1);
-  }
   if(weapon===2&&id<9){
     stroke('M8 22 L3 12 M9 20 L5 10 M10 18 L8 10','#654627',1);
     paint('M3 14 L9 12 L13 22 Q10 25 8 24 Z','#5b412f');
@@ -759,6 +753,93 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
     paint('M6.4 21.6 L10.5 22.5 L9.6 25.7 L5.8 25 Z','#614836');
   }
 }
+function campaignGeneral(c,stageKey,phase){
+  const cloth=campaigns[stageKey].colors,step=Math.sin(phase);
+  const fill=(d,color)=>{c.fillStyle=color;c.fill(new Path2D(d))};
+  const line=(d,color,width)=>{c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(d))};
+  c.lineJoin='round';c.lineCap='round';
+  const priest=stageKey==='border',armored=stageKey==='keep'||stageKey==='camp';
+  shadow(c,16,34,8);
+  for(const side of [-1,1]){
+    c.save();c.translate(side*(3+step*1.6),side*step);
+    fill('M13 25 L18 25 L18 32 L20 33 L20 34 L13 34Z','#41332e');c.restore();
+  }
+  c.translate(step*.32,-Math.abs(step)*.65);
+  fill('M11 15 Q6 16 6 22 L2 30 Q7 29 11 31 L17 18Z',cloth.shadow);
+  fill('M11 14 Q16 13 21 15 L23 20 L21 23 L24 30 L18 31 L16 28 L14 31 L7 30 L10 21 L7 21Z',cloth.base);
+  fill('M10 17 L13 16 L15 24 L11 30 L8 29Z',cloth.shadow);
+  line('M12 15 L16 19 L21 15 M16 19 L13 24',priest?'#f8df87':'#e3c7a1',1.25);
+  if(armored){
+    fill('M10 16 Q15 19 21 16 L21 22 L16 24 L10 22Z','#52565a');
+    line('M11 18 Q16 20 20 18 M11 21 Q16 23 20 20','#c3ae87',.9);
+    fill('M7 17 Q10 13 13 16 L13 18 L7 20Z',cloth.light);
+  }
+  fill('M10 22 Q15 23 21 21.8 L21.5 24 Q16 25 10 24Z','#513c32');
+  fill('M15 22.5 L18 22.3 L18 24 L15 24.3Z','#e1b56c');
+  fill('M11 8 Q14 4 20 6 L22 9 L21.8 12.5 Q21 15.3 17 15.6 Q12 16 10.6 12.2Z','#e8bf96');
+  fill('M16 10 L17.2 10 L17.2 12.1 L16 12.2Z M20 9.7 L21 9.6 L21 11.8 L20 12Z','#352a23');
+  if(priest){
+    fill('M9 8 Q9 3 13 3 L15 0.8 L18 3 Q22 3 22.5 7 L12 10 L10 14 L7 14Z','#b77e2c');
+    fill('M9 7 L22 5.5 L23 7.8 L12 9.4 L8 14 L4 15 L7.5 10 L4 11Z','#f4c34d');
+    fill('M12 12 L15 14 L19 13.5 L21 12.4 L20 16 L16 20 L15 17 L13 17Z','#6d5740');
+  }else if(stageKey==='keep'){
+    fill('M8 9 Q8 4 14 3 L16 1 L19 3 Q23 4 23 7 L24 8 L14 9 L12 14 L8 15Z','#444d52');
+    fill('M15 3 Q10 -1 5 2 L2 6 L6 5 L4 8 Q11 7 15 3Z','#b75844');
+    line('M10 8 L22 6.5','#d4ad64',1);
+  }else{
+    fill('M10 9 Q9 5 13 4 L19 3 L22 6 L22 8 L14 8 L12 13 L10 13Z','#3e3432');
+    if(stageKey==='camp'){
+      fill('M11 6 L12.5 2 Q13.5 .3 15 .5 L19 1.4 L20.5 5.6Z','#ba9057');
+      line('M14 2 L13.3 5 M16.8 2 L16 5 M9.5 5.3 L22.3 4.6','#efcb88',.8);
+      line('M11 6 L21 5.5','#ffe09b',1.2);
+    }else if(stageKey==='pass'){
+      fill('M10 6 L10 3 L13 3 L13 1 L18 1 L21 4 L21 6Z','#38383c');
+      line('M10 6 L21 5.5','#c4a16d',1);
+    }else{
+      fill('M9 6 L10 2 Q15 -.5 20 2 L21 6 L17 5 L13 7Z','#655144');
+      line('M10 3 Q15 2 19 3','#e8c99e',1);
+    }
+    if(stageKey!=='pursuit')fill('M14 13.2 Q17 15.3 21 13 L20 15.6 L17 18 L15 16Z','#493931');
+  }
+  c.save();c.translate(22,21);c.rotate(step*.05);
+  if(priest){
+    line('M1 10 L4 -16 L7 -18','#69462b',1.8);
+    oval(c,6,-18,1.6,1.6,'#ebc270');
+    fill('M4 -14 L8 -13 L7 -7 L3.5 -8Z','#f4d67b');
+    line('M5 -12 L6.5 -11 L5 -9','#a44b37',.7);
+  }else if(stageKey==='keep'){
+    line('M-3 11 L8 -14','#6e513d',1.5);
+    fill('M7 -11 L8 -19 L10 -16 L9 -13 L13 -15 Q12 -9 7 -9Z','#d5d8c9');
+  }else{
+    fill('M1 -1 L11 -13 L12 -16 L12 -11 L3 .8Z','#d3d9d4');
+    line('M-.5 -2 L4 1','#d5ad61',1.5);
+  }
+  c.restore();
+  fill('M17 17 L20 16.5 L21.5 19.5 L24.5 19 L25 21.5 Q21 23 18.5 21Z',cloth.light);
+  oval(c,24.7,20.2,1.7,1.5,'#e7bd93');
+}
+
+function unitFrames(scene,id,key,paint){
+  const rider=id===8||id===22;
+  for(let frame=-1;frame<WALK_FRAMES;frame++){
+    paintTexture(scene,frame<0?key:key+'walk'+frame,rider?100:72,rider?96:80,(c,p)=>{
+      c.scale(2,2);
+      paint(c,p,frame<0?0:TAU*frame/WALK_FRAMES);
+    });
+  }
+}
+
+function enemyTexture(scene,stageKey,id,boss=false){
+  const key='man-'+stageKey+'-'+(boss?'boss':id);
+  if(!scene.textures.exists(key)){
+    unitFrames(scene,id,key,(c,p,phase)=>{
+      if(boss)campaignGeneral(c,stageKey,phase);
+      else miniature(c,p,id,phase,0,null,0,'',campaigns[stageKey].colors);
+    });
+  }
+  return key;
+}
+
 function makeArt(scene){
   const theme=getComputedStyle(document.documentElement);
   const rankColors=[0,1,2,3].map(q=>theme.getPropertyValue('--tier-'+q).trim());
@@ -811,27 +892,14 @@ function makeArt(scene){
     haze.addColorStop(1,'rgba(168,139,111,.18)');
     c.fillStyle=haze;c.fill(new Path2D('M2 18 Q9 19 14 14 Q12 9 18 8 Q20 2 26 4 Q32 4 33 10 Q39 7 41 13 Q45 13 46 17 Q42 21 34 19 Q28 23 23 19 Q18 22 15 18 Q8 22 2 18Z'));
   });
-  const leaderSkins=new Set(Object.values(campaigns).map(stage=>stage.bossSkin));
-  function unitFrames(id,key,q,variant){
-    const rider=id===8||id===22;
-    const width=id===6?112:rider?100:72,height=id===6?112:rider?96:80;
-    for(let frame=-1;frame<WALK_FRAMES;frame++){
-      paintTexture(scene,frame<0?key:key+'walk'+frame,width,height,(c,p)=>{
-        c.save();c.scale(2,2);
-        miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q],0,variant);
-        c.restore();
+  for(const [type,id] of mercSkins.entries()){
+    for(let q=0;q<4;q++){
+      unitFrames(scene,id,'man'+troopSkin(type,q),(c,p,phase)=>{
+        miniature(c,p,id,phase,q,rankColors[q],0,'mercenary');
       });
     }
   }
-  for(const [type,id] of mercSkins.entries()){
-    for(let q=0;q<4;q++)unitFrames(id,'man'+troopSkin(type,q),q,'mercenary');
-  }
   commanderTexture(scene,1);
-  for(let id=0;id<=23;id++){
-    if(id===6||mercSkins.includes(id))continue;
-    unitFrames(id,'man'+id,0);
-    if(leaderSkins.has(id))unitFrames(id,'man'+id+'boss',0,'boss');
-  }
 }
 
 // Cache a promoted uniform only once a commander reaches that level.

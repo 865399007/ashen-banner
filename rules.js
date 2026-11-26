@@ -11,12 +11,30 @@ const portraitWorldWidth=270;
 const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
 const campaigns={
-  border:{bossMove:'volley',bossSkin:5,name:'灰烬村庄',elites:[4,8],pace:1,march:1,bossHP:1200,brief:'避开村庄燃烧带。第 4、8 波出现精英。统帅使用扇形三连箭。'},
-  camp:{bossMove:'volley',bossSkin:23,name:'废弃军营',elites:[4,9],pace:.95,march:1,bossHP:1400,brief:'警报响起后，军营将派出援兵。'},
-  keep:{bossMove:'cleave',bossSkin:10,name:'铁壁要塞',elites:[4,8,12],pace:1,march:.95,bossHP:1850,brief:'箭塔覆盖要塞通道，留意齐射预警。'},
-  pass:{bossMove:'rocks',bossSkin:14,name:'黑松隘口',elites:[3,6,9],pace:1.15,march:.95,bossHP:1650,brief:'注意山隘落石。敌军增援较慢，第 3、6、9 波出现精英，统帅生命更高，可在三处同时召落巨石。'},
-  pursuit:{bossMove:'cleave',bossSkin:13,name:'王城断墙',elites:[5,8],pace:.84,march:1.22,bossHP:1100,brief:'王城卫队定时增援。第 5、8 波出现精英。统帅蓄力后向前方横扫。'}
+  border:{
+    name:'黄巾之乱',army:'黄巾军',boss:'张角',colors:{shadow:'#8c591d',base:'#cf8f26',light:'#f1bf4e'},
+    bossMove:'rocks',bossSkin:5,elites:[4,8],pace:1,march:1,bossHP:1200
+  },
+  camp:{
+    name:'官渡之战',army:'袁绍军',boss:'袁绍',colors:{shadow:'#6b3547',base:'#a55363',light:'#da8b83'},
+    bossMove:'volley',bossSkin:23,elites:[4,9],pace:.95,march:1,bossHP:1400
+  },
+  pass:{
+    name:'赤壁之战',army:'曹军水师',boss:'曹操',colors:{shadow:'#343e55',base:'#596785',light:'#96adc1'},
+    bossMove:'rocks',bossSkin:14,elites:[3,6,9],pace:1.15,march:.95,bossHP:1650
+  },
+  keep:{
+    name:'合肥之战',army:'合肥守军',boss:'张辽',colors:{shadow:'#374944',base:'#607565',light:'#a0af89'},
+    bossMove:'cleave',bossSkin:10,elites:[4,8,12],pace:1,march:.95,bossHP:1850
+  },
+  pursuit:{
+    name:'夷陵之战',army:'东吴军',boss:'陆逊',colors:{shadow:'#783c2b',base:'#b65b3c',light:'#e39a62'},
+    bossMove:'cleave',bossSkin:13,elites:[5,8],pace:.84,march:1.22,bossHP:1100
+  }
 };
+function campaignOpposition(campaign){
+  return '敌军：'+campaign.army+'　·　主将：'+campaign.boss;
+}
 const commanders={
   banner:{name:"灰旗指挥官",weapon:0,skin:6,range:63,baseDamage:17,
     passives:[
@@ -97,4 +115,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

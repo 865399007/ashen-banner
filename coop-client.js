@@ -41,7 +41,7 @@ function installCoop(scene){
    canvas.setAttribute('aria-hidden','true');return canvas;
  }
  function partyRoom(){
-   const m=panel('出征备战','双人合作 · 15 波突围',true);
+   const m=panel('出征备战',campaigns.border.name+' · '+campaignOpposition(campaigns.border),true);
    const hall=node('div','party-hall');
    const seats=node('div','party-seats');hall.append(seats);
    const tools=node('div','party-tools'),code=node('b','party-code',state.code);
@@ -202,7 +202,7 @@ function installCoop(scene){
    const fresh=state.effects.filter(f=>f.id>lastEffect);
    const nearestHit=(x,y)=>fresh.reduce((best,f)=>!best||Math.hypot(f.x-x,f.y-y)<Math.hypot(best.x-x,best.y-y)?f:best,null);
    for(const e of state.enemies){
-     const s=draw('e'+e.id,e.x,e.y,'man'+e.skin+(e.boss?'boss':''),e.boss?.7:.33);
+     const s=draw('e'+e.id,e.x,e.y,enemyTexture(scene,'border',e.skin,e.boss),e.boss?.7:.33);
      const lost=(s.lastHp??e.max)-e.hp;
      if(lost>0&&!reset)localEnemyHit(s,lost,e.boss,false,nearestHit(e.x,e.y));
      s.lastHp=e.hp;s.wasBoss=e.boss;
@@ -231,7 +231,7 @@ function installCoop(scene){
      scene.mode='coopFight';$('modal').hidden=true;$('cover').hidden=true;$('battle-hud').hidden=false;menuKey='';
      showText($('level'),'Lv. '+state.level);showText($('money'),String(p.gold));
      $('life').style.width=100*p.hp/p.max+'%';$('experience').style.width=100*state.xp/(8+3*state.level)+'%';
-     showText($('wave'),'第 '+state.wave+' / '+finalWave+' 波 · '+Math.max(0,Math.ceil(state.time))+' 秒');
+     showText($('wave'),'第 '+state.wave+' / '+finalWave+' 波 · '+(state.wave===finalWave?'击败'+campaigns.border.boss:campaigns.border.army+' · '+Math.max(0,Math.ceil(state.time))+' 秒'));
      if(p.down||other?.down){const down=p.down?p:other;status.textContent=(p.down?'等待队友救援':'靠近倒地队友救援')+' · '+Math.ceil(down.down)+' 秒 · '+Math.floor(down.rescue/3*100)+'%'}
      drawWorld();return;
    }
@@ -283,7 +283,7 @@ function installCoop(scene){
        ['攻击距离',hero.range],['移速',statNumber(p.speed)],['幸运',p.luck]]);
      return;
    }
-   const m=panel(state.phase==='won'?'合作突围成功':state.phase==='closed'?'队友已退出房间':'小队倒下','第 '+state.wave+' 波 · 团队等级 '+state.level);
+   const m=panel(state.phase==='won'?campaigns.border.name+' · 合作告捷':state.phase==='closed'?'队友已退出房间':'小队倒下','第 '+state.wave+' 波 · 团队等级 '+state.level);
    scene.button(m,'返回主界面',stop);
  }
  async function poll(){

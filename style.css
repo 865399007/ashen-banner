@@ -296,19 +296,57 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .invite-note{min-height:14px;font-size:12px;color:#eac889}.invite-copy{width:95%}
 .party-choice{color:#f6e8c6;background:#39433b;border:1px solid #928464;padding:6px}
 
+#field{
+  --refit-surface:url("assets/refit-grain.png"),linear-gradient(145deg,#343435,#232325 60%,#292729);
+  --refit-rule:#605a52;
+  --refit-primary:#e4c599;
+  --refit-primary-ink:#382b22;
+}
 #field #cover:not([hidden]){
   position:absolute;inset:0;width:100%;height:100%;max-height:none;overflow:auto;display:block;
-  background:#bca17c url("assets/field/sand.png") center/cover;color:#392c23;text-align:center
+  background:var(--refit-surface);
+  color:#eadfca;text-align:left;text-shadow:none
 }
-.camp-home{min-height:100%;max-width:1000px;margin:auto;padding: max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;justify-content:center}
-.camp-home h1{font-size:clamp(24px,4vh,42px);margin:0;color:#463224}
-#camp-buildings{width:min(100%,840px);display:grid;grid-template-columns:repeat(6,1fr);align-items:end;margin:6px auto}
-#cover #camp-buildings button{grid-column:span 2;display:grid;justify-items:center;background:none;border:0;box-shadow:none;color:#38271b;text-shadow:0 1px 2px #fff2cb;padding:2px;font-weight:bold}
-#camp-buildings img{width:100%;height:clamp(75px,23vh,205px);object-fit:contain}
-.camp-orders{border-radius:6px;padding:6px 12px;background:#383029ed;color:#fff0d7}
-.camp-orders summary{cursor:pointer;padding:6px}
-.camp-orders button{margin:3px}
-
+.camp-home{
+  min-height:100%;max-width:1020px;margin:auto;display:flex;flex-direction:column;justify-content:center;
+  padding:max(52px,env(safe-area-inset-top)) max(16px,4vw,env(safe-area-inset-right))
+          max(24px,env(safe-area-inset-bottom)) max(16px,4vw,env(safe-area-inset-left))
+}
+.camp-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--refit-rule)}
+.camp-home h1{font-size:clamp(32px,6vw,56px);margin:0;color:#ffedcb}
+#camp-wallet{color:#e5c794;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+.camp-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+.camp-orders{display:grid;gap:12px;border:1px solid #776858;border-radius:6px;padding:clamp(12px,2.5vw,24px);background:#363437}
+.camp-orders h2{margin:0;color:#f7e6c9;font-size:26px}
+.camp-orders .loadout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.camp-orders .loadout label{display:grid;gap:5px;margin:0;color:#e1d0b7}
+.camp-orders .loadout select{width:100%;min-height:38px;padding:5px 8px}
+.camp-orders #campaign-brief{margin:0;color:#e2d3ba;line-height:1.55}
+.camp-passives{border-top:1px solid #66584a;color:#d9c7a9;font-size:13px}
+.camp-passives summary{cursor:pointer;padding:10px 0 3px}
+.camp-orders #commander-passives{margin:5px 0;max-width:none}
+#cover .camp-orders #start{width:100%;min-height:46px;margin:0;display:flex;justify-content:space-between;align-items:center;color:var(--refit-primary-ink);border-color:#bfa27c;background:var(--refit-primary)}
+#camp-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#cover #camp-actions button{
+  display:grid;justify-items:center;align-content:start;gap:5px;min-height:112px;margin:0;padding:9px 4px 8px;
+  background:linear-gradient(165deg,#464447,#322f32 95%);color:#fff2da;border:1px solid #756b5f;
+  border-top:3px solid #b9a589;border-radius:5px;box-shadow:0 3px 0 #171618;text-align:center;line-height:1.3
+}
+#camp-actions button i{
+  display:grid;place-items:center;width:38px;height:38px;border:1px solid #d2bea0;border-radius:50%;
+  background:radial-gradient(circle at 38% 28%,#f6e9cd,#c3ae8b);box-shadow:0 2px 3px #211d20
+}
+#camp-actions button img{width:25px;height:25px}
+#camp-actions button strong{font:400 clamp(15px,2vw,20px) "Ma Shan Zheng",var(--game-type)}
+#camp-actions button span{font-size:12px;color:#d8cdbb}
+#cover :is(button,select,summary):focus-visible{outline:2px solid #ffe0a1;outline-offset:2px}
+@media(max-width:660px){
+  .camp-layout{grid-template-columns:1fr}
+}
+@media(max-width:370px){
+  .camp-heading{margin-bottom:12px}
+  #camp-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 
 .mercenary-actions{display:flex;flex-flow:row nowrap;gap:4px}
 .mercenary-actions:not(:empty){margin-top:4px}
@@ -330,8 +368,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 }
 
 #field :is(h1, h2, h3, .hud-title, .hud-title b, .upgrade-card strong),
-#cards strong,
-#cover #camp-buildings button {
+#cards strong {
   font-family: "Ma Shan Zheng", var(--game-type);
   font-weight: 400;
 }
@@ -351,7 +388,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   border:0;
   border-radius:0;
   box-shadow:none;
-  background: url("assets/refit-grain.png"),linear-gradient(145deg,#343435,#232325 60%,#292729);
+  background:var(--refit-surface);
   color:#eadfca;
 }
 #modal:has(#cards)>h2 {text-align:left;margin:0;font-size:clamp(24px,4vw,36px);line-height:1.25}
@@ -380,9 +417,9 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #modal .mercenary-actions button::before {display:inline-block;margin-right:3px;font-size:16px}
 .merge-unit::before {content:'⚒'}
 .dismiss-unit::before {content:'↗'}
-.refit-controls {display:flex;justify-content:flex-end;align-items:stretch;gap:8px;padding:10px 0;border-block:1px solid #605a52}
+.refit-controls {display:flex;justify-content:flex-end;align-items:stretch;gap:8px;padding:10px 0;border-block:1px solid var(--refit-rule)}
 #modal .refit-controls button {margin:0;min-height:44px;padding:6px 16px;border:1px solid #877965;background:#3e3b39;color:#f5e8d0;border-radius:5px}
-#modal .refit-controls .primary {background:#e4c599;color:#382b22;min-width:36%}
+#modal .refit-controls .primary {background:var(--refit-primary);color:var(--refit-primary-ink);min-width:36%}
 #modal:has(#cards) .commander-stats {max-width:none;margin-top:12px;padding:0;background:transparent}
 #modal:has(#cards) .commander-stats dl {gap:0 12px}
 #modal:has(#cards) .commander-stats dl div {padding:6px 0;border-bottom:1px solid #484549}

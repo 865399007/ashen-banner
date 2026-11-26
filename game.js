@@ -40,8 +40,8 @@ class Battle extends Phaser.Scene{
  };
  $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
  this.syncStages();
- for(const button of $('camp-buildings').querySelectorAll('[data-building]')){
-   button.onclick=()=>this.camp.open(this,button.dataset.building);
+ for(const button of $('camp-actions').querySelectorAll('[data-camp-section]')){
+   button.onclick=()=>this.camp.open(this,button.dataset.campSection);
  }
  makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC');this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
@@ -821,7 +821,7 @@ class Battle extends Phaser.Scene{
    const reward=this.camp.settle(this,win);this.syncStages();
    const m=this.panel(win?'突围成功':'灰旗倒下','完成 '+this.cleared+' 波　·　击破 '+this.kills+' 名敌军');
    const receipt=document.createElement('p');receipt.textContent=reward;m.append(receipt);
-   this.button(m,'返回灰旗营地',()=>this.camp.open(this)).className='primary';
+   this.button(m,'返回首页',()=>this.camp.open(this)).className='primary';
    this.button(m,'再次出征',()=>this.startRun());
  }
 }

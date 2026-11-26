@@ -48,20 +48,20 @@ class GreyCamp {
       return;
     }
     const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals);
-    game.button(m,'← 营地全景',()=>this.open(game));
+    game.button(m,'← 首页',()=>this.open(game));
     const body=document.createElement('div');body.className='camp-rows';m.append(body);
     const row=(title,info)=>{
       const box=document.createElement('div'),text=document.createElement('div'),name=document.createElement('strong'),detail=document.createElement('small');
       name.textContent=title;detail.textContent=info;text.append(name,detail);box.append(text);body.append(box);return box;
     };
-    if(section==='训练场')for(const [key,title,effect] of drills){
+    if(section==='训练强化')for(const [key,title,effect] of drills){
       const level=this.level(key),price=8+level*6,box=row(title+'　'+level+'/5','每级'+effect);
       game.button(box,level===5?'已满级':price+' 银币',()=>{
         if(d.silver<price||this.level(key)!==level||level>=5)return;
         d.silver-=price;d.training[key]=level+1;this.save();this.open(game,section);
       },level===5||d.silver<price);
     }
-    if(section==='军需帐篷'){
+    if(section==='佣兵契约'){
       const box=row('斧兵契约','解锁后可在战地整备招募。单次伤害 40，间隔 1.8 秒。');
       game.button(box,d.axe?'已签约':'18 银币 · 2 铁料',()=>{
         if(d.axe||d.silver<18||d.iron<2)return;
@@ -75,15 +75,15 @@ class GreyCamp {
         d.silver-=silver;d.iron-=iron;list.push(id);this.save();this.open(game,section);
       },owned||d.silver<silver||d.iron<iron);
     };
-    if(section==='军需帐篷'){
+    if(section==='佣兵契约'){
       unlock(d.contracts,5,'弩兵契约','签约后加入商店佣兵池。',16,2);
       unlock(d.contracts,9,'轻骑兵契约','签约后加入商店佣兵池。',24,3);
     }
-    if(section==='铁匠铺'){
+    if(section==='装备图纸'){
       for(let id=11;id<items.length;id++)
         unlock(d.blueprints,id,items[id][0]+'图纸',items[id][2]+'。解锁后可从商店或宝箱获得。',12+4*items[id][1],items[id][1]);
     }
-    if(section==='指挥帐篷'){
+    if(section==='战役记录'){
       for(const [index,key] of stageOrder.entries()){
         const record=d.stages[key],open=this.stageOpen(key);
         const box=row(campaigns[key].name,open?'最佳 '+(record?.best||0)+' 波 · 通关 '+(record?.wins||0)+' 次':'通关「'+campaigns[stageOrder[index-1]].name+'」解锁');
@@ -98,7 +98,7 @@ class GreyCamp {
         d.veteran=!d.veteran;this.save();this.open(game,section);
       },!d.challenge&&(!d.victories||d.medals<1));
     }
-    if(section==='军械库'){
+    if(section==='兵种图鉴'){
       for(const [i,t] of troops.entries())row(t[0]+(!this.troopOpen(i)?' · 未招募':''),'伤害 '+t[1]+'　间隔 '+t[2]+' 秒　射程 '+t[3]);
       row('军魂附体','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得蓝色军魂，射程增加 25%，并叠加对应兵种加成。'+soulTypes.map((t,i)=>troops[i][0]+'：'+t.label+' +'+t.values.join(' / ')+'%').join('；'));
       row('剑士羁绊','2 人攻速 +8%，4 人提高至 +16%，6 人累计攻击 4 次后全队剑士追加斩击。');

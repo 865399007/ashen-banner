@@ -277,9 +277,10 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   c.save();c.transform(1,0,-.14,1,155*.14,0);
   // Bring the pauldrons closer to the neck while keeping the helmet proportions.
   c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
-  shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',sleeveLight,sleeveShade);
-  shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',sleeveLight,sleeveShade);
-  shape('M62 118 Q72 99 89 98 Q74 103 66 118 Z M139 101 Q151 100 158 109 Q150 104 141 105 Z',fold);
+  const shoulderLight=rank?sleeveLight:'#667d94',shoulderShade=rank?sleeveShade:'#475c76';
+  shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',shoulderLight,shoulderShade);
+  shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',shoulderLight,shoulderShade);
+  shape('M62 118 Q72 99 89 98 Q74 103 66 118 Z M139 101 Q151 100 158 109 Q150 104 141 105 Z',rank?fold:'#394c64');
   if(rank){
     shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
     shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z',form.edge);

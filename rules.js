@@ -35,16 +35,16 @@ const commanders={
       damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
 };
 const soulTypes=[
-  {stat:'haste',label:'攻速',values:[12,20,30]},
-  {stat:'reach',label:'射程',values:[15,25,35]},
-  {stat:'crit',label:'暴击率',values:[8,14,20]},
-  {stat:'power',label:'伤害',values:[15,25,40]},
-  {stat:'guard',label:'减伤',values:[12,20,30]},
-  {stat:'crit',label:'暴击率',values:[8,14,20]},
-  {stat:'power',label:'伤害',values:[15,25,40]},
-  {stat:'haste',label:'攻速',values:[12,20,30]},
-  {stat:'reach',label:'射程',values:[15,25,35]},
-  {stat:'power',label:'伤害',values:[15,25,40]}
+  {general:'liubei',name:'刘备',weapon:'雌雄双股剑',stat:'haste',label:'攻速',values:[12,20,30]},
+  {general:'zhaoyun',name:'赵云',weapon:'龙胆亮银枪',stat:'reach',label:'射程',values:[15,25,35]},
+  {general:'huangzhong',name:'黄忠',weapon:'长弓',stat:'crit',label:'暴击率',values:[8,14,20]},
+  {general:'xuhuang',name:'徐晃',weapon:'开山大斧',stat:'power',label:'伤害',values:[15,25,40]},
+  {general:'caoren',name:'曹仁',weapon:'大盾与佩刀',stat:'guard',label:'减伤',values:[12,20,30]},
+  {general:'zhugeliang',name:'诸葛亮',weapon:'诸葛连弩',stat:'crit',label:'暴击率',values:[8,14,20]},
+  {general:'wuanguo',name:'武安国',weapon:'长柄铁锤',stat:'power',label:'伤害',values:[15,25,40]},
+  {general:'dianwei',name:'典韦',weapon:'双铁戟',stat:'haste',label:'攻速',values:[12,20,30]},
+  {general:'lvbu',name:'吕布',weapon:'方天画戟',stat:'reach',label:'射程',values:[15,25,35]},
+  {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[15,25,40]}
 ];
 function armySoul(army){
   const counts=troops.map(()=>0);

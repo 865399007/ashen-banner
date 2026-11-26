@@ -196,33 +196,10 @@ class Battle extends Phaser.Scene{
  this.soul=armySoul(this.army);
  if(this.soul){
    this.soulStrike=0;
-   const {id,count}=this.soul,key='soul-'+id;
-   const skin=mercSkins[id];
-   const ink=getComputedStyle(document.documentElement).getPropertyValue('--tier-3').trim();
-   const poses=id===2?[0,.4,.85,1,-.35,-.1,0]:[0,-.22,-.42,.35,1,.55,0];
-   poses.forEach((pose,frame)=>{
-     const frameKey=key+'-'+frame;
-     if(this.textures.exists(frameKey))return;
-     paintTexture(this,frameKey,120,112,(ctx,polygon)=>{
-       ctx.save();ctx.translate(24,16);ctx.scale(2,2);
-       miniature(ctx,polygon,skin,0,3,ink,pose,'mercenary');
-       ctx.restore();
-       const pixels=ctx.getImageData(0,0,120,112);
-       const rgba=pixels.data;
-       // Map the original shading to navy shadows, azure midtones and ice-blue highlights.
-       const palette=[[30,94,135],[84,185,244],[177,224,251]];
-       for(let i=0;i<rgba.length;i+=4){
-         const light=Math.min(1,(rgba[i]*.30+rgba[i+1]*.59+rgba[i+2]*.11)/220);
-         const band=light<.5?0:1,blend=light*2-band;
-         for(let channel=0;channel<3;channel++){
-           rgba[i+channel]=palette[band][channel]*(1-blend)+palette[band+1][channel]*blend;
-         }
-       }
-       ctx.putImageData(pixels,0,0);
-     });
-   });
-   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,key+'-0').setOrigin(.5,84/112)
-     .setScale(.68+.045*(count-4)).setAlpha(0.75).setDepth(this.hero.y-1);
+   const {type,count}=this.soul;
+   this.soulFrames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,type,frame));
+   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,this.soulFrames[0]).setOrigin(.42,.85)
+     .setScale(.48+.035*(count-4)).setAlpha(.86).setDepth(this.hero.y-1);
  }
  this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
@@ -648,7 +625,7 @@ class Battle extends Phaser.Scene{
  if(this.soulImage){
    const frame=this.soulStrike>0?Math.min(6,Math.floor((1-this.soulStrike/.22)*7)):0;
    const left=this.soulStrike>0?this.soulFacesLeft:h.flipX;
-   this.soulImage.setTexture('soul-'+this.soul.id+'-'+frame)
+   this.soulImage.setTexture(this.soulFrames[frame])
      .setPosition(h.x+(left?8:-8),h.y-12+Math.sin(this.elapsed*3)*1.3)
      .setFlipX(left).setDepth(h.y-.5);
    this.soulStrike=Math.max(0,this.soulStrike-dt);
@@ -738,6 +715,7 @@ class Battle extends Phaser.Scene{
    const interval=this.attackInterval({hero:true,id:c.weapon});
    const reduction=1-15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18]);
    appendCommanderStats(panel,c.name,[
+     ...(this.soul?[['战魂',this.soul.type.name+' · '+this.soul.type.weapon]]:[]),
      ['等级',this.level],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
      ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.soul?.25:0)+this.soulBonus('reach')))],
      ['暴击率',percent(Math.min(1,.05+this.critBonus+this.soulBonus('crit')))],['暴击伤害','150%'],['护甲',this.armor],['常驻减伤',percent(reduction)],

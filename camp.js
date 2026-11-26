@@ -127,10 +127,15 @@ class GreyCamp {
           row('斧兵羁绊','2 人范围 +8%，4 人伤害 +15%，6 人劈砍产生更远的扇形冲击。');
           row('新兵种羁绊','盾兵、弩兵、战锤兵、双匕首兵、长戟兵和轻骑兵分别按同名人数计算，2 / 4 / 6 人分别增加 8% / 16% / 24% 攻速。');
         }],
-        ['军魂附体',()=>{
-          row('触发条件','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得蓝色军魂，射程增加 25%，并叠加对应兵种加成。');
-          for(const [i,{label,values}] of soulTypes.entries()){
-            row(troops[i][0],label+' +'+values.join(' / ')+'%');
+        ['名将战魂',()=>{
+          row('触发条件','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，对应名将的战魂将随主角出招，射程增加 25%，并叠加对应兵种加成。');
+          for(const [i,type] of soulTypes.entries()){
+            const entry=row(troops[i][0]+' · '+type.name,type.weapon+'　'+type.label+' +'+type.values.join(' / ')+'%');
+            const portrait=document.createElement('canvas');
+            portrait.width=200;portrait.height=160;portrait.className='general-portrait';
+            portrait.setAttribute('aria-hidden','true');
+            portrait.getContext('2d').drawImage(game.textures.get(generalSoulFrame(game,type,0)).getSourceImage(),0,0);
+            entry.append(portrait);
           }
         }],
         ['编制与合成',()=>{

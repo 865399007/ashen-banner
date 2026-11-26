@@ -48,7 +48,6 @@ class Battle extends Phaser.Scene{
    button.onclick=()=>this.camp.open(this,button.dataset.campSection);
  }
  makeArt(this);
- $('home-commander').getContext('2d').drawImage(this.textures.get(commanderTexture(this,1)).getSourceImage(),0,0);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
  this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
@@ -101,6 +100,9 @@ class Battle extends Phaser.Scene{
  });
  const debugToggle=$('toggle-debug');
  const showDebugButtons=visible=>{
+   const portrait=$('home-commander'),ctx=portrait.getContext('2d');
+   ctx.clearRect(0,0,portrait.width,portrait.height);
+   ctx.drawImage(this.textures.get(commanderTexture(this,this.startingLevel)).getSourceImage(),0,0);
    $('test-army').hidden=!visible;
    $('debug-final-wave').hidden=!visible;
    debugToggle.setAttribute('aria-pressed',String(visible));
@@ -109,8 +111,14 @@ class Battle extends Phaser.Scene{
  showDebugButtons(this.camp.data.showDebugButtons===true);
  debugToggle.onclick=()=>{
    const visible=$('test-army').hidden;
-   showDebugButtons(visible);
    this.camp.data.showDebugButtons=visible;this.camp.save();
+   showDebugButtons(visible);
+   if(visible&&['fight','paused','refit'].includes(previousMode)&&this.level<this.startingLevel){
+     this.level=this.startingLevel;
+     this.updateCommanderForm();
+     this.hud();
+     if(previousMode==='refit'&&$('modal').querySelector('.commander-stats'))this.shop(false);
+   }
    if(previousMode==='camp'){
      const section=$('modal').querySelector('h2')?.textContent;
      if(section==='战役记录'||section==='选择战役'){
@@ -192,7 +200,8 @@ class Battle extends Phaser.Scene{
    window.addEventListener('resize',this.resetStick);
    document.addEventListener('visibilitychange',this.resetStick);
  }
- resetRun(){Object.assign(this,{wave:1,souls:[],flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
+ get startingLevel(){return this.camp.data.showDebugButtons===true?20:1}
+ resetRun(){Object.assign(this,{wave:1,souls:[],flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:this.startingLevel,xp:0,pendingLevels:[],upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
    if(this.mode==='title')$('camp-wallet').textContent='银币 '+this.camp.data.silver+'　·　铁料 '+this.camp.data.iron+'　·　军功章 '+this.camp.data.medals;
    $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
@@ -748,18 +757,21 @@ class Battle extends Phaser.Scene{
  collect(d){
    if(d.heal){this.healCommander(d.heal);return}
    const previousLevel=this.level;
-   this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}
-   if(commanderForm(this.level)!==commanderForm(previousLevel)){
-     const hero=this.actors[0],oldBase=hero.baseTexture;
-     const pose=hero.hit?hero.normalTexture:hero.s.texture.key;
-     hero.baseTexture=commanderTexture(this,this.level);
-     const key=hero.baseTexture+pose.slice(oldBase.length);
-     if(hero.hit)hero.normalTexture=key;
-     hero.s.setTexture(hero.hit&&hero.hit.age<hitFlashMs/1000?hitTexture(this,key,true):key);
-     showCommanderPromotion(this,hero.s);
-   }
+   this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.pendingLevels.push(++this.level)}
+   if(commanderForm(this.level)!==commanderForm(previousLevel))this.updateCommanderForm();
  }
- reward(keptTier){if(this.pending){let lv=this.level-this.pending+1,q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],
+ updateCommanderForm(){
+   const hero=this.actors[0];
+   if(!hero)return;
+   const oldBase=hero.baseTexture;
+   const pose=hero.hit?hero.normalTexture:hero.s.texture.key;
+   hero.baseTexture=commanderTexture(this,this.level);
+   const key=hero.baseTexture+pose.slice(oldBase.length);
+   if(hero.hit)hero.normalTexture=key;
+   hero.s.setTexture(hero.hit&&hero.hit.age<hitFlashMs/1000?hitTexture(this,key,true):key);
+   showCommanderPromotion(this,hero.s);
+ }
+ reward(keptTier){if(this.pendingLevels.length){let lv=this.pendingLevels[0],q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pendingLevels.length+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],
  ['操练　佣兵攻速 +'+5*n+'%',()=>this.mercHaste+=.05*n],
  ['锐眼　暴击率 +'+(1+2*n)+'%',()=>this.critBonus+=(1+2*n)/100],
  ['铁甲　护甲 +'+n,()=>this.armor+=n]];
@@ -767,7 +779,7 @@ class Battle extends Phaser.Scene{
  const symbols=['♥','⚔','➶','♧','⚑','✦','⬟'];
  Phaser.Utils.Array.Shuffle(options.map(([label,apply],i)=>({label,apply,symbol:symbols[i]}))).slice(0,4).forEach(({label,apply,symbol},index)=>{
    const [name,effect]=label.split('　');
-   const card=this.button(hand,'',()=>{apply();this.upgradeRefreshes=0;this.pending--;this.hud();this.reward()});
+   const card=this.button(hand,'',()=>{apply();this.upgradeRefreshes=0;this.pendingLevels.shift();this.hud();this.reward()});
    card.className='upgrade-card';card.dataset.tier=q;card.style.setProperty('--delay',index*45+'ms');
    const icon=document.createElement('i'),title=document.createElement('strong'),value=document.createElement('span');
    icon.textContent=symbol;icon.setAttribute('aria-hidden','true');

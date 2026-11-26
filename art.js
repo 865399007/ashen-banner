@@ -174,11 +174,21 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   for(const [x,side] of [[138,1],[102,-1]]){
     c.save();c.translate(x+step*side*9,step*side*6);
     shape('M-11 170 Q0 168 11 174 L13 213 Q7 219 -8 217 L-12 190 Z','#31231f','#493326');
+    // Each greave follows its boot, with the ankle exposed below the metal rim.
+    shape('M-11 181 Q-1 176 10 181 L11 203 L7 210 L-6 208 L-10 201 Z','#516063','#8b8d7d');
+    shape('M0 184 L8 181 L8 201 L5 206 L1 203 Z','#859087');
+    shape('M-11 186 Q0 190 10 184 L10 188 Q0 194 -11 190 Z','#3b4748');
+    shape('M-8 201 Q0 206 10 200 L9 204 Q1 210 -7 205 Z','#ad8652','#d6b478');
     c.restore();
   }
   c.translate(step*2,-Math.abs(step)*4);
   shape('M89 109 Q116 97 146 110 L149 148 L158 187 Q126 199 80 191 L94 153 Z','#44231f','#632d27');
   shape('M97 108 Q121 100 142 109 L143 148 L151 182 Q129 191 95 185 L102 153 Z','#493327','#62412c');
+  // Split thigh plates sit beneath the belt and overlap the greaves.
+  shape('M96 155 L121 157 L116 188 L107 193 L87 188 Z','#516063','#8b8d7d');
+  shape('M125 157 L148 151 L156 183 L148 189 L122 186 Z','#516063','#8b8d7d');
+  shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
+  shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z','#ad8652','#d6b478');
   shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z','#b27b3c','#a16c35');
   shape('M146 120 Q157 120 166 132 L185 128 L191 146 Q172 154 151 149 Z','#503629','#38271e');
   c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);

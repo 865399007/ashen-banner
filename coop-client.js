@@ -41,7 +41,7 @@ function installCoop(scene){
    else{
      c.translate(9,10);c.scale(7.5,7.5);
      const polygon=(points,color)=>{c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=color;c.fill()};
-     miniature(c,polygon,hero==='scout'?2:1,0,hero==='scout'?2:3,'#b4a37a');
+     miniature(c,polygon,hero==='scout'?2:1,0,0,null,0,'mercenary');
    }
    canvas.setAttribute('aria-hidden','true');return canvas;
  }
@@ -286,7 +286,7 @@ function installCoop(scene){
      }
      button(m,p.ready?'已准备 · 等待队友':'准备下一波','ready',0,p.ready);
      const hero=commanders[p.hero];
-     appendCommanderStats(m,hero.name,[['团队等级',state.level],['甲胄',commanderForms[commanderForm(state.level)].name],['团队经验',state.xp],['生命',statNumber(p.hp)+' / '+p.max],
+     appendCommanderStats(m,hero.name,[['团队等级',state.level],['装束',commanderForms[commanderForm(state.level)].name],['团队经验',state.xp],['生命',statNumber(p.hp)+' / '+p.max],
        ['普攻伤害',statNumber(hero.baseDamage*p.power)],['攻击间隔',statNumber(troops[hero.weapon][2]*.75)+' 秒'],
        ['攻击距离',hero.range],['移速',statNumber(p.speed)],['幸运',p.luck]]);
      return;

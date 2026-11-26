@@ -158,7 +158,7 @@ const WALK_FRAMES=12;
 const commanderSwingAngles=[-.8,-.52,.15,.98,1.38,1.08,.7];
 const COMMANDER_CLOTH_FRAMES=12;
 const commanderForms=[
-  {name:'初阵'},
+  {name:'布衣民兵'},
   {name:'铜札战甲',metal:'#a06542',light:'#d7a570',edge:'#f0c388',cloth:'#853d35'},
   {name:'银翎明铠',metal:'#5f8297',light:'#c9dce1',edge:'#eff5ed',cloth:'#34586c'},
   {name:'玄甲虎卫',metal:'#303e49',light:'#66717a',edge:'#d9a44e',cloth:'#652e39'},
@@ -204,26 +204,33 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   for(const [x,side] of [[138,1],[102,-1]]){
     c.save();c.translate(x+step*side*9,step*side*6);
     shape('M-11 170 Q0 168 11 174 L13 213 Q7 219 -8 217 L-12 190 Z','#31231f','#493326');
-    // Each greave follows its boot, with the ankle exposed below the metal rim.
-    shape('M-11 181 Q-1 176 10 181 L11 203 L7 210 L-6 208 L-10 201 Z',form.metal||'#516063',form.light||'#8b8d7d');
-    shape('M0 184 L8 181 L8 201 L5 206 L1 203 Z','#859087');
-    shape('M-11 186 Q0 190 10 184 L10 188 Q0 194 -11 190 Z','#3b4748');
-    shape('M-8 201 Q0 206 10 200 L9 204 Q1 210 -7 205 Z',form.edge||'#ad8652',form.edge||'#d6b478');
+    if(rank){
+      // Each greave follows its boot, with the ankle exposed below the metal rim.
+      shape('M-11 181 Q-1 176 10 181 L11 203 L7 210 L-6 208 L-10 201 Z',form.metal,form.light);
+      shape('M0 184 L8 181 L8 201 L5 206 L1 203 Z','#859087');
+      shape('M-11 186 Q0 190 10 184 L10 188 Q0 194 -11 190 Z','#3b4748');
+      shape('M-8 201 Q0 206 10 200 L9 204 Q1 210 -7 205 Z',form.edge);
+    }else{
+      shape('M-11 178 Q-1 182 10 178 L11 194 Q5 202 -7 201 L-11 194 Z','#474044','#635052');
+      shape('M-9 199 L10 195 L10 199 L-8 203 Z M-7 205 L10 201 L10 204 L-7 208 Z','#9e8070');
+    }
     c.restore();
   }
   c.translate(step*2,-Math.abs(step)*4);
   shape('M89 109 Q116 97 146 110 L149 148 L158 187 Q126 199 80 191 L94 153 Z','#44231f','#632d27');
   shape('M97 108 Q121 100 142 109 L143 148 L151 182 Q129 191 95 185 L102 153 Z','#493327','#62412c');
-  // Split thigh plates sit beneath the belt and overlap the greaves.
-  shape('M96 155 L121 157 L116 188 L107 193 L87 188 Z',form.metal||'#516063',form.light||'#8b8d7d');
-  shape('M125 157 L148 151 L156 183 L148 189 L122 186 Z',form.metal||'#516063',form.light||'#8b8d7d');
-  shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
-  shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z',form.edge||'#ad8652',form.edge||'#d6b478');
   if(rank){
+    shape('M96 155 L121 157 L116 188 L107 193 L87 188 Z',form.metal,form.light);
+    shape('M125 157 L148 151 L156 183 L148 189 L122 186 Z',form.metal,form.light);
+    shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
+    shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z',form.edge);
     shape('M111 157 L130 157 L132 187 L120 200 L108 189 Z',form.cloth);
     shape('M114 165 L120 174 L127 163 L124 178 L120 185 L115 179 Z',form.edge);
+  }else{
+    shape('M96 143 Q119 151 145 144 L154 177 L134 183 L125 175 L113 186 L85 181 Z','#8a4c45','#ab6453');
+    shape('M103 154 L115 157 L108 181 L102 180 Z M132 156 L142 152 L146 176 L138 177 Z','#834945');
   }
-  shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z','#b27b3c','#a16c35');
+  shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z',rank?'#b27b3c':'#5e4440',rank?'#a16c35':'#765549');
   shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z',sleeveLight,sleeveShade);
   shape('M174 131 L181 129 L184 146 L177 148 Z',cuff);
   shape('M174 131 L176 130.5 L179 147.5 L177 148 Z',cuffEdge);
@@ -260,36 +267,51 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',sleeveLight,sleeveShade);
   shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',sleeveLight,sleeveShade);
-  shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
-  shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z',form.edge||'#ad8652',form.edge||'#d6b478');
   if(rank){
+    shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
+    shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z',form.edge);
     c.save();c.translate(46,89);c.scale(2.5,2.5);commandPauldron(c,rank);c.restore();
   }
   c.restore();
-  shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z',form.metal||'#516063',form.light||'#8b8d7d');
-  shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
-  oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
+  if(rank){
+    shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z',form.metal,form.light);
+    shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
+    oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
+  }else{
+    shape('M98 108 Q112 100 126 101 L144 106 L148 144 L144 151 Q123 157 97 150 Z','#a9524d','#b76555');
+    shape('M102 106 L113 103 L129 115 L122 122 Z','#d2ac8c');
+    shape('M139 102 L148 107 L116 150 L107 151 Z','#e0b99a');
+    shape('M111 145 L148 106 L147 112 L119 149 Z','#8d5149');
+  }
   c.restore();
   // Lift the chin slightly around the collar and keep the helmet over the shoulders.
   c.save();c.translate(122,102);c.rotate(-.055);c.translate(-120,-103);
   shape('M96 62 Q112 43 138 56 L147 76 L145 99 Q134 110 114 104 L96 93 Z','#614539','#48352c');
   shape('M114 72 Q128 67 145 73 L145 96 Q142 106 120 103 Q114 99 114 92 Z','#dfb78b','#f0cda2');
-  shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');
-  // A crested doumou helmet with a flared neck guard and a gilt brow.
-  shape('M92 72 Q91 48 116 43 Q140 44 145 66 L151 73 Q121 72 96 84 L86 88 Z',form.metal||'#394449',form.light||'#647170');
-  shape('M93 72 L103 75 L109 100 L99 106 L86 99 Z','#535a57','#746b58');
-  shape('M91 73 Q115 64 145 65 L152 71 Q126 71 98 80 Z','#a47a48','#e5c68b');
-  shape('M111 66 Q117 52 116 43 L121 44 Q122 55 116 65 Z','#b58b52','#d4b174');
-  shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
-  if(rank===1)shape('M97 72 L98 54 L103 47 L106 66 L121 60 L115 67 Z',form.light,form.edge);
-  if(rank===2)shape('M119 45 Q112 19 87 26 Q72 37 60 32 Q71 45 88 38 L76 46 Q96 46 105 36 L116 48 Z',form.light,form.edge);
-  if(rank===3)shape('M92 73 L83 47 L98 56 L95 40 L110 52 L111 64 Z M124 50 L132 36 L133 52 L143 45 L138 62 Z',form.metal,form.edge);
-  if(rank===4){
-    shape('M114 48 Q85 -5 47 31 Q35 44 20 44 Q37 53 59 33 Q83 14 111 52 Z','#a74c41',form.edge);
-    shape('M119 47 Q117 17 137 12 Q151 9 164 19 Q141 14 132 27 Q126 37 125 50 Z',form.edge);
-    shape('M91 74 L84 48 L99 59 L94 39 L111 53 L118 47 L123 60 L110 69 Z',form.light,form.edge);
+  if(rank){
+    shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');
+    // A crested doumou helmet with a flared neck guard and a gilt brow.
+    shape('M92 72 Q91 48 116 43 Q140 44 145 66 L151 73 Q121 72 96 84 L86 88 Z',form.metal,form.light);
+    shape('M93 72 L103 75 L109 100 L99 106 L86 99 Z','#535a57','#746b58');
+    shape('M91 73 Q115 64 145 65 L152 71 Q126 71 98 80 Z','#a47a48','#e5c68b');
+    shape('M111 66 Q117 52 116 43 L121 44 Q122 55 116 65 Z','#b58b52','#d4b174');
+    shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
+    if(rank===1)shape('M97 72 L98 54 L103 47 L106 66 L121 60 L115 67 Z',form.light,form.edge);
+    if(rank===2)shape('M119 45 Q112 19 87 26 Q72 37 60 32 Q71 45 88 38 L76 46 Q96 46 105 36 L116 48 Z',form.light,form.edge);
+    if(rank===3)shape('M92 73 L83 47 L98 56 L95 40 L110 52 L111 64 Z M124 50 L132 36 L133 52 L143 45 L138 62 Z',form.metal,form.edge);
+    if(rank===4){
+      shape('M114 48 Q85 -5 47 31 Q35 44 20 44 Q37 53 59 33 Q83 14 111 52 Z','#a74c41',form.edge);
+      shape('M119 47 Q117 17 137 12 Q151 9 164 19 Q141 14 132 27 Q126 37 125 50 Z',form.edge);
+      shape('M91 74 L84 48 L99 59 L94 39 L111 53 L118 47 L123 60 L110 69 Z',form.light,form.edge);
+    }
+    shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
+  }else{
+    shape('M93 78 Q90 59 102 53 Q123 42 140 56 L147 69 L139 76 L116 73 L108 83 L106 94 L97 95 Z','#40322d','#504038');
+    oval(c,111,48,12,10,'#43332d');
+    shape('M103 50 Q111 46 122 49 L121 53 L103 54 Z','#98524d');
+    shape('M92 68 Q117 63 144 65 L147 73 Q122 71 96 78 L92 81 Z','#903d40','#b05250');
+    shape('M95 74 L100 79 Q91 89 86 98 L87 87 L78 92 Q88 79 95 74 Z','#8e3d40');
   }
-  shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
   shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
   c.restore();
   // The near arm and saber pass in front of the armor during the swing.
@@ -747,13 +769,13 @@ function commanderTexture(scene,skin,level){
   const rank=commanderForm(level),base='man'+skin+(rank?'form'+rank:'');
   if(scene.textures.exists(base))return base;
   const banner=skin===commanders.banner.skin,scout=skin===commanders.scout.skin;
-  const q=scout?2:3;
+  const q=rank?(scout?2:3):0;
   const ink=getComputedStyle(document.documentElement).getPropertyValue('--tier-'+q).trim();
   function frame(key,phase,swing=null,cloth=phase){
     paintTexture(scene,key,banner?112:72,banner?112:80,(c,p)=>{
       c.scale(2,2);
       if(banner)bannerCommander(c,phase,swing,cloth,rank);
-      else miniature(c,p,scout?2:1,phase,q,ink,0,'',rank);
+      else miniature(c,p,scout?2:1,phase,q,ink,0,rank?'':'mercenary',rank);
     });
   }
   frame(base,0);

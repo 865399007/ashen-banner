@@ -741,7 +741,7 @@ class Battle extends Phaser.Scene{
    const reduction=1-15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18]);
    appendCommanderStats(panel,c.name,[
      ...(this.soul?[['战魂',this.soul.type.name+' · '+this.soul.type.weapon]]:[]),
-     ['等级',this.level],['甲胄',commanderForms[commanderForm(this.level)].name],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
+     ['等级',this.level],['装束',commanderForms[commanderForm(this.level)].name],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
      ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.soul?.25:0)+this.soulBonus('reach')))],
      ['暴击率',percent(Math.min(1,.05+this.critBonus+this.soulBonus('crit')))],['暴击伤害','150%'],['护甲',this.armor],['常驻减伤',percent(reduction)],
      ['移速',statNumber(this.speed)],['幸运',this.luck],['拾取范围',statNumber(70*(1+.05*this.camp.level('sense'))*(1+.2*this.bag[satchel]))],

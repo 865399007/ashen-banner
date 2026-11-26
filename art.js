@@ -246,8 +246,74 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   c.restore();
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];
-function troopSkin(id,q=0){const skin=mercSkins[id];return q?skin+"tier"+q:skin}
+function troopSkin(id,q=0){const skin=mercSkins[id];return "merc"+skin+(q?"tier"+q:"")}
 const enemyCloth={shadow:'#8c591d',base:'#cf8f26',light:'#e9ad3f'};
+// Shared by standing soldiers and riders so that each rank has the same silhouette.
+function mercenaryUniform(c,rank,coat,trim,step){
+  const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
+  const line=(path,color,width)=>{
+    c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
+  };
+  const steel=rank===2;
+  const guard=rank===3;
+  const edge=guard?'#dfb568':'#a7b7af';
+  const dark=guard?'#293637':'#485b60';
+  const plate=guard?'#435555':'#778b8b';
+
+  if(guard){
+    const tail=3+step*1.2;
+    fill('M12 14 Q6 14 6 20 L'+tail+' 30 L6 29 L7 32 L12 29 L16 16 Z','#853c35');
+    line('M6 29 L7 30 L10 28','#c89c56',.9);
+  }
+  // Crossed collar, sleeves and split hem remain visible underneath heavier equipment.
+  fill('M9 15 Q14 13 20 14 L23 18 L22 23 L20 22 L23 29 L17 30 L15 27 L13 30 L7 29 L10 21 L6 22 L6 18 Z',coat);
+  fill('M9 16 L12 16 L13 22 L10 28 L7 28 L10 21 L6 22 L6 19 Z',trim);
+  line('M11 15 L15 19 L19 15 M15 19 L12 22','#c6b699',1);
+  if(rank===1){
+    // Wide vertical wooden slats with two dark lashings.
+    fill('M10 15 L20 14 L22 23 L10 24 Z','#493527');
+    fill('M10.6 16 L13 16 L13.4 22.6 L11.3 22.8 Z','#bb8955');
+    fill('M13.9 16 L16.6 15.7 L17 22.2 L14.5 22.6 Z','#a97445');
+    fill('M17.4 15.4 L19.6 15 L21 21.8 L18 22.2 Z','#c79359');
+    line('M10.7 17.9 Q16 18.5 20.2 16.8 M11 21 Q16 21.6 21 19.9','#62452f',.85);
+    fill('M6 16 L10 14 L13 16 L12 18 L6 20 Z','#926438');
+    line('M7 17 L11.5 15.7','#d4ab71',.9);
+  }
+  if(steel||guard){
+    fill('M9 15 Q15 17 21 14 L22 22 L17 24 L10 23 Z',dark);
+    fill('M10 16 Q15 18 20.5 15 L21 20.8 Q16.5 23.2 10.6 21.8 Z',plate);
+    fill('M9 23 L15.5 24 L14 30.5 L7.5 29 Z M16.5 24 L21 22.8 L23.5 28.8 L17 30 Z',dark);
+    line('M10.5 18.5 Q16 20.2 20.6 17.6 M11 21 Q17 22.4 21 20 M9.8 26 L14 27 M17.6 26.5 L21.1 25.3',edge,.8);
+    fill('M5.2 16.2 L9.8 13.4 L14 15.4 L13.3 18.9 L5.4 20 Z',dark);
+    fill('M6.4 16.5 L10 14.6 L13 15.9 L12.4 17.2 L6.3 18.5 Z',plate);
+    line('M6 19 L13 17.8',edge,1);
+    if(guard){
+      fill('M13.5 16 L16 17.1 L14.7 20.6 L12.3 19.8 Z M17.1 17 L20 15.5 L20.5 19.2 L17.8 20.2 Z','#d6a554');
+      fill('M13.3 23 L17 23 L17.7 29.2 L15.3 31.8 L12.9 29.4 Z','#a34337');
+      line('M14.4 25 L15.2 29.4 L16.2 27.3','#e4bb70',.8);
+    }
+  }
+  fill('M9.2 22.3 Q15 23.4 21.5 21.5 L22 23.4 Q15 25.3 9 24 Z','#4d3931');
+  if(rank)fill('M15 22.8 L17.5 22.5 L17.7 24 L15.2 24.4 Z',guard?'#edc578':'#b5996c');
+
+  fill('M10.8 7 Q14 4.4 21 6.6 L21.4 12.6 Q19 15.8 14 15 L11 13.2 Z','#e2b98f');
+  if(rank<2){
+    fill('M8.7 9.6 Q8 3.8 14.3 3.2 Q20.2 2.6 22 7 L21 8.8 L13 9.6 L11.4 13.5 L8.7 14 Z','#473b34');
+    oval(c,14,2.7,2.9,2.2,'#473b34');
+    fill('M8.4 7.7 Q14 7.5 21.1 5.9 L22 7.9 L10.8 9.8 L8 13.6 L5 14.8 L7.6 10 Z',rank===1?'#806043':trim);
+    line('M12 4 L16 3.8','#b6986c',.7);
+  }else{
+    fill('M7.3 9 Q7.7 4.1 14.1 2 L16.2 1.5 Q21.6 2.9 22.4 6.9 L24 8.5 L14.2 10 L12.1 14.7 L7.4 16 Z',dark);
+    fill('M9.1 7.4 Q10.2 3.7 15.6 2.8 Q19.8 3.4 21.5 6.7 L14 7.1 Z',plate);
+    line('M8.3 8.9 Q15.4 7.2 22.6 7.7 M8.7 12.1 L12 11.4',edge,1);
+    if(guard){
+      fill('M17.7 3.7 Q15 .1 10.9 .4 Q5.4 .3 2.4 6.5 L6.2 5.4 L3.2 10.2 Q9.1 8.7 11.8 4.8 Q14.4 3.6 17.7 4.6 Z','#ae493d');
+      line('M6.1 4.1 Q10.9 .5 15.2 2.8','#d78758',.85);
+      fill('M15 4.1 L17 2.9 L18 6.6 L16.1 8 Z','#dfb568');
+    }
+  }
+  fill('M16.6 10.8 L17.8 10.6 L17.8 12.6 L16.6 12.8 Z M20.1 10.4 L21.1 10.2 L21.1 12 L20.1 12.2 Z','#332a23');
+}
 function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   const step=Math.sin(phase);
   const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
@@ -263,14 +329,21 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M28 23 Q31 13 35 11 L38 12 L34 17 L32 26 Z','#49342c');
   fill('M13 21 L26 21 L25 31 L16 29 L12 30 Z',ally?'#416879':enemyCloth.base);
   fill('M14 27 L24 29 L24 31 L14 29 Z','#d4aa6c');
-  fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z',ally?'#537775':enemyCloth.base);
-  fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
-  oval(c,22,9,4,5,'#e2bb90');
-  fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
-  fill('M16 7 Q17 1 22 2 Q26 3 27 7 L29 8 L18 9 L18 13 L14 14 Z',ally?'#556b6d':'#6a554d');
-  fill('M18 3 Q15 0 11 2 L7 4 Q12 4 14 3 L19 5 Z',ally?'#47857b':enemyCloth.base);
-  fill('M16 15 L24 13 L26 19 L17 21 Z','#74786c');
-  fill('M16 17 L25 15 L25 16 L17 18 Z M17 20 L26 18 L26 19 L17 21 Z','#43483f');
+  if(ally){
+    fill('M17 20 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
+    c.save();c.translate(8.2,1.4);c.scale(.85,.83);
+    mercenaryUniform(c,q,'#537775','#395554',step);
+    c.restore();
+  }else{
+    fill('M17 12 Q21 9 25 13 L27 22 L17 24 L14 21 Z',enemyCloth.base);
+    fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
+    oval(c,22,9,4,5,'#e2bb90');
+    fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
+    fill('M16 7 Q17 1 22 2 Q26 3 27 7 L29 8 L18 9 L18 13 L14 14 Z','#6a554d');
+    fill('M18 3 Q15 0 11 2 L7 4 Q12 4 14 3 L19 5 Z',enemyCloth.base);
+    fill('M16 15 L24 13 L26 19 L17 21 Z','#74786c');
+    fill('M16 17 L25 15 L25 16 L17 18 Z M17 20 L26 18 L26 19 L17 21 Z','#43483f');
+  }
   fill('M35 12 L40 13 L44 19 L41 20 L36 16 Z',ally?'#b39864':'#a07854');
   fill('M12 23 L15 24 L14 29 L11 28 Z M24 23 L27 22 L26 29 L23 30 Z','#715741');
   if(!ally){
@@ -290,7 +363,8 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,boss=false){
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
+  const boss=variant==='boss',mercenary=variant==='mercenary';
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
   const recruit=id>=17&&id<=22;
   const recruitSkin=id;
@@ -319,91 +393,95 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,boss=false){
     paint('M8 2 L2 4 L1 14 L4 12 L6 15 L10 12 Z',enemyCloth.light);
     stroke('M3 6 L7 5 M3 8 L7 7','#eac278',1.1);
   }
-  if(q>=2){
-    const hem=3+step*1.4;
-    paint('M12 14 Q7 15 7 19 L'+hem+' 31 Q7 33 11 30 L15 17 Z',q===3?'#913e30':'#685381');
-    stroke('M7 20 L'+hem+' 31 L7 31',q===3?'#ebb767':'#ad92bd',1);
-  }
   if(weapon===2&&id<9){
     stroke('M8 22 L3 12 M9 20 L5 10 M10 18 L8 10','#654627',1);
     paint('M3 14 L9 12 L13 22 Q10 25 8 24 Z','#5b412f');
   }
-  paint('M10 15 Q15 13 20 15 L23 28 Q17 30.5 7 28.7 Z',wash(7,23,trim,coat));
-  paint('M8.7 22 Q16 23 21.3 21 L21.9 23.1 Q16 25 8.4 24.1 Z','#493328');
-  paint('M8.7 15.8 Q13 12.8 20 14.6 L21.7 17.4 L17 19.8 L12 17.6 L8 18.8 Z',trim);
-  if(q){
-    const plate=['',['#405960','#a6c2bf'],['#41445f','#a69ab7'],['#85552f','#e8ba6e']][q];
-    paint('M11 15 Q16 17 20 14 L22 21 Q17 25 10 22 Z',wash(10,22,...plate));
-    if(q===1)stroke('M11 16 L19 22','#dbc8a0',2.2);
+  if(mercenary){
+    mercenaryUniform(c,q,coat,trim,step);
+  }else{
     if(q>=2){
-      paint('M11 23 L20 22 L22 29 L17 28 L14 31 L10 29 Z',q===2?'#47375b':'#8a332d');
-      stroke('M14 24 L15 28 L18 24',plate[1],1.5);
+      const hem=3+step*1.4;
+      paint('M12 14 Q7 15 7 19 L'+hem+' 31 Q7 33 11 30 L15 17 Z',q===3?'#913e30':'#685381');
+      stroke('M7 20 L'+hem+' 31 L7 31',q===3?'#ebb767':'#ad92bd',1);
     }
-  }
-  paint('M11 7 Q14 4.2 21 6.8 L21 13.5 Q18 16.2 13 14.8 L10.8 13 Z',wash(11,21,'#ba9167','#ebc79a'));
-  // Cloth wraps and tied hair give light troops a different silhouette from armored ranks.
-  const lightTroop=[0,2,3,5,9,12,16].includes(id);
-  const binding=allied?'#476b6a':enemyCloth.base;
-  const brass=q===3?'#ebc789':'#bc9b66';
-  if(lightTroop){
-    paint('M9 10 Q8 4 14 3 Q20 2 22 7 L21 9 L14 9 L12 13 L9 14 Z',wash(8,22,'#3a302d','#625048'));
-    oval(c,13.6,2.8,3.1,2.3,'#443631');
-    stroke('M11 4 L16 3.8',brass,.85);
-    paint('M8 8 Q14 7 21 6 L22 8 L11 10 L8 14 L4 16 L7 10 Z',binding);
-  }else{
-    paint('M8 9 Q9 3.5 15 2 L16 .6 L18 2.6 Q22 4 22 7 L24 8 L14 10 L12 15 L7 16 Z',wash(7,24,'#454c4c','#92998c'));
-    stroke('M8.5 9 Q15 7 22 7.4',brass,1);
-    stroke('M8.8 12 L12 11.4 M8.5 14 L11.5 13.5','#b1a082',.65);
-  }
-  if(lightTroop){
-    paint('M10 15 L14 15 L20 20 L18 21 Z',brass);
-    stroke('M19 15 L12 22',allied?'#c8be9e':'#c39278',1.35);
-    paint('M10 24 L14 24 L13 30 L10 29 Z',binding);
-  }else{
-    paint('M10 16 Q15 18 21 15 L22 22 Q17 24 10 22 Z',wash(9,22,'#454c49','#838877'));
-    stroke('M10.5 18.5 Q16 20 21 17.8 M11 21 Q16 22 21.5 20','#b9ab88',.68);
-    paint('M10 24 L15 25 L14 30 L8 29 Z M16 25 L21 24 L23 29 L16 30 Z',trim);
-  }
-  if([10,13,14].includes(id)){
-    for(const x of [13,18.4]){
-      oval(c,x,18.9,2.3,2.6,'#514635');
-      oval(c,x+.15,18.5,1.8,1.95,brass);
+    paint('M10 15 Q15 13 20 15 L23 28 Q17 30.5 7 28.7 Z',wash(7,23,trim,coat));
+    paint('M8.7 22 Q16 23 21.3 21 L21.9 23.1 Q16 25 8.4 24.1 Z','#493328');
+    paint('M8.7 15.8 Q13 12.8 20 14.6 L21.7 17.4 L17 19.8 L12 17.6 L8 18.8 Z',trim);
+    if(q){
+      const plate=['',['#405960','#a6c2bf'],['#41445f','#a69ab7'],['#85552f','#e8ba6e']][q];
+      paint('M11 15 Q16 17 20 14 L22 21 Q17 25 10 22 Z',wash(10,22,...plate));
+      if(q===1)stroke('M11 16 L19 22','#dbc8a0',2.2);
+      if(q>=2){
+        paint('M11 23 L20 22 L22 29 L17 28 L14 31 L10 29 Z',q===2?'#47375b':'#8a332d');
+        stroke('M14 24 L15 28 L18 24',plate[1],1.5);
+      }
     }
-  }
-  if(!allied){
-    // The iron shoulder silhouette and ochre waist tab read even on the smallest sprites.
-    paint('M5.5 15.4 L10.5 12.6 L15.4 15 L13.3 19.3 L5 20.4 Z',wash(5,15,'#343839','#646966'));
-    stroke('M6.5 16.1 L10.6 14.3 L14 15.8','#b9ab8e',1.05);
-    paint('M8 23 L22 21.6 L22.5 24 L17 25 L15.7 31.5 L12.4 29.7 L10.8 31 L11 25 L7.6 25 Z',enemyCloth.light);
-    paint('M13.3 22.7 L16.8 22.1 L17 24 L13.5 24.7 Z','#d0ad70');
+    paint('M11 7 Q14 4.2 21 6.8 L21 13.5 Q18 16.2 13 14.8 L10.8 13 Z',wash(11,21,'#ba9167','#ebc79a'));
+    // Cloth wraps and tied hair give light troops a different silhouette from armored ranks.
+    const lightTroop=[0,2,3,5,9,12,16].includes(id);
+    const binding=allied?'#476b6a':enemyCloth.base;
+    const brass=q===3?'#ebc789':'#bc9b66';
     if(lightTroop){
-      paint('M8 8.5 Q13 6 22 6 L22.8 8.8 L11.8 10.5 L7.5 14.5 L3 16 L5.6 12.8 L2 13.2 Z',enemyCloth.light);
-      paint('M10.5 7.8 L19 6.4 L21 8.1 L12.5 9.6 Z','#535956');
-      paint('M12 12 L16.2 13.2 L21.4 12 L20.8 15.2 L16 17.1 L11.8 15 Z','#483e3a');
-      stroke('M12 17 L21 20.4 M12.7 19.5 L20.8 22','#666763',1.4);
+      paint('M9 10 Q8 4 14 3 Q20 2 22 7 L21 9 L14 9 L12 13 L9 14 Z',wash(8,22,'#3a302d','#625048'));
+      oval(c,13.6,2.8,3.1,2.3,'#443631');
+      stroke('M11 4 L16 3.8',brass,.85);
+      paint('M8 8 Q14 7 21 6 L22 8 L11 10 L8 14 L4 16 L7 10 Z',binding);
     }else{
-      paint('M7.4 9 Q8 3.4 15.4 2 L18 2.5 Q22 4 23 7 L25 8.7 L15 9.8 L13.5 15 L8 16.2 Z',wash(7,23,'#343a3d','#717875'));
-      paint('M13.3 4 Q9 1 4 3 L1.6 5.7 L6 4.9 L3 8.4 Q10 7.8 15 4.7 Z',enemyCloth.light);
-      stroke('M9 9 Q15 7 22.8 7.8','#c7a572',1);
-      paint('M10 24.8 L14 25.2 L12.5 30.4 L7.2 29 Z M17.3 25 L21.7 24 L24 28.7 L17 30 Z','#464746');
+      paint('M8 9 Q9 3.5 15 2 L16 .6 L18 2.6 Q22 4 22 7 L24 8 L14 10 L12 15 L7 16 Z',wash(7,24,'#454c4c','#92998c'));
+      stroke('M8.5 9 Q15 7 22 7.4',brass,1);
+      stroke('M8.8 12 L12 11.4 M8.5 14 L11.5 13.5','#b1a082',.65);
     }
-  }
-  if(recruitSkin===23){
-    paint('M10 7 L12 2 L15 1 L18 4 L17 7 Z','#6e4435');
-    stroke('M10 5 L18 4',brass,.9);
-  }
-  paint('M16.5 10.9 L17.7 10.7 L17.7 12.8 L16.5 13 Z M20 10.4 L21 10.1 L21 12.1 L20 12.4 Z','#30271f');
-  if(q){
-    const metal=q===3?['#a2733d','#f0cc83']:['#536979','#bbccd1'];
-    paint('M7 18 Q8 12 13 14 L15 17 L12 20 Z',wash(7,15,...metal));
-    stroke('M10 10 Q16 11 21 9',metal[1],1.3);
-    if(q===2){
-      paint('M18 5 Q13 1 8 3 Q5 4 3 11 L8 9 L7 12 Q12 10 14 6 Z',wash(3,18,'#514568','#b29abd'));
+    if(lightTroop){
+      paint('M10 15 L14 15 L20 20 L18 21 Z',brass);
+      stroke('M19 15 L12 22',allied?'#c8be9e':'#c39278',1.35);
+      paint('M10 24 L14 24 L13 30 L10 29 Z',binding);
+    }else{
+      paint('M10 16 Q15 18 21 15 L22 22 Q17 24 10 22 Z',wash(9,22,'#454c49','#838877'));
+      stroke('M10.5 18.5 Q16 20 21 17.8 M11 21 Q16 22 21.5 20','#b9ab88',.68);
+      paint('M10 24 L15 25 L14 30 L8 29 Z M16 25 L21 24 L23 29 L16 30 Z',trim);
     }
-    if(q===3){
-      paint('M19 5 Q16 0 10 1 Q5 1 2 8 L6 7 L2 14 Q9 12 12 7 Q15 5 19 6 Z',wash(2,19,'#92352e','#ed9758'));
-      stroke('M9 9 Q15 7 22 7',brass,1.45);
-      stroke('M10 26 Q16 28 21 25','#eac279',1.5);
+    if([10,13,14].includes(id)){
+      for(const x of [13,18.4]){
+        oval(c,x,18.9,2.3,2.6,'#514635');
+        oval(c,x+.15,18.5,1.8,1.95,brass);
+      }
+    }
+    if(!allied){
+      // The iron shoulder silhouette and ochre waist tab read even on the smallest sprites.
+      paint('M5.5 15.4 L10.5 12.6 L15.4 15 L13.3 19.3 L5 20.4 Z',wash(5,15,'#343839','#646966'));
+      stroke('M6.5 16.1 L10.6 14.3 L14 15.8','#b9ab8e',1.05);
+      paint('M8 23 L22 21.6 L22.5 24 L17 25 L15.7 31.5 L12.4 29.7 L10.8 31 L11 25 L7.6 25 Z',enemyCloth.light);
+      paint('M13.3 22.7 L16.8 22.1 L17 24 L13.5 24.7 Z','#d0ad70');
+      if(lightTroop){
+        paint('M8 8.5 Q13 6 22 6 L22.8 8.8 L11.8 10.5 L7.5 14.5 L3 16 L5.6 12.8 L2 13.2 Z',enemyCloth.light);
+        paint('M10.5 7.8 L19 6.4 L21 8.1 L12.5 9.6 Z','#535956');
+        paint('M12 12 L16.2 13.2 L21.4 12 L20.8 15.2 L16 17.1 L11.8 15 Z','#483e3a');
+        stroke('M12 17 L21 20.4 M12.7 19.5 L20.8 22','#666763',1.4);
+      }else{
+        paint('M7.4 9 Q8 3.4 15.4 2 L18 2.5 Q22 4 23 7 L25 8.7 L15 9.8 L13.5 15 L8 16.2 Z',wash(7,23,'#343a3d','#717875'));
+        paint('M13.3 4 Q9 1 4 3 L1.6 5.7 L6 4.9 L3 8.4 Q10 7.8 15 4.7 Z',enemyCloth.light);
+        stroke('M9 9 Q15 7 22.8 7.8','#c7a572',1);
+        paint('M10 24.8 L14 25.2 L12.5 30.4 L7.2 29 Z M17.3 25 L21.7 24 L24 28.7 L17 30 Z','#464746');
+      }
+    }
+    if(recruitSkin===23){
+      paint('M10 7 L12 2 L15 1 L18 4 L17 7 Z','#6e4435');
+      stroke('M10 5 L18 4',brass,.9);
+    }
+    paint('M16.5 10.9 L17.7 10.7 L17.7 12.8 L16.5 13 Z M20 10.4 L21 10.1 L21 12.1 L20 12.4 Z','#30271f');
+    if(q){
+      const metal=q===3?['#a2733d','#f0cc83']:['#536979','#bbccd1'];
+      paint('M7 18 Q8 12 13 14 L15 17 L12 20 Z',wash(7,15,...metal));
+      stroke('M10 10 Q16 11 21 9',metal[1],1.3);
+      if(q===2){
+        paint('M18 5 Q13 1 8 3 Q5 4 3 11 L8 9 L7 12 Q12 10 14 6 Z',wash(3,18,'#514568','#b29abd'));
+      }
+      if(q===3){
+        paint('M19 5 Q16 0 10 1 Q5 1 2 8 L6 7 L2 14 Q9 12 12 7 Q15 5 19 6 Z',wash(2,19,'#92352e','#ed9758'));
+        stroke('M9 9 Q15 7 22 7',brass,1.45);
+        stroke('M10 26 Q16 28 21 25','#eac279',1.5);
+      }
     }
   }
   c.save();c.translate(20,21);if(id===1)c.translate(5*pose,0);
@@ -573,17 +651,26 @@ function makeArt(scene){
     });
   }
   const leaderSkins=new Set(Object.values(campaigns).map(stage=>stage.bossSkin));
-  for(let id=0;id<=23;id++){
-    const tiers=mercSkins.includes(id)?4:1;
-    const variants=leaderSkins.has(id)?['','boss']:Array.from({length:tiers},(_,q)=>q?'tier'+q:'');
-    for(const [rank,variant] of variants.entries()){
-      const boss=variant==='boss',q=boss?0:rank;
-      const key='man'+id+variant;
-      for(let frame=-1;frame<WALK_FRAMES;frame++){
-        paintTexture(scene,frame<0?key:key+'walk'+frame,id===6?112:(id===8||id===22)?100:72,id===6?112:(id===8||id===22)?96:80,(c,p)=>{
-          c.save();c.scale(2,2);miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q],0,boss);c.restore();
-        });
-      }
+  function unitFrames(id,key,q,variant){
+    const rider=id===8||id===22;
+    const width=id===6?112:rider?100:72,height=id===6?112:rider?96:80;
+    for(let frame=-1;frame<WALK_FRAMES;frame++){
+      paintTexture(scene,frame<0?key:key+'walk'+frame,width,height,(c,p)=>{
+        c.save();c.scale(2,2);
+        miniature(c,p,id,frame<0?0:TAU*frame/WALK_FRAMES,q,rankColors[q],0,variant);
+        c.restore();
+      });
     }
+  }
+  for(const [type,id] of mercSkins.entries()){
+    for(let q=0;q<4;q++)unitFrames(id,'man'+troopSkin(type,q),q,'mercenary');
+  }
+  // Two commanders use the original archer and lancer uniforms.
+  unitFrames(2,'man'+commanders.scout.skin,2);
+  unitFrames(1,'man'+commanders.guard.skin,3);
+  for(let id=0;id<=23;id++){
+    if(mercSkins.includes(id))continue;
+    unitFrames(id,'man'+id,0);
+    if(leaderSkins.has(id))unitFrames(id,'man'+id+'boss',0,'boss');
   }
 }

@@ -205,7 +205,7 @@ class Battle extends Phaser.Scene{
      if(this.textures.exists(frameKey))return;
      paintTexture(this,frameKey,120,112,(ctx,polygon)=>{
        ctx.save();ctx.translate(24,16);ctx.scale(2,2);
-       miniature(ctx,polygon,skin,0,3,ink,pose);
+       miniature(ctx,polygon,skin,0,3,ink,pose,'mercenary');
        ctx.restore();
        const pixels=ctx.getImageData(0,0,120,112);
        const rgba=pixels.data;

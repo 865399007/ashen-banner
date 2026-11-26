@@ -700,7 +700,7 @@ class Battle extends Phaser.Scene{
    title.textContent=name;value.textContent=effect;card.append(cardRank(q),icon,title,value);
  });
  const cost=refreshPrice(this.wave,this.upgradeRefreshes);
- this.button(m,'重抽 · '+cost+' 银币',()=>{
+ this.button(m,'刷新 · '+cost+' 银币',()=>{
    if(this.gold<cost)return;
    this.gold-=cost;this.upgradeRefreshes++;this.hud();this.reward(q);
  },this.gold<cost);

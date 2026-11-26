@@ -19,8 +19,8 @@ function appendCommanderStats(panel,name,rows){
 const statNumber=value=>Number(value.toFixed(2));
 class Battle extends Phaser.Scene{
  preload(){
-   this.load.image('ashen-battlefield','assets/field/ashen-battlefield.webp');
-   for(const key of ['linen-cross',...Object.keys(fieldCoverage)])this.load.image(key,'assets/field/'+key+'.png');
+   this.load.image('ember-arena','assets/field/ember-arena.webp');
+   this.load.image('linen-cross','assets/field/linen-cross.png');
  }
  create(){
  this.camp=new GreyCamp();
@@ -234,7 +234,7 @@ class Battle extends Phaser.Scene{
  });
    Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.soul?.count===6&&this.soul.id===id)));
  }
- clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const prop of this.occluders)prop.image.setAlpha(1);for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false,forcedSkin=null){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
@@ -648,7 +648,6 @@ class Battle extends Phaser.Scene{
      .setFlipX(left).setDepth(h.y-.5);
    this.soulStrike=Math.max(0,this.soulStrike-dt);
  }
- updatePropOpacity(this,dt);
  for(let drop of [...this.drops]){
    if(this.elapsed<(drop.collectAfter??0))continue;
    const pullRadius=(drop.chest?94:70*(1+.05*this.camp.level('sense')))*(1+.20*this.bag[satchel]);

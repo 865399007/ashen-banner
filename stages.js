@@ -1,52 +1,28 @@
-// Coordinates are world-space landmark centres. The middle remains open for combat.
 const stageOrder=['border','camp','pass','keep','pursuit'];
-const stageScenery={
- border:[['cart',630,388],['tree',720,165]],
- camp:[['tent',348,201],['tower',650,250],['tent',560,423]],
- pass:[['boulder',325,215],['tree',585,182],['boulder',620,385],['tree',380,406]],
- keep:[['tower',358,245],['wall',655,225],['wall',580,408]],
- pursuit:[['wall',335,230],['standard',610,240],['wall',625,400],['standard',400,404]]
-};
-function drawLandmark(scene,key,x,y){
- const g=scene.add.graphics().setPosition(x,y).setDepth(y);
- const poly=(color,points)=>g.fillStyle(color).fillPoints(points.map(([x,y])=>({x,y})),true);
- g.fillStyle(0x775631,.28).fillEllipse(-4,1,39,8);
- if(key==='tower'){
-   g.fillStyle(0x755436).fillRect(-11,-32,4,32).fillRect(9,-32,4,32);
-   g.lineStyle(3,0x98714b).lineBetween(-9,-4,10,-26).lineBetween(10,-4,-9,-26);
-   g.fillStyle(0xa67b4e).fillRect(-15,-35,31,11);
-   poly(0x8b4a33,[[-19,-34],[0,-49],[19,-34]]);
- }else{
-   g.fillStyle(0x775334).fillRect(-1,-34,3,35);
-   poly(0x9d4436,[[1,-32],[19,-29],[16,-21],[19,-16],[1,-19]]);
-   g.fillStyle(0xe9c58a).fillRect(6,-28,2,9).fillRect(3,-25,8,2);
- }
- return g;
-}
+const keepTower={x:358,y:245};
+
 function setupStage(scene){
  const key=scene.stageKey;
  scene.stageObjects=[];scene.stageTick=5;scene.stageEvent=0;
- const colors={border:0xffeac6,camp:0xf7d8af,pass:0xcdd7b7,keep:0xdacfc5,pursuit:0xe7c8b2};
+ const colors={border:0xfff4df,camp:0xffebd2,pass:0xe8f0d7,keep:0xe9e5e0,pursuit:0xffe7d9};
  scene.back.setTint(colors[key]);
- scene.stageObstacleStart=scene.obstacles.length;scene.stageOccluderStart=scene.occluders.length;
- for(const [kind,x,y] of stageScenery[key]){
-   let image;
-   if(fieldCoverage[kind]){
-     image=scene.add.image(x,y,kind).setOrigin(0).setScale(fieldScaleX,fieldScaleY);
-     image.x-=image.displayWidth/2;image.y-=image.displayHeight*.85;image.setDepth(y);
-     scene.occluders.push({image,mask:atob(fieldCoverage[kind]),columns:Math.ceil(image.width/4)});
-   }else image=drawLandmark(scene,kind,x,y);
-   scene.stageObjects.push(image);
-   scene.obstacles.push({x,y,rx:kind==='standard'?3:13,ry:5});
- }
+ if(key!=='keep')return;
 
+ // The active archer tower marks the source of the keep's volley.
+ const {x,y}=keepTower;
+ const g=scene.add.graphics().setPosition(x,y).setDepth(y);
+ g.fillStyle(0x775631,.28).fillEllipse(-4,1,39,8);
+ g.fillStyle(0x755436).fillRect(-11,-32,4,32).fillRect(9,-32,4,32);
+ g.lineStyle(3,0x98714b).lineBetween(-9,-4,10,-26).lineBetween(10,-4,-9,-26);
+ g.fillStyle(0xa67b4e).fillRect(-15,-35,31,11);
+ g.fillStyle(0x8b4a33).fillTriangle(-19,-34,0,-49,19,-34);
+ scene.stageObjects.push(g);
+ scene.obstacles.push({x,y,rx:13,ry:5});
 }
 function clearStage(scene){
  for(const obj of scene.stageObjects??[])obj.destroy();
  scene.stageObjects=[];
- if(scene.stageObstacleStart!==undefined){
-   scene.obstacles.length=scene.stageObstacleStart;scene.occluders.length=scene.stageOccluderStart;
- }
+ scene.obstacles.length=0;
  const cast=scene.stageCaster?.cast;cast?.stones?.destroy();cast?.g.destroy();
  scene.stageCaster?.s.destroy();scene.stageCaster=null;scene.fire=null;
 }
@@ -75,7 +51,7 @@ function stepStage(scene,dt){
    scene.fire={x,y,g,life:4};
    return;
  }
- const tower=key==='keep',x=tower?358:h.x-10,y=tower?245:h.y;
+ const tower=key==='keep',x=tower?keepTower.x:h.x-10,y=tower?keepTower.y:h.y;
  // Towers fire from their actual platform, only while the commander is in range.
  if(tower&&Math.hypot(h.x-x,h.y-y)>enemyMoves.volley.reach){scene.stageTick=.5;return}
  const s=scene.add.image(x,y,tower?'man5':'man14').setScale(.25).setVisible(tower).setDepth(y+1);

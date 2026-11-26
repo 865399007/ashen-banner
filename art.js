@@ -176,7 +176,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   const u=bannerUniforms[rank],step=Math.sin(phase),wind=Math.sin(clothPhase-.55);
   const torsoX=step*1.3,torsoY=-3.4*step*step;
   const capeSwing=walking?Math.sin(phase-.75):0;
-  const hairSwing=walking?Math.sin(phase-1.05):0;
+  const plumeSwing=walking?Math.sin(phase-1.05):0;
   c.save();c.scale(.21875,.21875);c.lineJoin='round';c.lineCap='round';
   function fill(path,color){c.fillStyle=color;c.fill(new Path2D(path))}
   function line(path,color,width){c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(path))}
@@ -325,8 +325,21 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   if(!rank){
     fill('M109 68 Q111 53 131 53 Q151 53 155 69 L155 85 Q154 93 145 97 Q138 101 131 99 L118 94 L111 87Z',skin);
     oval(c,111,82,4.2,5.5,'#d9a57c');
-    c.save();c.translate(103,49);c.rotate(.036*wind+hairSwing*.19);
-    fill('M4 2 C-4 -15 -16 -17 -23 -8 C-36 8 -23 39 -44 54 Q-37 57 -30 50 Q-34 59 -43 63 Q-23 63 -16 46 C-8 28 -18 8 -9 2 Q-2 -2 3 9Z',glaze('#55423e','#302827',-14,62));
+    // Keep the arch at the tie still. The bend travels down the loose hair.
+    const amplitude=walking?1:.24;
+    const middle=6*amplitude*Math.sin(clothPhase-.55);
+    const lower=10*amplitude*Math.sin(clothPhase-1.35);
+    const tip=15*amplitude*Math.sin(clothPhase-2.15);
+    const lift=3*amplitude*Math.cos(clothPhase-2.15);
+    c.save();c.translate(103,49);
+    fill(`M4 2 C-4 -15 -16 -17 -23 -8
+      C-30 1 -30 10 ${-29+middle} 23
+      C${-28+middle} 37 ${-35+lower} 47 ${-44+tip} ${54+lift}
+      Q${-37+tip} ${57+lift} ${-30+lower} 50
+      Q${-34+lower} 59 ${-43+tip} ${63+lift}
+      C${-29+tip} ${61+lift} ${-21+lower} 55 ${-16+lower} 46
+      C${-9+middle} 32 ${-17+middle} 22 -15 11
+      Q-14 5 -9 2 Q-2 -2 3 9Z`,glaze('#55423e','#302827',-14,62));
     fill('M-25 9 Q-25 -7 -16 -10 Q-10 -11 -6 -5 Q-19 -9 -25 9Z','#70534b');
     c.restore();
     // A raised crown flows into the high tie, with a swept fringe above the eyes.
@@ -338,7 +351,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M103 67 Q102 49 125 48 Q151 46 158 66 L159 87 Q159 99 150 102 Q136 107 117 101 L108 94Z',skin);
     oval(c,107,84,5.4,6.5,'#d9a57c');
     const plume=rank===2?'#fffdf6':'#bc4937';
-    c.save();c.translate(119,48);c.rotate(wind*.025+hairSwing*.14);c.translate(-119,-48);
+    c.save();c.translate(119,48);c.rotate(wind*.025+plumeSwing*.14);c.translate(-119,-48);
     if(rank===4){
       fill('M122 49 Q109 27 91 34 Q72 54 56 49 Q70 63 84 53 Q78 61 69 62 Q91 66 103 48 Q113 38 120 53Z',glaze('#ede1c9','#c5ac8a',33,61));
       fill('M123 47 Q112 18 91 22 Q77 24 65 41 Q51 62 36 50 Q47 68 64 58 Q73 54 84 43 Q98 29 119 50Z',glaze('#cb5c42','#933a30',22,58));

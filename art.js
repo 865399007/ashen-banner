@@ -326,11 +326,11 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M109 68 Q111 53 131 53 Q151 53 155 69 L155 85 Q154 93 145 97 Q138 101 131 99 L118 94 L111 87Z',skin);
     oval(c,111,82,4.2,5.5,'#d9a57c');
     // Keep the arch at the tie still. The bend travels down the loose hair.
-    const amplitude=walking?1:.24;
+    const amplitude=walking?.7:.17;
     const middle=6*amplitude*Math.sin(clothPhase-.55);
-    const lower=10*amplitude*Math.sin(clothPhase-1.35);
-    const tip=15*amplitude*Math.sin(clothPhase-2.15);
-    const lift=3*amplitude*Math.cos(clothPhase-2.15);
+    const lower=10*amplitude*Math.sin(clothPhase-1.1);
+    const tip=15*amplitude*Math.sin(clothPhase-1.65);
+    const lift=3*amplitude*Math.cos(clothPhase-1.65);
     c.save();c.translate(103,49);
     fill(`M4 2 C-4 -15 -16 -17 -23 -8
       C-30 1 -30 10 ${-29+middle} 23

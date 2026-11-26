@@ -12,26 +12,57 @@ const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
 const campaigns={
   border:{
+    event:'fire',tint:0xfff4df,
     name:'黄巾之乱',army:'黄巾军',boss:'张角',colors:{shadow:'#8c591d',base:'#cf8f26',light:'#f1bf4e'},
     bossMove:'rocks',bossSkin:5,elites:[4,8],pace:1,march:1,bossHP:4800
   },
   camp:{
+    event:'reinforce',tint:0xffebd2,reinforcements:[null,null,null],
     name:'官渡之战',army:'袁绍军',boss:'袁绍',colors:{shadow:'#6b3547',base:'#a55363',light:'#da8b83'},
     bossMove:'volley',bossSkin:23,elites:[4,9],pace:.95,march:1,bossHP:5600
   },
   pass:{
+    event:'rocks',tint:0xe8f0d7,
     name:'赤壁之战',army:'曹军水师',boss:'曹操',colors:{shadow:'#343e55',base:'#596785',light:'#96adc1'},
     bossMove:'rocks',bossSkin:14,elites:[3,6,9],pace:1.15,march:.95,bossHP:6600
   },
   keep:{
+    event:'tower',tint:0xe9e5e0,
     name:'合肥之战',army:'合肥守军',boss:'张辽',colors:{shadow:'#374944',base:'#607565',light:'#a0af89'},
     bossMove:'cleave',bossSkin:10,elites:[4,8,12],pace:1,march:.95,bossHP:7400
   },
   pursuit:{
+    event:'reinforce',tint:0xffe7d9,reinforcements:[10,13],
     name:'夷陵之战',army:'东吴军',boss:'陆逊',colors:{shadow:'#783c2b',base:'#b65b3c',light:'#e39a62'},
     bossMove:'cleave',bossSkin:13,elites:[5,8],pace:.84,march:1.22,bossHP:4400
+  },
+  xiapi:{
+    name:'下邳之战',army:'并州军',boss:'吕布',colors:{shadow:'#5d3141',base:'#963e4d',light:'#e9bb7c'},
+    event:'reinforce',tint:0xf4e5d9,reinforcements:[8,9,8],
+    bossMove:'cleave',bossSkin:9,elites:[4,8,12],pace:.96,march:1.03,bossHP:7600
+  },
+  tongguan:{
+    name:'潼关之战',army:'关西联军',boss:'马超',colors:{shadow:'#3c535b',base:'#738f94',light:'#e4e1cb'},
+    event:'reinforce',tint:0xffedcb,reinforcements:[8,8,16],
+    bossMove:'cleave',bossSkin:11,elites:[3,7,11],pace:.92,march:1.15,bossHP:8000
+  },
+  dingjun:{
+    name:'定军山之战',army:'汉中守军',boss:'夏侯渊',colors:{shadow:'#464931',base:'#797b45',light:'#d0b478'},
+    event:'rocks',tint:0xe3edda,
+    bossMove:'volley',bossSkin:5,elites:[4,7,10,13],pace:1,march:1.06,bossHP:8400
+  },
+  fancheng:{
+    name:'樊城之战',army:'樊城守军',boss:'曹仁',colors:{shadow:'#38445c',base:'#526e93',light:'#a8bfd4'},
+    event:'tower',tint:0xe4eaf1,
+    bossMove:'hammer',bossSkin:10,elites:[4,8,11,14],pace:.94,march:1,bossHP:9000
+  },
+  wuzhang:{
+    name:'五丈原之战',army:'曹魏关中军',boss:'司马懿',colors:{shadow:'#403348',base:'#665474',light:'#b5a4bb'},
+    event:'reinforce',tint:0xece3d1,reinforcements:[10,23,23],
+    bossMove:'rocks',bossSkin:14,elites:[3,6,9,12],pace:.90,march:1.08,bossHP:9600
   }
 };
+const stageOrder=Object.keys(campaigns);
 function campaignOpposition(campaign){
   return '敌军：'+campaign.army+'　·　主将：'+campaign.boss;
 }

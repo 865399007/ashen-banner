@@ -1,12 +1,9 @@
-const stageOrder=['border','camp','pass','keep','pursuit'];
 const keepTower={x:358,y:245};
 
 function setupStage(scene){
- const key=scene.stageKey;
  scene.stageObjects=[];scene.stageTick=5;scene.stageEvent=0;
- const colors={border:0xfff4df,camp:0xffebd2,pass:0xe8f0d7,keep:0xe9e5e0,pursuit:0xffe7d9};
- scene.back.setTint(colors[key]);
- if(key!=='keep')return;
+ scene.back.setTint(scene.campaign.tint);
+ if(scene.campaign.event!=='tower')return;
 
  // The active archer tower marks the source of the keep's volley.
  const {x,y}=keepTower;
@@ -27,8 +24,8 @@ function clearStage(scene){
  scene.stageCaster?.s.destroy();scene.stageCaster=null;scene.fire=null;
 }
 function stepStage(scene,dt){
- const key=scene.stageKey,h=scene.hero;
- if(scene.wave<=3&&key!=='camp'&&key!=='pursuit')return;
+ const {event,reinforcements}=scene.campaign,h=scene.hero;
+ if(scene.wave<=3&&event!=='reinforce')return;
  if(scene.stageCaster){
    const caster=scene.stageCaster;
    stepEnemyMove(scene,caster,dt);
@@ -37,24 +34,26 @@ function stepStage(scene,dt){
  }
  scene.stageTick-=dt;
  if(scene.stageTick>0)return;
- scene.stageEvent++;scene.stageTick=key==='camp'||key==='pursuit'?14:8;
- if(key==='camp'||key==='pursuit'){
-   const guards=key==='pursuit';
+ scene.stageEvent++;scene.stageTick=event==='reinforce'?14:8;
+ if(event==='reinforce'){
    const label=scene.add.text(h.x,h.y-48,scene.campaign.army+' · 增援',{fontSize:'10px',color:'#fff0ca',stroke:'#704632',strokeThickness:2}).setOrigin(.5).setDepth(990);
    scene.tweens.add({targets:label,y:label.y-8,alpha:0,duration:1100,onComplete:()=>label.destroy()});
-   for(let i=0;i<(guards?2:3)&&scene.enemies.length<90;i++)scene.spawn(false,false,guards?[10,13][i]:null);
+   for(const skin of reinforcements){
+     if(scene.enemies.length>=90)break;
+     scene.spawn(false,false,skin);
+   }
    return;
  }
- if(key==='border'){
+ if(event==='fire'){
    const x=h.x,y=h.y,g=scene.add.graphics().setPosition(x,y).setDepth(y-2);
    scene.stageObjects.push(g);
    scene.fire={x,y,g,life:4};
    return;
  }
- const tower=key==='keep',x=tower?keepTower.x:h.x-10,y=tower?keepTower.y:h.y;
+ const tower=event==='tower',x=tower?keepTower.x:h.x-10,y=tower?keepTower.y:h.y;
  // Towers fire from their actual platform, only while the commander is in range.
  if(tower&&Math.hypot(h.x-x,h.y-y)>enemyMoves.volley.reach){scene.stageTick=.5;return}
- const baseTexture=enemyTexture(scene,key,tower?5:14);
+ const baseTexture=enemyTexture(scene,scene.stageKey,tower?5:14);
  const s=scene.add.image(x,y,baseTexture).setScale(.25).setVisible(tower).setDepth(y+1);
  const caster={s,baseTexture,skin:tower?5:14,move:tower?'volley':'rocks',reload:0,stride:0};
  scene.stageCaster=caster;stepEnemyMove(scene,caster,dt);

@@ -758,7 +758,9 @@ function campaignGeneral(c,stageKey,phase){
   const fill=(d,color)=>{c.fillStyle=color;c.fill(new Path2D(d))};
   const line=(d,color,width)=>{c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(d))};
   c.lineJoin='round';c.lineCap='round';
-  const priest=stageKey==='border',armored=stageKey==='keep'||stageKey==='camp';
+  const priest=stageKey==='border';
+  const helmet=['keep','xiapi','tongguan','dingjun','fancheng'].includes(stageKey);
+  const armored=helmet||stageKey==='camp';
   shadow(c,16,34,8);
   for(const side of [-1,1]){
     c.save();c.translate(side*(3+step*1.6),side*step);
@@ -782,16 +784,30 @@ function campaignGeneral(c,stageKey,phase){
     fill('M9 8 Q9 3 13 3 L15 0.8 L18 3 Q22 3 22.5 7 L12 10 L10 14 L7 14Z','#b77e2c');
     fill('M9 7 L22 5.5 L23 7.8 L12 9.4 L8 14 L4 15 L7.5 10 L4 11Z','#f4c34d');
     fill('M12 12 L15 14 L19 13.5 L21 12.4 L20 16 L16 20 L15 17 L13 17Z','#6d5740');
-  }else if(stageKey==='keep'){
-    fill('M8 9 Q8 4 14 3 L16 1 L19 3 Q23 4 23 7 L24 8 L14 9 L12 14 L8 15Z','#444d52');
-    fill('M15 3 Q10 -1 5 2 L2 6 L6 5 L4 8 Q11 7 15 3Z','#b75844');
-    line('M10 8 L22 6.5','#d4ad64',1);
+  }else if(helmet){
+    const silver=stageKey==='tongguan';
+    fill('M8 9 Q8 4 14 3 L16 1 L19 3 Q23 4 23 7 L24 8 L14 9 L12 14 L8 15Z',silver?'#bfcbd0':'#444d52');
+    if(stageKey==='xiapi'){
+      line('M14 5 Q9 -2 4 2 L1 7 M16 4 Q15 0 9 .8 Q6 1 4 5','#da7353',1.6);
+      fill('M11 6 L13 2 L15 5 L18 2 L20 5 L22 4 L21 7 L13 8Z','#e4b669');
+    }else if(stageKey==='fancheng'){
+      fill('M8 8 L12 9 L11 15 L7 15Z M20 7 L23 7 L24 13 L22 13Z','#68798b');
+      line('M14 3 L17 2 L19 6','#c5ab72',1.3);
+    }else if(stageKey==='dingjun'){
+      fill('M9 6 Q5 6 3 11 L7 10 L5 14 Q11 11 12 7Z',cloth.light);
+    }else{
+      fill('M15 3 Q10 -1 5 2 L2 6 L6 5 L4 8 Q11 7 15 3Z',silver?'#f4efe3':'#b75844');
+    }
+    line('M10 8 L22 6.5',silver?'#f1dec2':'#d4ad64',1);
   }else{
     fill('M10 9 Q9 5 13 4 L19 3 L22 6 L22 8 L14 8 L12 13 L10 13Z','#3e3432');
     if(stageKey==='camp'){
       fill('M11 6 L12.5 2 Q13.5 .3 15 .5 L19 1.4 L20.5 5.6Z','#ba9057');
       line('M14 2 L13.3 5 M16.8 2 L16 5 M9.5 5.3 L22.3 4.6','#efcb88',.8);
       line('M11 6 L21 5.5','#ffe09b',1.2);
+    }else if(stageKey==='wuzhang'){
+      fill('M9 7 L10 2 L13 3 L14 .5 L20 1 L22 7Z','#35313e');
+      line('M10 6 L21 5 M15 2 L15 5','#aa9c99',.8);
     }else if(stageKey==='pass'){
       fill('M10 6 L10 3 L13 3 L13 1 L18 1 L21 4 L21 6Z','#38383c');
       line('M10 6 L21 5.5','#c4a16d',1);
@@ -807,6 +823,26 @@ function campaignGeneral(c,stageKey,phase){
     oval(c,6,-18,1.6,1.6,'#ebc270');
     fill('M4 -14 L8 -13 L7 -7 L3.5 -8Z','#f4d67b');
     line('M5 -12 L6.5 -11 L5 -9','#a44b37',.7);
+  }else if(stageKey==='xiapi'){
+    line('M-4 13 L9 -16','#734c37',1.6);
+    fill('M7 -12 L11 -20 L10 -13 L8 -10Z M7 -10 Q12 -11 11 -16 Q16 -11 8 -8Z','#d7dfd8');
+    line('M6 -9 L10 -8','#d6ab62',1);
+  }else if(stageKey==='tongguan'){
+    line('M-4 13 L8 -14','#695047',1.5);
+    fill('M6 -12 L8 -17 L11 -20 L10 -14 L8 -11Z','#f0eeea');
+    fill('M7 -12 Q4 -10 3 -6 L6 -8 L5 -5 L9 -11Z','#b75644');
+  }else if(stageKey==='dingjun'){
+    line('M1 -11 Q13 -2 7 10','#ad804a',1.8);
+    line('M1 -11 L2 -1 L7 10','#e4ceab',.65);
+    line('M-1 1 L11 -3','#d8cbb3',.9);
+  }else if(stageKey==='fancheng'){
+    fill('M0 -7 L9 -8 L12 -5 L10 3 L6 7 L0 3 L-2 -3Z','#b79a65');
+    fill('M1 -5 L8 -6 L10 -4 L8 2 L6 4 L2 2Z','#455773');
+    line('M4 -4 L7 1 M7 -4 L4 1','#b9bbc0',.9);
+  }else if(stageKey==='wuzhang'){
+    line('M0 2 L5 -6','#78593c',1.3);
+    fill('M4 -4 Q0 -8 2 -12 L5 -10 Q5 -15 8 -16 L9 -12 L12 -14 Q13 -8 6 -4Z','#d9d6c7');
+    line('M5 -5 L8 -12','#969589',.8);
   }else if(stageKey==='keep'){
     line('M-3 11 L8 -14','#6e513d',1.5);
     fill('M7 -11 L8 -19 L10 -16 L9 -13 L13 -15 Q12 -9 7 -9Z','#d5d8c9');

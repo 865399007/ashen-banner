@@ -209,7 +209,7 @@ class Battle extends Phaser.Scene{
    this.stageKey=key;this.campaign=campaigns[key];
    this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin();
  }
- begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.wildlifeArrivals=wildlifeArrivals(this.wave,this.timeLeft);this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
  this.healCommander(15+6*this.bag[bandage]);
@@ -277,6 +277,16 @@ class Battle extends Phaser.Scene{
                 [alongX,top-margin],[alongX,top+height+margin]];
    const inside=edges.filter(([x,y])=>x>=0&&x<=960&&y>=0&&y<=600);
    const [x,y]=pick(inside.length?inside:edges);
+   const beast=wildBeasts[forcedSkin];
+   if(beast){
+     const baseTexture=enemyTexture(this,this.stageKey,forcedSkin);
+     const s=this.add.image(x,y,baseTexture).setOrigin(.5,.85).setScale(1/3);
+     const hp=Math.round((beast.health+3*this.wave)*(this.camp.data.veteran?1.25:1));
+     const enemy={s,skin:forcedSkin,beast,baseTexture,stride:Math.random(),hp,max:hp,
+       speed:beast.speed+this.wave,elite:false,boss:false};
+     if(forcedSkin==='boar')enemy.charge={phase:'ready',remaining:.6};
+     this.enemies.push(enemy);return;
+   }
    const mounted=!boss&&!elite&&++this.ordinarySpawns%8===5;
    const type=mounted?3:Math.floor(Math.random()*3);
    // Alternate infantry reinforcements with the existing patrols.
@@ -350,7 +360,7 @@ class Battle extends Phaser.Scene{
    enemy.facing=Math.atan2(this.hero.y-y,this.hero.x-x);
    this.move(s,this.hero.x,this.hero.y,enemy.speed*dt);
    if(enemy.elite||enemy.boss)resolveFootprint(this,s,x,y,true);
-   this.animateWalk(enemy,s.x-x,s.y-y,enemy.boss?48:22);
+   this.animateWalk(enemy,s.x-x,s.y-y,enemy.boss?48:enemy.beast?14:22);
  }
  animateWalk(unit,dx,dy,stepLength){
    const s=unit.s,travel=Math.hypot(dx,dy);
@@ -659,7 +669,7 @@ class Battle extends Phaser.Scene{
  }
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
- advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn();this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
+ advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn(false,false,takeWildlife(this.wildlifeArrivals,this.timeLeft,this.stageKey));this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  this.spawnWaveElites();
  for(const e of this.enemies){
    advanceImpact(e,dt);
@@ -667,7 +677,7 @@ class Battle extends Phaser.Scene{
    if(this.mode!=='fight')return;
    e.s.setDepth(e.s.y);
    if(e.footBar)this.positionFootBar(e);
-   if(!e.move&&distance(e.s,h)<19)this.enemyHit(e.s,7+this.wave);
+   if(!e.move&&distance(e.s,h)<(e.beast?.reach??19))this.enemyHit(e.s,(e.beast?.damage??7)+this.wave);
    if(this.mode!=='fight')return;
  }
  stepStage(this,dt);if(this.mode!=='fight')return;stepStageFire(this,dt);if(this.mode!=='fight')return;

@@ -12,102 +12,136 @@ const referenceScale=portraitWorldWidth/900;
 const startingSpeed=90;
 const campaigns={
   border:{
+    wildlife:'wolf',
     event:'fire',
     name:'黄巾之乱',army:'黄巾军',boss:'张角',colors:{shadow:'#8c591d',base:'#cf8f26',light:'#f1bf4e'},
     bossMove:'rocks',bossSkin:5,pace:1,march:1,bossHP:4800
   },
   camp:{
+    wildlife:'wolf',
     event:'reinforce',reinforcements:[null,null,null],
     name:'官渡之战',army:'袁绍军',boss:'袁绍',colors:{shadow:'#6b3547',base:'#a55363',light:'#da8b83'},
     bossMove:'volley',bossSkin:23,pace:.95,march:1,bossHP:5600
   },
   pass:{
+    wildlife:'snake',
     event:'rocks',
     name:'赤壁之战',army:'曹军水师',boss:'曹操',colors:{shadow:'#343e55',base:'#596785',light:'#96adc1'},
     bossMove:'rocks',bossSkin:14,pace:1.15,march:.95,bossHP:6600
   },
   keep:{
+    wildlife:'wolf',
     event:'tower',
     name:'合肥之战',army:'合肥守军',boss:'张辽',colors:{shadow:'#374944',base:'#607565',light:'#a0af89'},
     bossMove:'cleave',bossSkin:10,pace:1,march:.95,bossHP:7400
   },
   pursuit:{
+    wildlife:'boar',
     event:'reinforce',reinforcements:[10,13],
     name:'夷陵之战',army:'东吴军',boss:'陆逊',colors:{shadow:'#783c2b',base:'#b65b3c',light:'#e39a62'},
     bossMove:'cleave',bossSkin:13,pace:.84,march:1.22,bossHP:4400
   },
   xiapi:{
+    wildlife:'snake',
     name:'下邳之战',army:'并州军',boss:'吕布',colors:{shadow:'#5d3141',base:'#963e4d',light:'#e9bb7c'},
     event:'reinforce',reinforcements:[8,9,8],
     bossMove:'cleave',bossSkin:9,pace:.96,march:1.03,bossHP:7600
   },
   tongguan:{
+    wildlife:'boar',
     name:'潼关之战',army:'关西联军',boss:'马超',colors:{shadow:'#3c535b',base:'#738f94',light:'#e4e1cb'},
     event:'reinforce',reinforcements:[8,8,16],
     bossMove:'cleave',bossSkin:11,pace:.92,march:1.15,bossHP:8000
   },
   dingjun:{
+    wildlife:'boar',
     name:'定军山之战',army:'汉中守军',boss:'夏侯渊',colors:{shadow:'#464931',base:'#797b45',light:'#d0b478'},
     event:'rocks',
     bossMove:'volley',bossSkin:5,pace:1,march:1.06,bossHP:8400
   },
   fancheng:{
+    wildlife:'snake',
     name:'樊城之战',army:'樊城守军',boss:'曹仁',colors:{shadow:'#38445c',base:'#526e93',light:'#a8bfd4'},
     event:'tower',
     bossMove:'hammer',bossSkin:10,pace:.94,march:1,bossHP:9000
   },
   wuzhang:{
+    wildlife:'wolf',
     name:'五丈原之战',army:'曹魏关中军',boss:'司马懿',colors:{shadow:'#403348',base:'#665474',light:'#b5a4bb'},
     event:'reinforce',reinforcements:[10,23,23],
     bossMove:'rocks',bossSkin:14,pace:.90,march:1.08,bossHP:9600
   },
   bailang:{
+    wildlife:'wolf',
     name:'白狼山之战',army:'乌桓骑军',boss:'蹋顿',colors:{shadow:'#61412e',base:'#94704e',light:'#dcc19b'},
     event:'reinforce',reinforcements:[8,16,8],bossMove:'volley',bossSkin:5,pace:.91,march:1.15,bossHP:9900
   },
   changban:{
+    wildlife:'wolf',
     name:'长坂坡之战',army:'虎豹骑',boss:'曹纯',colors:{shadow:'#343c49',base:'#596574',light:'#c49562'},
     event:'reinforce',reinforcements:[8,8,22],bossMove:'cleave',bossSkin:11,pace:.88,march:1.18,bossHP:10400
   },
   jieting:{
+    wildlife:'boar',
     name:'街亭之战',army:'蜀汉守军',boss:'马谡',colors:{shadow:'#4c4630',base:'#7e794a',light:'#cbb480'},
     event:'rocks',bossMove:'rocks',bossSkin:14,pace:.92,march:1.09,bossHP:10900
   },
   shiting:{
+    wildlife:'snake',
     name:'石亭之战',army:'曹魏东征军',boss:'曹休',colors:{shadow:'#5e3940',base:'#935457',light:'#cdad83'},
     event:'reinforce',reinforcements:[10,5,13],bossMove:'volley',bossSkin:5,pace:.88,march:1.12,bossHP:11400
   },
   jiange:{
+    wildlife:'boar',
     name:'剑阁之战',army:'伐蜀魏军',boss:'钟会',colors:{shadow:'#414354',base:'#6a7286',light:'#b8b7a7'},
     event:'tower',bossMove:'cleave',bossSkin:10,pace:.86,march:1.12,bossHP:12000
   },
   jieqiao:{
+    wildlife:'wolf',
     name:'界桥之战',army:'幽州骑军',boss:'公孙瓒',colors:{shadow:'#424f59',base:'#829295',light:'#e2dcd1'},
     roster:[8,8,4,11,5],event:'reinforce',reinforcements:[8,8,11],
     bossMove:'cleave',bossSkin:11,pace:.88,march:1.14,bossHP:12500
   },
   chencang:{
+    wildlife:'wolf',
     name:'陈仓之围',army:'凉州联军',boss:'王国',colors:{shadow:'#624537',base:'#ab7651',light:'#d5b389'},
     roster:[8,9,13,16,23],event:'fire',
     bossMove:'volley',bossSkin:5,pace:.85,march:1.13,bossHP:13000
   },
   jingxian:{
+    wildlife:'boar',
     name:'泾县之战',army:'山越部众',boss:'祖郎',colors:{shadow:'#3b4c39',base:'#718457',light:'#bbbd86'},
     roster:[5,9,12,12,14],event:'rocks',
     bossMove:'cleave',bossSkin:9,pace:.86,march:1.17,bossHP:13600
   },
   xiangping:{
+    wildlife:'snake',
     name:'襄平之战',army:'辽东守军',boss:'公孙渊',colors:{shadow:'#45394f',base:'#78627b',light:'#bcabb3'},
     roster:[10,10,11,5,23],event:'tower',
     bossMove:'volley',bossSkin:23,pace:.83,march:1.13,bossHP:14300
   },
   nanzhong:{
+    wildlife:'snake',
     name:'南中之战',army:'南中部众',boss:'孟获',colors:{shadow:'#62423c',base:'#a06250',light:'#d5b474'},
     roster:[4,9,11,13,15],event:'reinforce',reinforcements:[11,13,15],
     bossMove:'hammer',bossSkin:13,pace:.82,march:1.15,bossHP:15000
   }
 };
 const stageOrder=Object.keys(campaigns);
+const wildBeasts={
+  wolf:{name:'山狼',speed:66,health:15,reach:12,damage:4,habit:'步伐快，会贴近指挥官撕咬。'},
+  boar:{name:'野猪',speed:35,health:29,reach:14,damage:6,habit:'靠近时会低头蓄力，随后沿直线冲撞。'},
+  snake:{name:'泽蛇',speed:44,health:12,reach:10,damage:4,habit:'贴地游动，近身后啮咬。'}
+};
+function wildlifeArrivals(wave,duration){
+  if(wave===finalWave)return [];
+  const first=duration-(7+Math.random()*5);
+  return wave<=3?[first]:[first,duration*(.26+Math.random()*.12)];
+}
+function takeWildlife(arrivals,timeLeft,stageKey){
+  if(!arrivals.length||timeLeft>arrivals[0])return null;
+  arrivals.shift();return campaigns[stageKey].wildlife;
+}
 function eliteArrivalTimes(wave,duration){
   const count=3+Math.floor(Math.random()*3);
   // Countdown thresholds: leave one full interval to fight the last regular-wave elite.
@@ -222,4 +256,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={eliteArrivalTimes,spawnDueElites,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElites,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

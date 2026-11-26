@@ -35,6 +35,7 @@ figure canvas{width:100%;height:65px;object-fit:contain;display:block}
 figcaption{font-size:14px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .pair .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.beast-row{display:flex;align-items:center;gap:10px}.beast-row canvas{width:62px;height:49px;object-fit:cover;object-position:bottom}.beast-row p{font-size:14px}
 .event-text{margin-top:7px}
 @media(max-width:650px){header{padding:18px 12px 12px}nav{padding:0 12px 12px;gap:5px}main{padding:0 8px 20px}article{padding:16px 14px}select,button{padding:7px}header a{font-size:14px}.roster{grid-template-columns:repeat(4,minmax(0,1fr))}.pair{grid-template-columns:1fr;gap:0}.hero{gap:10px}.portrait{width:76px;height:100px}.hero p{font-size:14px}figure canvas{height:55px}}
 @page{size:A4;margin:13mm}
@@ -51,11 +52,11 @@ figcaption{font-size:14px}
 </style>
 </head>
 <body>
-<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf">全册 PDF</a></header>
+<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf?v=wild-beasts">全册 PDF</a></header>
 <nav aria-label="选择战役"><button id="prev" type="button">上一关</button><select id="chapters" aria-label="战役"></select><button id="next" type="button">下一关</button></nav>
 <main id="book"></main>
-<script src="rules.js?v=twenty-fields"></script>
-<script src="art.js?v=twenty-fields"></script>
+<script src="rules.js?v=wild-beasts"></script>
+<script src="art.js?v=wild-beasts"></script>
 <script>
 const names={3:'短刀兵',4:'长枪兵',5:'弓兵',8:'突击骑兵',9:'双刃兵',10:'大盾兵',11:'长戟兵',12:'短刃游兵',13:'重剑兵',14:'战镐兵',15:'连枷兵',16:'火把兵',22:'轻骑兵',23:'弩兵'};
 const standardPatrol=[3,4,5,8,9,10,11,12,13,14,15,16,23];
@@ -76,7 +77,8 @@ function sprite(key,id,boss){
   canvas.width=(mounted?50:36)*scale;canvas.height=(mounted?45:38)*scale;
   canvas.setAttribute('aria-hidden','true');
   const c=canvas.getContext('2d');c.scale(scale,scale);
-  if(boss)campaignGeneral(c,key,0);
+  if(wildBeasts[id])paintWildBeast(c,id,0);
+  else if(boss)campaignGeneral(c,key,0);
   else miniature(c,(points,color)=>{
     c.fillStyle=color;c.beginPath();
     points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();
@@ -125,7 +127,10 @@ function campaignPage(key,i){
     }else units(event,key,c.reinforcements,'');
     event.append(element('p','note','每波约第 5 秒起增援，随后每 14 秒一批。'));
   }else event.append(element('p','event-text',hazards[c.event]));
-  return page;
+  const wild=section(page,'战场野怪'),kind=c.wildlife,beast=wildBeasts[kind];
+  const row=element('div','beast-row');
+  row.append(sprite(key,kind,false),element('p','',beast.name+'　'+beast.habit));
+  wild.append(row);return page;
 }
 function render(){
   const key=stageOrder.includes(location.hash.slice(1))?location.hash.slice(1):stageOrder[0],i=stageOrder.indexOf(key);

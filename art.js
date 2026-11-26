@@ -895,6 +895,59 @@ function campaignGeneral(c,stageKey,phase){
   oval(c,24.7,20.2,1.7,1.5,'#e7bd93');
 }
 
+function paintWildBeast(c,id,phase){
+  const stride=Math.sin(phase);
+  const fill=(d,color)=>{c.fillStyle=color;c.fill(new Path2D(d))};
+  c.save();c.lineJoin='round';c.lineCap='round';
+  oval(c,18,33,13,2,'rgba(58,45,32,.19)');
+  if(id==='snake'){
+    const spine=new Path2D();
+    // Taper the tail and widen the middle; a travelling bend runs from neck to tip.
+    const flank=[];
+    for(let i=0;i<=28;i++){
+      const t=i/28,x=2+28*t,y=30-4*t+Math.sin(t*8-phase)*3.3*(1-t*.55);
+      const r=.22+1.85*Math.sin(Math.PI*t*.88);
+      if(!i)spine.moveTo(x,y-r);else spine.lineTo(x,y-r);
+      flank.push([x,y+r]);
+    }
+    for(const [x,y] of flank.reverse())spine.lineTo(x,y);
+    spine.closePath();c.fillStyle='#68754c';c.fill(spine);c.strokeStyle='#424b37';c.lineWidth=.75;c.stroke(spine);
+    for(const t of [.36,.57,.74]){
+      const y=30-4*t+Math.sin(t*8-phase)*3.3*(1-t*.55);
+      oval(c,2+28*t,y-.4,1.05,.78,'#b9aa73',.48);
+    }
+    c.translate(0,Math.sin(8-phase)*1.48);
+    fill('M27 26 Q27 23 30 23 L34 24 L35 26 L32 27.5 L28 27.3Z','#586747');
+    fill('M29 26 L34.8 25.6 L32 27.4 L29 27.1Z','#c0b48a');
+    oval(c,32,24.8,.92,.82,'#2c3023');
+  }else{
+    const boar=id==='boar';
+    for(const [i,x] of [10,23,12,25].entries()){
+      c.save();c.translate(x,26);c.rotate((i===1||i===2?1:-1)*stride*.46);
+      fill('M-2 -2 L2 -2 L1.3 2 L.5 5 L2.5 6.5 L-1 7 L-2 5 L-1 2Z',i<2?'#55463c':boar?'#725749':'#655d52');
+      c.restore();
+    }
+    c.translate(0,-Math.abs(stride)*1.1);
+    if(boar){
+      fill('M6 21 Q2 20 2 16 Q0 20 2 22 L6 24Z','#594239');
+      fill('M4 23 Q4 18 9 17 L11 14 L13 15 L15 12 L17 14 L20 13 L24 16 Q29 16 31 22 L35 23 L35 26 L31 28 L25 27 L23 29 L11 29 Q5 29 4 25Z','#785747');
+      fill('M6 21 Q11 16 18 16 L22 18 L21 21 L18 19 L16 21 L13 19 L10 21Z','#a27a5b');
+      fill('M23 19 L22 13 L27 16 L27 20Z','#593f35');
+      fill('M29 25 L31 26 L33 23 Q33 28.5 29 28Z','#e5d4aa');
+      fill('M32 22.5 L35 22.8 L35.5 25 L33.7 26 L31.5 24.6Z','#a77f68');
+      oval(c,28.7,21.6,.9,.9,'#29221f');
+    }else{
+      fill('M11 23 Q6 23 1 17 L1 21 L0 19 Q1 27 8 28 L13 26Z','#685f54');
+      fill('M7 23 Q9 19 14 20 L21 20 L23 16 L26 16 L26 12 L29 15 L31 14 L32 19 L35.5 20.8 L34.8 23 L30 24 L28 28 L26 26 L24 28 L23 25 Q18 28 12 26 L9 29 L6 28Z','#827d70');
+      fill('M10 22 Q16 19 22 21 L26 18 L27 20 L24 23 L17 23 L13 24Z','#a29d8a');
+      fill('M24 24 L27 21 L29 22 L35 21.7 L31 24 L28 24 L27 27Z','#d1c3a4');
+      fill('M27 16 L27.3 14 L29 16.2Z','#56493e');
+      oval(c,31,19.7,.9,.77,'#312a25');oval(c,35,21.2,.7,.7,'#423a31');
+    }
+  }
+  c.restore();
+}
+
 function unitFrames(scene,id,key,paint){
   const rider=id===8||id===22;
   for(let frame=-1;frame<WALK_FRAMES;frame++){
@@ -906,10 +959,12 @@ function unitFrames(scene,id,key,paint){
 }
 
 function enemyTexture(scene,stageKey,id,boss=false){
-  const key='man-'+stageKey+'-'+(boss?'boss':id);
+  const beast=wildBeasts[id];
+  const key=beast?'wild-'+id:'man-'+stageKey+'-'+(boss?'boss':id);
   if(!scene.textures.exists(key)){
     unitFrames(scene,id,key,(c,p,phase)=>{
-      if(boss)campaignGeneral(c,stageKey,phase);
+      if(beast)paintWildBeast(c,id,phase);
+      else if(boss)campaignGeneral(c,stageKey,phase);
       else miniature(c,p,id,phase,0,null,0,'',campaigns[stageKey].colors);
     });
   }

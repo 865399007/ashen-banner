@@ -1,12 +1,5 @@
 // Each plate uses the same 960 × 600 ground scale as the combat simulation.
 const battlefieldPlates = {
-  border: { earth:'#c2a878', draw({patch,trail,mark}) {
-    patch('stubble','M-20 -15 H532 L497 47 L335 121 L82 187 L-20 170Z');
-    patch('stubble','M992 319 L854 371 L660 487 L579 625 H992Z');
-    trail('foot','M-40 480 Q190 437 354 326 T700 169 Q821 97 980 99',36);
-    mark('sheaf',150,126,1.15); mark('sheaf',174,132,.83); mark('sickle',383,282);
-    mark('sheaf',770,469); mark('cloth',840,426,.85);
-  }},
   camp: { earth:'#c0a085', draw({patch,trail,mark}) {
     patch('trampled','M-22 74 Q134 25 282 77 L341 153 L270 214 L-22 228Z');
     patch('trampled','M678 349 Q823 304 982 370 V562 L680 514 L621 432Z');

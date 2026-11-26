@@ -201,16 +201,6 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
     Q${75+capeWave*4} ${202+capeWave*3} ${56+capeTip*9} ${196-capeTip*5}
     Q${67+capeWave*5} 169 70 138 Z`,'#97483c','#622d29');
   shape('M94 107 Q99 115 108 119 L98 164 L92 201 Q96 155 88 146 Z','#78382f','#4c2724');
-  c.save();
-  c.translate(86,119);
-  c.rotate(swing===null?.72:swing);
-  shape('M-7 0 Q0 -9 9 -4 L31 11 L43 8 L47 18 L29 24 L1 15 Z','#674634','#483326');
-  shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
-  shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
-  shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');
-  c.beginPath();c.arc(42,26,4.1,0,TAU);c.strokeStyle='#c69a56';c.lineWidth=2.5;c.stroke();
-  shape('M37 11 Q41 7 47 12 L46 22 Q40 26 35 20 Z','#684834','#493126');
-  c.restore();
   // Bring the pauldrons closer to the neck while keeping the helmet proportions.
   c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z','#cfb998','#b49a7e');
@@ -232,6 +222,17 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
   shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
   shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
+  // The near arm and saber pass in front of the armor during the swing.
+  c.save();
+  c.translate(86,119);
+  c.rotate(swing===null?.72:swing);
+  shape('M-7 0 Q0 -9 9 -4 L31 11 L43 8 L47 18 L29 24 L1 15 Z','#674634','#483326');
+  shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
+  shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
+  shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');
+  c.beginPath();c.arc(42,26,4.1,0,TAU);c.strokeStyle='#c69a56';c.lineWidth=2.5;c.stroke();
+  shape('M37 11 Q41 7 47 12 L46 22 Q40 26 35 20 Z','#684834','#493126');
+  c.restore();
   c.restore();
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];

@@ -196,7 +196,7 @@ class Battle extends Phaser.Scene{
    window.addEventListener('resize',this.resetStick);
    document.addEventListener('visibilitychange',this.resetStick);
  }
- resetRun(){Object.assign(this,{wave:1,flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
+ resetRun(){Object.assign(this,{wave:1,souls:[],flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:1,xp:0,pending:0,upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
    if(this.mode==='title')$('camp-wallet').textContent='银币 '+this.camp.data.silver+'　·　铁料 '+this.camp.data.iron+'　·　军功章 '+this.camp.data.medals;
    $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
@@ -241,22 +241,22 @@ class Battle extends Phaser.Scene{
    this.bondCounts=troops.map((_,id)=>this.army.filter(unit=>unit.id===id).length);
    this.swordHits=0;this.volleyIn=8*(1-.12*this.bag[11]);
    this.army.forEach((unit,i)=>this.actors.push(this.createActor(unit,i+1)));
-   this.soulImage?.destroy();this.soulImage=null;
- this.soul=armySoul(this.army);
- if(this.soul){
+   this.clearSouls();
+   this.souls=armySouls(this.army);
    this.soulStrike=0;
-   const {type,count}=this.soul;
-   this.updateSoulFrames();
-   this.soulImage=this.add.image(this.hero.x,this.hero.y,this.soulFrames[0]).setOrigin(.5,soulBeltOriginY)
-     .setScale(.36+.02*(count-4)).setAlpha(.86);
-   if(type.general==='lvbu'){
-     const plumes=this.add.image(0,0,lvbuPlumeFrame(this,0)).setOrigin(.5,soulBeltOriginY)
-       .setScale(this.soulImage.scaleX).setAlpha(this.soulImage.alpha);
-     this.soulImage.plumes=plumes;
-     this.soulImage.once('destroy',()=>plumes.destroy());
+   for(const spirit of this.souls){
+     const {type,level}=spirit;
+     spirit.frames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,type,frame,level-1));
+     const image=this.add.image(this.hero.x,this.hero.y,spirit.frames[0]).setOrigin(.5,soulBeltOriginY)
+       .setScale(.34+.02*(level-1)).setAlpha(.86);
+     spirit.image=image;
+     if(type.general==='lvbu'){
+       image.plumes=this.add.image(0,0,lvbuPlumeFrame(this,0)).setOrigin(.5,soulBeltOriginY)
+         .setScale(image.scaleX).setAlpha(image.alpha);
+       image.once('destroy',()=>image.plumes.destroy());
+     }
    }
-   this.positionSoul();
- }
+   this.positionSouls();
  this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
    unit.s.setPosition(pos.x,pos.y);
@@ -268,9 +268,9 @@ class Battle extends Phaser.Scene{
    unit.followGoal=pos;
    unit.goalHistory=[];
  });
-   Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.soul?.count===6&&this.soul.id===id)));
+   Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.souls.some(s=>s.count===6&&s.id===id))));
  }
- clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.soulImage?.destroy();this.soulImage=null;this.soul=null;$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawn(boss=false,elite=false,forcedSkin=null){
    const camera=this.cameras.main;
    const width=Math.min(960,camera.width/camera.zoomX),height=Math.min(600,camera.height/camera.zoomY);
@@ -494,30 +494,30 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:fx,rotation:facing+.45,alpha:0,duration:180,onComplete:()=>fx.destroy()});
    }
  }
- updateSoulFrames(){
-   const tier=soulWeaponTier(this.level);
-   const pose=this.soulImage?this.soulFrames.indexOf(this.soulImage.texture.key):0;
-   this.soulFrames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,this.soul.type,frame,tier));
-   this.soulImage?.setTexture(this.soulFrames[Math.max(0,pose)]);
+ clearSouls(){
+   for(const spirit of this.souls)spirit.image?.destroy();
+   this.souls=[];
  }
- positionSoul(){
-   const h=this.hero;
-   const back=h.displayWidth*.14*(h.flipX?1:-1);
-   const soul=this.soulImage;
-   soul.setPosition(h.x+back,h.y-h.displayHeight*.55).setFlipX(h.flipX).setDepth(h.depth-.5);
-   if(soul.plumes){
-     const phase=Math.floor(this.elapsed*15)%plumeFrameCount;
-     soul.plumes.setTexture(lvbuPlumeFrame(this,phase)).setPosition(soul.x,soul.y)
-       .setFlipX(soul.flipX).setDepth(soul.depth-.01);
-   }
+ positionSouls(){
+   const h=this.hero,back=h.flipX?1:-1;
+   this.souls.forEach(({image},i)=>{
+     const offset=this.souls.length===1 ? .14 : (i===0 ? .44 : -.24);
+     image.setPosition(h.x+back*h.displayWidth*offset,h.y-h.displayHeight*(.55+.17*i))
+       .setFlipX(h.flipX).setDepth(h.depth-.5-.1*i);
+     if(image.plumes){
+       const phase=Math.floor(this.elapsed*15)%plumeFrameCount;
+       image.plumes.setTexture(lvbuPlumeFrame(this,phase)).setPosition(image.x,image.y)
+         .setFlipX(image.flipX).setDepth(image.depth-.01);
+     }
+   });
  }
- soulBonus(stat){return this.soul?.type.stat===stat?this.soul.bonus:0}
+ soulBonus(stat){return this.souls.reduce((sum,s)=>sum+(s.type.stat===stat?s.bonus:0),0)}
  attack(a,e){
  if(a.hero){
    a.s.setFlipX(e.s.x<a.s.x);
-   if(this.soulImage){
-     this.soulStrike=.22;this.positionSoul();
-     showSoulStrike(this,this.soulImage,this.soul.type.general,e.s);
+   if(this.souls.length){
+     this.soulStrike=.22;this.positionSouls();
+     for(const spirit of this.souls)showSoulStrike(this,spirit,e.s);
    }
  }
  if(a.hero&&a.skin===6){
@@ -692,7 +692,7 @@ class Battle extends Phaser.Scene{
    const candidates=i&&![2,5].includes(a.id)&&nearby.length?nearby:this.enemies;
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
- const range=a.hero?this.commander.range*(1+(this.soul ? .25 : 0)+this.soulBonus('reach')):this.mercRange(a);
+ const range=a.hero?this.commander.range*(1+(this.souls.length ? .25 : 0)+this.soulBonus('reach')):this.mercRange(a);
  if(i)this.follow(a,i-1,target,x||y,dt);
  if(i&&a.id===4&&target){a.facing=Math.atan2(target.s.y-a.s.y,target.s.x-a.s.x);a.s.setFlipX(Math.cos(a.facing)<0)}
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<range&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}
@@ -700,10 +700,10 @@ class Battle extends Phaser.Scene{
    this.volleyIn+=8*(1-.12*this.bag[11]);this.groupStrike(2);
    if(this.mode!=='fight')return;
  }
- if(this.soulImage){
+ if(this.souls.length){
    const frame=this.soulStrike>0?Math.min(6,Math.floor((1-this.soulStrike/.22)*7)):0;
-   this.soulImage.setTexture(this.soulFrames[frame]);
-   this.positionSoul();
+   for(const s of this.souls)s.image.setTexture(s.frames[frame]);
+   this.positionSouls();
    this.soulStrike=Math.max(0,this.soulStrike-dt);
  }
  for(let drop of [...this.drops]){
@@ -738,7 +738,6 @@ class Battle extends Phaser.Scene{
    if(d.heal){this.healCommander(d.heal);return}
    const previousLevel=this.level;
    this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}
-   if(this.soulImage&&soulWeaponTier(this.level)!==soulWeaponTier(previousLevel))this.updateSoulFrames();
    if(commanderForm(this.level)!==commanderForm(previousLevel)){
      const hero=this.actors[0],oldBase=hero.baseTexture;
      const pose=hero.hit?hero.normalTexture:hero.s.texture.key;
@@ -803,15 +802,15 @@ class Battle extends Phaser.Scene{
    const interval=this.attackInterval({hero:true,id:c.weapon});
    const reduction=1-15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18]);
    appendCommanderStats(panel,c.name,[
-     ...(this.soul?[['战魂',this.soul.type.name+' · '+this.soul.type.weapon]]:[]),
+     ...this.souls.map(s=>['战魂',s.type.name+' · '+s.level+' 级 · '+s.type.label+' +'+s.type.values[s.level-1]+'%']),
      ['等级',this.level],['装束',commanderForms[commanderForm(this.level)].name],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
-     ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.soul?.25:0)+this.soulBonus('reach')))],
+     ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.souls.length ? .25 : 0)+this.soulBonus('reach')))],
      ['暴击率',percent(Math.min(1,.05+this.critBonus+this.soulBonus('crit')))],['暴击伤害','150%'],['护甲',this.armor],['常驻减伤',percent(reduction)],
      ['移速',statNumber(this.speed)],['幸运',this.luck],['拾取范围',statNumber(70*(1+.05*this.camp.level('sense'))*(1+.2*this.bag[satchel]))],
      ['宝箱拾取范围',statNumber(94*(1+.2*this.bag[satchel]))],['开波恢复',15+6*this.bag[bandage]],['佣兵攻速加成',percent(this.mercHaste)]
    ]);
  }
- shop(deal=true){this.soul=armySoul(this.army);this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
+ shop(deal=true){this.souls=armySouls(this.army);this.hud();let m=this.panel('战地整备','第 '+this.wave+' 波已完成　 ·　军饷 '+this.gold+' 银币'),cards=document.createElement('div');cards.id='cards';cards.className=deal?'deal':'';m.append(cards);
  this.offers.forEach((o,i)=>{let c=document.createElement('div');cards.append(c);if(!o){c.textContent='已售出';return} const emblem=document.createElement('i'),name=document.createElement('strong'),detail=document.createElement('small');
  c.dataset.tier=o.q;c.dataset.suit=o.merc?'佣兵':'道具';emblem.append(o.merc?mercenaryPortrait(this,o):itemIcon(o.id));
  emblem.setAttribute('aria-hidden','true');

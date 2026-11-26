@@ -1,5 +1,4 @@
 const soulRimColors=['#ffffff','#49aaff','#bb72ff','#ff514c'];
-function soulWeaponTier(level){return Math.min(3,commanderForm(level))}
 
 // The codex and the battlefield share a bust, drawn around its belt at (40, 48).
 function drawGeneralSoul(c,general,pose=0,tier=0){

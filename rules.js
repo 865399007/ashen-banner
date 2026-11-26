@@ -79,24 +79,27 @@ const commanders={
   }
 };
 const soulTypes=[
-  {general:'liubei',name:'刘备',weapon:'雌雄双股剑',stat:'haste',label:'攻速',values:[12,20,30]},
-  {general:'zhaoyun',name:'赵云',weapon:'龙胆亮银枪',stat:'reach',label:'射程',values:[15,25,35]},
-  {general:'huangzhong',name:'黄忠',weapon:'长弓',stat:'crit',label:'暴击率',values:[8,14,20]},
-  {general:'xuhuang',name:'徐晃',weapon:'开山大斧',stat:'power',label:'伤害',values:[15,25,40]},
-  {general:'caoren',name:'曹仁',weapon:'大盾与佩刀',stat:'guard',label:'减伤',values:[12,20,30]},
-  {general:'zhugeliang',name:'诸葛亮',weapon:'诸葛连弩',stat:'crit',label:'暴击率',values:[8,14,20]},
-  {general:'wuanguo',name:'武安国',weapon:'长柄铁锤',stat:'power',label:'伤害',values:[15,25,40]},
-  {general:'dianwei',name:'典韦',weapon:'双铁戟',stat:'haste',label:'攻速',values:[12,20,30]},
-  {general:'lvbu',name:'吕布',weapon:'方天画戟',stat:'reach',label:'射程',values:[15,25,35]},
-  {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[15,25,40]}
+  {general:'liubei',name:'刘备',weapon:'雌雄双股剑',stat:'haste',label:'攻速',values:[6,12,20,30]},
+  {general:'zhaoyun',name:'赵云',weapon:'龙胆亮银枪',stat:'reach',label:'射程',values:[8,15,25,35]},
+  {general:'huangzhong',name:'黄忠',weapon:'长弓',stat:'crit',label:'暴击率',values:[4,8,14,20]},
+  {general:'xuhuang',name:'徐晃',weapon:'开山大斧',stat:'power',label:'伤害',values:[8,15,25,40]},
+  {general:'caoren',name:'曹仁',weapon:'大盾与佩刀',stat:'guard',label:'减伤',values:[6,12,20,30]},
+  {general:'zhugeliang',name:'诸葛亮',weapon:'诸葛连弩',stat:'crit',label:'暴击率',values:[4,8,14,20]},
+  {general:'wuanguo',name:'武安国',weapon:'长柄铁锤',stat:'power',label:'伤害',values:[8,15,25,40]},
+  {general:'dianwei',name:'典韦',weapon:'双铁戟',stat:'haste',label:'攻速',values:[6,12,20,30]},
+  {general:'lvbu',name:'吕布',weapon:'方天画戟',stat:'reach',label:'射程',values:[8,15,25,35]},
+  {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[8,15,25,40]}
 ];
-function armySoul(army){
+function armySouls(army){
   const counts=troops.map(()=>0);
   for(const unit of army)if(unit.q===3)counts[unit.id]++;
-  const id=counts.findIndex(n=>n>=4);
-  if(id<0)return null;
-  const count=counts[id],type=soulTypes[id];
-  return {id,count,type,bonus:type.values[count-4]/100};
+  const souls=[];
+  counts.forEach((count,id)=>{
+    if(count<3)return;
+    const level=count-2,type=soulTypes[id];
+    souls.push({id,count,level,type,bonus:type.values[level-1]/100});
+  });
+  return souls;
 }
 const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞'];
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57]];

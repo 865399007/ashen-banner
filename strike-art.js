@@ -143,8 +143,10 @@ function drawSoulWeapon(g,form,color){
   }
 }
 
-function showSoulStrike(scene,soul,general,target){
-  const {form,color}=soulStrikes[general],light=0xfff2ce;
+function showSoulStrike(scene,spirit,target){
+  const {image:soul,type,level}=spirit;
+  const {form,color}=soulStrikes[type.general],light=0xfff2ce;
+  const rim=Phaser.Display.Color.HexStringToColor(soulRimColors[level-1]).color;
   // The painted grip is eight drawing units forward and five above the belt anchor.
   const scale=soul.scaleX*2,side=soul.flipX?-1:1;
   const x=soul.x+side*8*scale,y=soul.y-5*scale;
@@ -160,8 +162,8 @@ function showSoulStrike(scene,soul,general,target){
     if(t<.73){
       const fade=Phaser.Math.Clamp((.73-t)/.15,0,1);
       g.setAlpha(fade);
-      const tail=Math.min(front,28);
-      if(tail>1){
+      const tail=Math.min(front,10+level*5);
+      if(tail>1&&level>=2){
         // Two tapering streamers spiral in behind the travelling weapon.
         for(const sign of [-1,1]){
           const points=[];
@@ -170,11 +172,16 @@ function showSoulStrike(scene,soul,general,target){
             const y=sign*spread*(4+2.5*Math.sin(5*u-7*t));
             points.push({x:front-tail*(1-u),y});
           }
-          g.lineStyle(1,color,.8).strokePoints(points);
+          g.lineStyle(1,rim,.85).strokePoints(points);
           const spark=points[sign>0?4:8],size=1.6*travel;
           strikeShard(g,spark.x-size,spark.y,size*2+.01,0,size*.7,light);
         }
-        strikeShard(g,front-tail,0,tail,0,1.6,color);
+      }
+      if(tail>1)strikeShard(g,front-tail,0,tail,0,1.4,rim);
+      if(level>=3&&travel>.15){
+        g.save().translateCanvas(front-tail*.7,0).scaleCanvas(.58,.58);
+        drawSoulWeapon(g,form,rim);
+        g.restore();
       }
       g.save().translateCanvas(front,0).scaleCanvas(.55+.45*travel,.55+.45*travel);
       if(sweep)g.rotateCanvas(side*(-.75+travel*1.25));
@@ -184,11 +191,22 @@ function showSoulStrike(scene,soul,general,target){
     if(t>.5){
       const burst=(t-.5)*2,r=(heavy?25:17)*burst+2;
       g.setAlpha(1-burst).save().translateCanvas(reach,0);
-      for(let i=0;i<6;i++){
-        const a=i*Math.PI/3+.24,u=Math.cos(a),v=Math.sin(a);
-        strikeShard(g,r*u,r*v,(3+5*burst)*u,(3+5*burst)*v,1.3,i%2?light:color);
+      const sparks=2+level*2;
+      for(let i=0;i<sparks;i++){
+        const a=i*2*Math.PI/sparks+.24,u=Math.cos(a),v=Math.sin(a);
+        strikeShard(g,r*u,r*v,(3+5*burst)*u,(3+5*burst)*v,1.3,i%2?light:rim);
       }
-      for(const a of [.3,Math.PI+.3])bladeRibbon(g,r,a+burst*.5,a+2.3+burst*.5,heavy?2.6:1.4,color);
+      if(level>=3){
+        for(const a of [.3,Math.PI+.3])bladeRibbon(g,r,a+burst*.5,a+2.3+burst*.5,heavy?2.6:1.4,rim);
+      }
+      if(level===4&&burst>.2){
+        const ring=(burst-.2)*(heavy?37:28);
+        g.lineStyle(1.8,rim,.9).strokeCircle(0,0,ring);
+        for(let i=0;i<4;i++){
+          const a=i*Math.PI/2+.65,u=Math.cos(a),v=Math.sin(a);
+          strikeShard(g,ring*u,ring*v,8*u,8*v,2,rim);
+        }
+      }
       g.restore();
     }
   }

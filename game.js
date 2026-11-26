@@ -44,7 +44,10 @@ class Battle extends Phaser.Scene{
  for(const button of $('camp-actions').querySelectorAll('[data-camp-section]')){
    button.onclick=()=>this.camp.open(this,button.dataset.campSection);
  }
- makeArt(this);this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
+ makeArt(this);
+ const silverIcon=$('silver-icon').getContext('2d');
+ silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
+ this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC',false);this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{
    if(event.code!=='Space'||(this.mode!=='fight'&&this.mode!=='paused'))return;

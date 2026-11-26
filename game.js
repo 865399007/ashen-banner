@@ -19,7 +19,8 @@ function appendCommanderStats(panel,name,rows){
 const statNumber=value=>Number(value.toFixed(2));
 class Battle extends Phaser.Scene{
  preload(){
-   for(const key of ['sand','linen-cross',...fieldProps.map(p=>p.key)])this.load.image(key,'assets/field/'+key+'.png');
+   this.load.image('ashen-battlefield','assets/field/ashen-battlefield.webp');
+   for(const key of ['linen-cross',...Object.keys(fieldCoverage)])this.load.image(key,'assets/field/'+key+'.png');
  }
  create(){
  this.camp=new GreyCamp();

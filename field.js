@@ -1,16 +1,3 @@
-// Original illustration coordinates. Each ellipse follows a solid footprint at ground level.
-const fieldProps=[
-  {key:'tree-ground',left:423,top:48,depth:-9,solids:[]},
-  {key:'tree',left:423,top:48,feet:198,solids:[[539,191,14,9],[595,203,27,12]]},
-  {key:'tent',left:1001,top:149,feet:314,solids:[[1175,284,75,28],[1090,294,21,14],[1241,278,10,9],[1185,339,11,5]]},
-  {key:'cart',left:169,top:449,feet:522,solids:[[257,496,50,19],[301,511,30,8]]},
-  {key:'wall',left:958,top:667,feet:766,solids:[[1099,738,38,16],[1033,761,28,13],[1113,779,14,7]]},
-  {key:'boulder',left:141,top:410,feet:457,solids:[[213,449,27,13]]},
-  {key:'stones',left:263,top:887,feet:926,solids:[[296,916,20,10]]},
-  {key:'tent-stone',left:1293,top:266,feet:291,solids:[[1318,285,14,7]]},
-  {key:'cart-stone',left:296,top:530,feet:552,solids:[[331,545,14,7]]},
-  {key:'pebble',left:1040,top:67,feet:94,solids:[[1095,86,14,7]]}
-];
 const fieldScaleX=960/1738,fieldScaleY=600/1086;
 // Packed 4-by-4 source-pixel coverage cells from the prop PNG alpha channels.
 const fieldCoverage={
@@ -24,20 +11,23 @@ const fieldCoverage={
   'cart-stone':'gA/4h//5f/4f/wMAAAAAAA==',
   'pebble':'AAAAAAeA+AH+H/D/A/8//P/B/w/4BwAAAA=='
 };
+// Ground-level footprints on the battlefield, in world coordinates.
+const battlefieldFootprints=[
+  [68,91,62,23], [166,83,13,8], [48,164,13,8],
+  [225,110,16,9], [100,181,17,8],
+  [496,36,54,12], [569,55,30,12], [617,79,32,13],
+  [670,107,38,14], [721,125,36,13], [771,135,29,14],
+  [895,157,24,16], [935,158,23,13],
+  [912,331,10,7],
+  [88,529,44,22], [136,554,29,15],
+  [738,542,25,13], [820,541,50,25], [884,548,30,18],
+  [894,492,14,8]
+];
+
 function placeField(scene){
-  scene.back=scene.add.image(0,0,'sand').setOrigin(0).setDisplaySize(960,600).setDepth(-10);
-  scene.obstacles=[];
+  scene.back=scene.add.image(0,0,'ashen-battlefield').setOrigin(0).setDisplaySize(960,600).setDepth(-10);
+  scene.obstacles=battlefieldFootprints.map(([x,y,rx,ry])=>({x,y,rx,ry}));
   scene.occluders=[];
-  for(const prop of fieldProps){
-    const image=scene.add.image((145+prop.left)*fieldScaleX,prop.top*fieldScaleY,prop.key)
-      .setOrigin(0).setScale(fieldScaleX,fieldScaleY).setDepth(prop.depth??prop.feet*fieldScaleY);
-    if(fieldCoverage[prop.key]){
-      scene.occluders.push({image,mask:atob(fieldCoverage[prop.key]),columns:Math.ceil(image.width/4)});
-    }
-    for(const [x,y,rx,ry] of prop.solids){
-      scene.obstacles.push({x:(145+x)*fieldScaleX,y:y*fieldScaleY,rx:rx*fieldScaleX,ry:ry*fieldScaleY});
-    }
-  }
 }
 
 function propCoversActor(prop,actor){

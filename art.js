@@ -316,17 +316,14 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   }
 
   if(walking){
-    // The head settles just after the shoulders, with a small nod at the neck.
-    const headBeat=Math.sin(2*phase-.6);
-    c.translate(131,98+headBeat*1.1);
-    c.rotate(headBeat*.018);
-    c.translate(-131,-98);
+    // Let the head settle after each footfall while keeping the eye line level.
+    c.translate(0,1.1*Math.sin(2*phase-.6));
   }
-  // The same three-quarter face sits beneath the fringe and all four helmets.
-  fill('M115 64 Q125 52 140 55 L151 62 L155 73 L153 86 L150 93 L140 102 L135 103 L122 96 L115 87 L112 75Z',
+  // Both cheekbones and the tapered jaw are centered on the bridge at x=134.
+  fill('M114 71 Q114 55 134 54 Q154 55 154 71 L153 85 L149 93 L139 101 Q134 104 129 101 L119 93 L115 85Z',
     glaze('#f4cda4','#e4aa7e',69,102));
-  fill('M114 69 L121 70 L120 84 L124 91 L137 100 L140 100 L137 103 L134 102 L121 96 L115 87 L112 75Z','#c48c69');
-  fill('M113 78 Q108 74 109 81 Q110 87 116 88 L116 81Z','#d29a73');
+  fill('M114 71 L118 71 L118 84 L122 92 L131 100 Q134 101.5 137 100 L139 101 Q134 104 129 101 L119 93 L115 85Z','#d29a74');
+  fill('M115 78 Q110 75 111 81 Q111 86 116 87Z','#d29a73');
   if(!rank){
     // Keep the arch at the tie still. The bend travels down the loose hair.
     const amplitude=walking?.7:.17;
@@ -384,11 +381,15 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M137 61 L140 56 L143 61 L140 66Z',rank===2?'#a0e0f0':'#fff0ba');
     oval(c,118,42,4,3,u.trim);line('M116 41 L120 40',u.shade,1.3);
   }
-  // Keep the far eye inside the cheek and give the near brow a longer sweep.
-  fill('M120 75 L124 74 L132 77 L131 79 L124 77Z M140 77 L148 73 L150 74 L147 77 L140 79Z','#684637');
-  fill('M121 80 Q125 78 131 81 L130 85 Q128 88 125 86Z M140 81 Q144 78 149 78 L147 84 Q145 87 142 85Z','#392c29');
-  fill('M136 82 L140 89 L136 91 L134 90 L137 88Z','#c38a65');
-  line('M134 95 Q138 95.8 142 94','#a16d53',1.4);
+  // Mirror the brow and eye around the facial centerline.
+  for(const side of [-1,1]){
+    c.save();c.translate(134,0);c.scale(side,1);
+    fill('M4 76 L12 73.5 L14 74.5 L12 76.4 L4 78Z','#684637');
+    fill('M5 80.5 Q9 79 13 80 L12 84.5 Q9.5 87 6.5 85Z','#392c29');
+    c.restore();
+  }
+  fill('M134 83 L136 89 L134 90 L132 89Z','#c8926c');
+  line('M130 95 Q134 96 138 95','#a16d53',1.4);
   c.restore();
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];

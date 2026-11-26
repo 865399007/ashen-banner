@@ -813,7 +813,7 @@ class Battle extends Phaser.Scene{
  }
  m.append(inventory);
  const controls=document.createElement('div');controls.className='refit-controls';m.append(controls);
- let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(controls,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(controls,'下一波 →',()=>{this.wave++;this.begin()}).className='primary';this.showCommanderStats(m)}
+ let cost=this.freeRefreshes?0:refreshPrice(this.wave,this.refreshes);this.button(controls,cost?'刷新 · '+cost:'免费刷新',()=>{this.gold-=cost;if(this.freeRefreshes)this.freeRefreshes--;else this.refreshes++;this.roll();this.shop()},this.gold<cost);this.button(controls,'下一波',()=>{this.wave++;this.begin()}).className='primary';this.showCommanderStats(m)}
  pauseRun(){
    const field=$('field'),modal=$('modal');
    if(this.mode==='paused'){

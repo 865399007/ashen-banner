@@ -98,17 +98,61 @@ class GreyCamp {
         d.veteran=!d.veteran;this.save();this.open(game,section);
       },!d.challenge&&(!d.victories||d.medals<1));
     }
-    if(section==='兵种图鉴'){
-      for(const [i,t] of troops.entries())row(t[0]+(!this.troopOpen(i)?' · 未招募':''),'伤害 '+t[1]+'　间隔 '+t[2]+' 秒　射程 '+t[3]);
-      row('军魂附体','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得蓝色军魂，射程增加 25%，并叠加对应兵种加成。'+soulTypes.map((t,i)=>troops[i][0]+'：'+t.label+' +'+t.values.join(' / ')+'%').join('；'));
-      row('剑士羁绊','2 人攻速 +8%，4 人提高至 +16%，6 人累计攻击 4 次后全队剑士追加斩击。');
-      row('长枪羁绊','2 人刺击距离 +10%，4 人多贯穿一名敌军，6 人可击退正在冲锋的骑兵。');
-      row('长弓羁绊','2 人攻速 +8%，4 人追加一箭，6 人每 8 秒齐射。');
-      row('斧兵羁绊','2 人范围 +8%，4 人伤害 +15%，6 人劈砍产生更远的扇形冲击。');
-      row('新兵种战术','盾兵近身护卫使指挥官受伤降低 12%；弩兵对重装与精英首领增伤 25%；战锤震退杂兵；双匕首每次连击两段；长戟扇形横扫；轻骑短冲后攻击落点附近敌人。');
-      row('新兵种羁绊','以上六种各自按同名人数计算，2 / 4 / 6 人分别增加 8% / 16% / 24% 攻速。');
-      row('编制与合成','同种佣兵按 2 / 4 / 6 人触发羁绊。两名同阶同名佣兵可手动合成，最高 Ⅳ 阶。');
+    if(this.saveWarning){
+      const warning=row('存档提示','浏览器存储不可用，本次进度仅在当前页面生效。');
+      const notice=document.createElement('div');
+      notice.className='camp-rows'; notice.append(warning); body.after(notice);
     }
-    if(this.saveWarning)row('存档提示','浏览器存储不可用，本次进度仅在当前页面生效。');
+    if(section==='兵种图鉴'){
+      const pages=[
+        ['兵种属性',()=>{
+          const tactics=[
+            '', '', '', '',
+            '近身护卫使指挥官受伤降低 12%。',
+            '对重装与精英首领增伤 25%。',
+            '震退杂兵。',
+            '每次连击两段。',
+            '扇形横扫。',
+            '短冲后攻击落点附近的敌人。'
+          ];
+          for(const [i,[name,damage,interval,range]] of troops.entries()){
+            const stats='伤害 '+damage+'　间隔 '+interval+' 秒　射程 '+range;
+            row(name+(this.troopOpen(i)?'':' · 未招募'),stats+(tactics[i]?'　'+tactics[i]:''));
+          }
+        }],
+        ['兵种羁绊',()=>{
+          row('剑士羁绊','2 人攻速 +8%，4 人提高至 +16%，6 人累计攻击 4 次后全队剑士追加斩击。');
+          row('长枪羁绊','2 人刺击距离 +10%，4 人多贯穿一名敌军，6 人可击退正在冲锋的骑兵。');
+          row('长弓羁绊','2 人攻速 +8%，4 人追加一箭，6 人每 8 秒齐射。');
+          row('斧兵羁绊','2 人范围 +8%，4 人伤害 +15%，6 人劈砍产生更远的扇形冲击。');
+          row('新兵种羁绊','盾兵、弩兵、战锤兵、双匕首兵、长戟兵和轻骑兵分别按同名人数计算，2 / 4 / 6 人分别增加 8% / 16% / 24% 攻速。');
+        }],
+        ['军魂附体',()=>{
+          row('触发条件','同种Ⅳ阶佣兵上阵 4 / 5 / 6 名时，主角获得蓝色军魂，射程增加 25%，并叠加对应兵种加成。');
+          for(const [i,{label,values}] of soulTypes.entries()){
+            row(troops[i][0],label+' +'+values.join(' / ')+'%');
+          }
+        }],
+        ['编制与合成',()=>{
+          row('编制','同种佣兵按 2 / 4 / 6 人触发羁绊。');
+          row('合成','两名同阶同名佣兵可手动合成，最高 Ⅳ 阶。');
+        }]
+      ];
+      const nav=document.createElement('nav');
+      nav.className='codex-pages';
+      nav.setAttribute('aria-label','兵种图鉴分页');
+      body.classList.add('codex-entries');
+      body.id='codex-entries';
+      body.before(nav);
+      const showPage=index=>{
+        for(const [i,button] of Array.from(nav.children).entries())button.setAttribute('aria-pressed',String(i===index));
+        body.replaceChildren();
+        pages[index][1]();
+      };
+      for(const [i,[name]] of pages.entries()){
+        game.button(nav,name,()=>showPage(i)).setAttribute('aria-controls',body.id);
+      }
+      showPage(0);
+    }
   }
 }

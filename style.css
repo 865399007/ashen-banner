@@ -226,9 +226,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #cards .item-icon{width:100%;height:100%}
 .loot-icon .item-icon{width:48px;height:48px;margin:auto}
 
-#commander-passives{font-size:clamp(12px,2vw,15px);line-height:1.5;margin:8px auto 14px;max-width:34em}
 
-#campaign-brief{margin:6px auto;font-size:13px}
 #cover{overflow-y:auto}
 
 
@@ -346,10 +344,10 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   .camp-orders .loadout option:enabled:is(:hover,:focus-visible){background:#63513c;color:#fff4df}
   .camp-orders .loadout option::checkmark{color:var(--refit-primary)}
 }
-.camp-orders #campaign-brief{margin:0;color:#e2d3ba;line-height:1.55}
-.camp-passives{border-top:1px solid #66584a;color:#d9c7a9;font-size:13px}
-.camp-passives summary{cursor:pointer;padding:10px 0 3px}
-.camp-orders #commander-passives{margin:5px 0;max-width:none}
+.camp-passives{border-top:1px solid var(--refit-rule);padding-top:10px;color:#e2d3ba}
+.camp-passives h3{margin:0;color:#ffedcb;font-size:18px}
+#commander-passives{display:grid;gap:4px;margin:5px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5}
+#commander-passives strong{color:#f4d9a5}
 #cover .camp-orders #start{
   width:100%;min-height:56px;margin:2px 0 0;padding:9px 14px;border:1px solid #f4d9a5;
   border-radius:5px;background:linear-gradient(#f2d49d,#dbad66);color:#2b1b12;
@@ -488,3 +486,12 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 }
 #modal.home-subpage .party-hall{max-width:600px;margin-inline:auto;text-align:center}
 #modal.home-subpage .party-choice,#modal.home-subpage .party-room-code{margin:0 8px 8px 0}
+
+#modal.home-subpage .codex-pages{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 14px
+}
+#modal.home-subpage .codex-pages button{padding-inline:4px;font-size:clamp(12px,2.25vw,15px)}
+#modal.home-subpage .codex-pages button[aria-pressed="true"]{
+  background:var(--refit-primary);color:var(--refit-primary-ink);border-color:#f4d9a5
+}
+#modal.home-subpage .codex-entries{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}

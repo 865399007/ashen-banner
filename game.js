@@ -30,12 +30,13 @@ class Battle extends Phaser.Scene{
  const selectLoadout=()=>{
  this.commander=commanders[$('hero-choice').value];
  this.stageKey=$('campaign-choice').value;this.campaign=campaigns[this.stageKey];
- $('campaign-brief').textContent=this.campaign.brief;
- $('commander-passives').replaceChildren();
- for(const passive of this.commander.passives){
-   const line=document.createElement('div');
-   line.textContent=passive.name+' · '+passive.description;
-   $('commander-passives').append(line);
+ const skills=$('commander-passives');
+ skills.replaceChildren();
+ for(const {name,description} of this.commander.passives){
+   const line=document.createElement('li'), title=document.createElement('strong');
+   title.textContent=name;
+   line.append(title,' · '+description);
+   skills.append(line);
  }
  };
  $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();

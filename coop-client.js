@@ -34,15 +34,10 @@ function installCoop(scene){
  function node(tag,cls,text){
    const el=document.createElement(tag);if(cls)el.className=cls;if(text)el.textContent=text;return el;
  }
- function portrait(hero){
+ function portrait(){
    const canvas=node('canvas','seat-portrait');canvas.width=300;canvas.height=300;
    const c=canvas.getContext('2d');
-   if(hero==='banner'){c.scale(5.4,5.4);bannerCommander(c,0)}
-   else{
-     c.translate(9,10);c.scale(7.5,7.5);
-     const polygon=(points,color)=>{c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=color;c.fill()};
-     miniature(c,polygon,hero==='scout'?2:1,0,0,null,0,'mercenary');
-   }
+   c.scale(5.4,5.4);bannerCommander(c,0);
    canvas.setAttribute('aria-hidden','true');return canvas;
  }
  function partyRoom(){
@@ -70,7 +65,7 @@ function installCoop(scene){
      const player=state.players[i],seat=node('div','party-seat seat-'+i+(player?'':' vacant'));
      seat.append(node('span','seat-role',i===0?'房主':'队友'));
      if(player){
-       seat.append(portrait(player.hero),node('strong','seat-name',commanders[player.hero].name),
+       seat.append(portrait(),node('strong','seat-name',commanders.banner.name),
          node('small','seat-state'+(player.ready?' ready':''),(i===state.you?'你 · ':'')+(!player.online?'重连中':player.ready?'已准备':'备战中')));
      }else{
        const add=scene.button(seat,'＋',invite);
@@ -88,18 +83,13 @@ function installCoop(scene){
  function showLobby(message=''){
    scene.mode='coopMenu';$('field').classList.add('cooperative');
    const m=panel('双人合作',message||'创建房间，或输入队友的六位房间号。',true);
-   const choice=node('select','party-choice');
-   choice.setAttribute('aria-label','出征指挥官');
-   for(const [id,c] of Object.entries(commanders))choice.add(new Option(c.name,id));
-   choice.value=$('hero-choice').value;
-   m.append(choice);
    const input=document.createElement('input');input.value=new URLSearchParams(location.search).get('room')?.match(/^\d{6}$/)?.[0]||'';input.className='party-room-code';input.maxLength=6;input.inputMode='numeric';input.placeholder='六位房间号';input.setAttribute('aria-label','房间号');m.append(input);
    async function enter(op){
      if(running)return;scene.sfx.unlock();
      if(op==='join'&&!/^\d{6}$/.test(input.value)){m.querySelector('p').textContent='请输入六位数字';return}
      running=true;
      try{
-       const r=await api({op,code:input.value,hero:choice.value});
+       const r=await api({op,code:input.value,hero:'banner'});
        session={code:r.code,token:r.token};sessionStorage.setItem(key,JSON.stringify(session));
        state=r.state;paint();poll();
      }catch(e){showLobby(e.message)}finally{running=false}
@@ -193,8 +183,8 @@ function installCoop(scene){
    const keys=new Set();
    const draw=(k,...args)=>{keys.add(k);return sprite(k,...args)};
    for(const p of state.players){
-     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,commanders[p.hero].skin,state.level),.42);
-     u.bannerCommander=p.hero==='banner';
+     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,state.level),.42);
+     u.bannerCommander=true;
      if(u.previousHealth!==undefined&&p.hp>u.previousHealth)showHealing(scene,u,p.hp-u.previousHealth);
      u.previousHealth=p.hp;
      u.setAlpha(p.down>0?.5:1).setAngle(p.down>0?70:0);
@@ -285,7 +275,7 @@ function installCoop(scene){
        const cost=refreshPrice(state.wave,me.refresh);button(m,'刷新 · '+cost,'refresh',0,p.gold<cost);
      }
      button(m,p.ready?'已准备 · 等待队友':'准备下一波','ready',0,p.ready);
-     const hero=commanders[p.hero];
+     const hero=commanders.banner;
      appendCommanderStats(m,hero.name,[['团队等级',state.level],['装束',commanderForms[commanderForm(state.level)].name],['团队经验',state.xp],['生命',statNumber(p.hp)+' / '+p.max],
        ['普攻伤害',statNumber(hero.baseDamage*p.power)],['攻击间隔',statNumber(troops[hero.weapon][2]*.75)+' 秒'],
        ['攻击距离',hero.range],['移速',statNumber(p.speed)],['幸运',p.luck]]);

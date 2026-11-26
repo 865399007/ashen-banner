@@ -168,25 +168,6 @@ function commanderForm(level){return Math.min(4,Math.floor(level/5))}
 function commanderIdleTexture(ms,base='man6'){
   return base+'cloth'+(Math.floor(ms/100)%COMMANDER_CLOTH_FRAMES);
 }
-// Draw the shoulder insignia in local coordinates so it fits each commander's build.
-function commandPauldron(c,rank){
-  const {metal,light,edge}=commanderForms[rank];
-  const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
-  if(rank===1){
-    fill('M1 7 L11 1 L22 2 L28 8 L22 12 L12 11 L2 16 Z',metal);
-    fill('M2 8 L11 3 L21 4 L23 6 L12 6 L2 12 Z M5 13 L14 8 L24 8 L22 10 L14 10 L5 15 Z',light);
-  }else if(rank===2){
-    fill('M0 11 Q4 3 15 0 L25 2 L31 8 L20 9 L11 13 L2 18 Z',metal);
-    fill('M2 10 L12 3 L23 3 L16 6 L6 13 Z M6 14 L19 7 L26 7 L17 11 L5 17 Z',light);
-  }else if(rank===3){
-    fill('M0 8 L4 0 L10 3 L18 1 L24 0 L28 8 L25 16 L20 11 L14 17 L8 13 L3 18 Z',metal);
-    fill('M3 4 L10 5 L13 9 L5 7 Z M16 8 L20 4 L25 4 L23 7 Z M8 10 L14 12 L20 9 L15 15 Z',edge);
-  }else{
-    fill('M0 1 L12 5 L9 0 L25 4 L31 9 L17 14 L3 20 L8 12 L1 14 L6 8 Z',metal);
-    fill('M1 2 L16 7 L11 2 L24 5 L29 8 L16 10 Z',light);
-    fill('M3 14 L13 8 L24 8 L14 11 Z M5 18 L16 12 L22 11 L14 15 Z',edge);
-  }
-}
 const bannerUniforms=[
   {cape:'#536675',lining:'#364451',metal:'#a64e39',shade:'#73392d',light:'#bc6046',trim:'#e5c89a'},
   {cape:'#a24b36',lining:'#672e2b',metal:'#ae763c',shade:'#714725',light:'#e1ac64',trim:'#e9b762'},
@@ -500,7 +481,7 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=null){
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
   const boss=variant==='boss',mercenary=variant==='mercenary';
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
   const recruit=id>=17&&id<=22;
@@ -524,9 +505,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=null)
     c.save();c.translate(15+side*3.4+side*step*2.1,side*step*2);
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
   }
-  const commander=formRank!==null;
-  if(commander)c.translate(0,-.14*step*step);
-  else c.translate(step*.65,-Math.abs(step)*1.1);
+  c.translate(step*.65,-Math.abs(step)*1.1);
   if(boss){
     stroke('M12 23 L8 2','#514132',1.2);
     paint('M8 2 L2 4 L1 14 L4 12 L6 15 L10 12 Z',enemyCloth.light);
@@ -623,28 +602,10 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=null)
       }
     }
   }
-  if(formRank){
-    const form=commanderForms[formRank];
-    paint('M9 15 L14 16 L11 28 L9 31 L3 30 L6 22 Z',form.cloth);
-    paint('M12 16 Q17 18 21 15 L22 21 L17 24 L12 22 Z',wash(12,22,form.metal,form.light));
-    stroke('M12 19 Q16 21 21 18 M14 25 L13 29 M18 25 L19 28',form.edge,.85);
-    c.save();c.translate(4.4,13.6);c.scale(.34,.34);commandPauldron(c,formRank);c.restore();
-    paint('M8 8 Q10 3 16 2 L19 3 L22.5 7 L24 8 L14 9 L11 14 L7 15 Z',wash(7,22,form.metal,form.light));
-    stroke('M8 9 Q14 7 22 7.6',form.edge,1);
-    if(formRank===2)paint('M17 4 Q11 .2 7 3 L2 9 L6 8 L3 12 Q10 10 13 5 Z',form.light);
-    if(formRank===3)paint('M8 9 L5 2 L10 5 L9 1 L15 4 L16 7 Z',form.edge);
-    if(formRank===4){
-      paint('M16 4 Q8 -1 4 3 Q2 6 1 10 Q6 7 8 4 Q11 2 16 6 Z M17 4 Q20 .2 24 1 Q27 2 28 5 Q23 2 20 5 Z',form.edge);
-      paint('M8 10 L5 4 L10 6 L9 2 L15 5 L16 7 Z',form.light);
-    }
-  }
   c.save();
-  if(commander){
-    c.translate(16,17);c.rotate(-step*.095);c.translate(-16,-17);
-  }
   c.translate(20,21);if(id===1)c.translate(5*pose,0);
   const swing=recruit?(recruitSkin===18?.18:1.05):id===1?1.02:id===7?1.8:id===0?.96:0;
-  c.rotate((commander?0:step*.10)+pose*swing);c.translate(-20,-21);
+  c.rotate(step*.10+pose*swing);c.translate(-20,-21);
   const lightEdge=q===3&&!recruit?({
     0:'M23 19 L33 6',
     1:'M28 7 L31.5 1.5',
@@ -762,7 +723,6 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=null)
   if(lightEdge)stroke(lightEdge,'#fff1ac',1.25);
   c.restore();
   if(weapon!==2){
-    if(commander){c.translate(10,17);c.rotate(step*.16);c.translate(-10,-17)}
     paint('M9 17 Q11.3 16.7 12.5 19 L10.3 23.1 L6.4 22 Z','#ceae89');
     paint('M6.4 21.6 L10.5 22.5 L9.6 25.7 L5.8 25 Z','#614836');
   }
@@ -814,7 +774,7 @@ function makeArt(scene){
   for(const [type,id] of mercSkins.entries()){
     for(let q=0;q<4;q++)unitFrames(id,'man'+troopSkin(type,q),q,'mercenary');
   }
-  for(const hero of Object.values(commanders))commanderTexture(scene,hero.skin,1);
+  commanderTexture(scene,1);
   for(let id=0;id<=23;id++){
     if(id===6||mercSkins.includes(id))continue;
     unitFrames(id,'man'+id,0);
@@ -823,24 +783,18 @@ function makeArt(scene){
 }
 
 // Cache a promoted uniform only once a commander reaches that level.
-function commanderTexture(scene,skin,level){
-  const rank=commanderForm(level),base='man'+skin+(rank?'form'+rank:'');
+function commanderTexture(scene,level){
+  const rank=commanderForm(level),base='man'+commanders.banner.skin+(rank?'form'+rank:'');
   if(scene.textures.exists(base))return base;
-  const banner=skin===commanders.banner.skin,scout=skin===commanders.scout.skin;
-  const q=rank?(scout?2:3):0;
-  const ink=getComputedStyle(document.documentElement).getPropertyValue('--tier-'+q).trim();
   function frame(key,phase,swing=null,cloth=phase){
-    paintTexture(scene,key,banner?112:72,banner?112:80,(c,p)=>{
+    paintTexture(scene,key,112,112,c=>{
       c.scale(2,2);
-      if(banner)bannerCommander(c,phase,swing,cloth,rank);
-      else miniature(c,p,scout?2:1,phase,q,ink,0,rank?'':'mercenary',rank);
+      bannerCommander(c,phase,swing,cloth,rank);
     });
   }
   frame(base,0);
   for(let i=0;i<WALK_FRAMES;i++)frame(base+'walk'+i,TAU*i/WALK_FRAMES);
-  if(banner){
-    for(let i=0;i<COMMANDER_CLOTH_FRAMES;i++)frame(base+'cloth'+i,0,null,TAU*i/COMMANDER_CLOTH_FRAMES);
-    commanderSwingAngles.forEach((angle,i)=>frame(base+'swing'+i,0,angle,i*.55));
-  }
+  for(let i=0;i<COMMANDER_CLOTH_FRAMES;i++)frame(base+'cloth'+i,0,null,TAU*i/COMMANDER_CLOTH_FRAMES);
+  commanderSwingAngles.forEach((angle,i)=>frame(base+'swing'+i,0,angle,i*.55));
   return base;
 }

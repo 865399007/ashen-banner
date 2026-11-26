@@ -49,7 +49,7 @@ function item(p,id){
  if(id===17){p.max+=6;p.hp=Math.min(p.max,p.hp+6);p.speed*=.99}
 }
 function hit(r,p,a,e,damage){
- r.effects.push({id:++r.serial,x:e.x,y:e.y,fromX:a.x,fromY:a.y,weapon:a===p?commanders[p.hero].weapon:a.id,q:a.q||0,until:r.clock+.24});
+ r.effects.push({id:++r.serial,x:e.x,y:e.y,fromX:a.x,fromY:a.y,weapon:a===p?commanders.banner.weapon:a.id,q:a.q||0,until:r.clock+.24});
  e.hp-=damage;
  if(e.hp>0)return;
  r.enemies.splice(r.enemies.indexOf(e),1);
@@ -72,7 +72,7 @@ function tick(r,dt,now=Date.now()){
      const stats=i?troops[a.id]:null;
      if(i){const angle=2*Math.PI*(i-1)/p.army.length;move(a,{x:p.x+31*Math.cos(angle),y:p.y+31*Math.sin(angle)},210*dt)}
      a.cd-=dt;const e=nearest(a,r.enemies);
-     const c=commanders[p.hero];
+     const c=commanders.banner;
      if(e&&a.cd<=0&&distance(a,e)<(stats?stats[3]:c.range)){
        hit(r,p,a,e,(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power);
        a.cd=(stats?stats[2]:troops[c.weapon][2])*.75;if(r.phase!=='fight')return;

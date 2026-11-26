@@ -27,12 +27,7 @@ const commanders={
          if(scene.kills%5===0)scene.healCommander(3);
        }}
     ]
-  },
-  scout:{name:'逐风斥候',weapon:2,skin:'2tier2',range:115,baseDamage:19,
-    passives:[{name:'疾行',description:'基础移速提高 20%。',speedBonus:startingSpeed*.2}]},
-  guard:{name:'铁壁枪卫',weapon:1,skin:'1tier3',range:61,baseDamage:29,
-    passives:[{name:'背水迎击',description:'生命不高于一半时，自身伤害提高 50%。',
-      damageMultiplier:scene=>scene.hp<=scene.maxHP*.5?1.5:1}]}
+  }
 };
 const soulTypes=[
   {general:'liubei',name:'刘备',weapon:'雌雄双股剑',stat:'haste',label:'攻速',values:[12,20,30]},

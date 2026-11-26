@@ -24,12 +24,13 @@ class Battle extends Phaser.Scene{
  }
  create(){
  this.camp=new GreyCamp();
- for(const [id,entries] of [['hero-choice',commanders],['campaign-choice',campaigns]]){
-   for(const [key,entry] of (id==='campaign-choice'?stageOrder.map(key=>[key,entries[key]]):Object.entries(entries)))$(id).add(new Option(entry.name,key));
- }
- const selectLoadout=()=>{
- this.commander=commanders[$('hero-choice').value];
- this.stageKey=$('campaign-choice').value;this.campaign=campaigns[this.stageKey];
+ this.commander=commanders.banner;
+ const campaignChoice=$('campaign-choice');
+ for(const key of stageOrder)campaignChoice.add(new Option(campaigns[key].name,key));
+ campaignChoice.onchange=()=>{
+   this.stageKey=campaignChoice.value;this.campaign=campaigns[this.stageKey];
+ };
+ campaignChoice.onchange();
  const skills=$('commander-passives');
  skills.replaceChildren();
  for(const {name,description} of this.commander.passives){
@@ -38,8 +39,7 @@ class Battle extends Phaser.Scene{
    line.append(title,' · '+description);
    skills.append(line);
  }
- };
- $('hero-choice').onchange=$('campaign-choice').onchange=selectLoadout;selectLoadout();
+
  this.syncStages();
  for(const button of $('camp-actions').querySelectorAll('[data-camp-section]')){
    button.onclick=()=>this.camp.open(this,button.dataset.campSection);
@@ -196,7 +196,7 @@ class Battle extends Phaser.Scene{
  }
  createActor(unit,index){
    const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
-   const baseTexture=unit.hero?commanderTexture(this,skin,this.level):'man'+skin;
+   const baseTexture=unit.hero?commanderTexture(this,this.level):'man'+skin;
    const s=this.add.image(480,300,baseTexture).setOrigin(.5,.85).setScale((unit.hero?.62:.5)*2/3);
    return {...unit,skin,baseTexture,stride:0,shots:0,cd:index*.12,s};
  }
@@ -680,7 +680,7 @@ class Battle extends Phaser.Scene{
    if(commanderForm(this.level)!==previousForm){
      const hero=this.actors[0],oldBase=hero.baseTexture;
      const pose=hero.hit?hero.normalTexture:hero.s.texture.key;
-     hero.baseTexture=commanderTexture(this,hero.skin,this.level);
+     hero.baseTexture=commanderTexture(this,this.level);
      const key=hero.baseTexture+pose.slice(oldBase.length);
      if(hero.hit)hero.normalTexture=key;
      hero.s.setTexture(hero.hit&&hero.hit.age<.095?hitTexture(this,key):key);

@@ -283,13 +283,13 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 .coop-exit{position:absolute;z-index:8;right:max(8px,env(safe-area-inset-right));top:max(4px,env(safe-area-inset-top));min-width:48px;min-height:44px;padding:0 6px;border:0;background:transparent;box-shadow:none;color:#fff0cf;font-family:inherit;font-weight:700;font-size:16px;text-shadow:0 1px 3px #493428}
 .coop-exit[hidden]{display:none}
-#field.cooperative #modal:has(.party-hall),#field.cooperative #modal:has(.party-choice){
+#field.cooperative #modal:has(.party-hall),#field.cooperative #modal:has(.party-room-code){
   width:min(490px,calc(100% - 24px));max-height:calc(100% - 88px);padding:clamp(12px,3vh,26px) 16px;
   border:1px solid #a98957;border-radius:9px;color:#f6e8c6;
   background:linear-gradient(165deg,#3e4740f7,#252c29fc 55%,#31332dfc);
   box-shadow:inset 0 0 0 3px #343932,0 12px 30px #30291966}
-#field.cooperative #modal:has(.party-hall)>h2,#field.cooperative #modal:has(.party-choice)>h2{color:#f9e5ba;font-size:clamp(22px,4vh,30px);letter-spacing:.12em}
-#field.cooperative #modal:has(.party-hall)>p,#field.cooperative #modal:has(.party-choice)>p{color:#d9c79f;margin:5px auto 15px}
+#field.cooperative #modal:has(.party-hall)>h2,#field.cooperative #modal:has(.party-room-code)>h2{color:#f9e5ba;font-size:clamp(22px,4vh,30px);letter-spacing:.12em}
+#field.cooperative #modal:has(.party-hall)>p,#field.cooperative #modal:has(.party-room-code)>p{color:#d9c79f;margin:5px auto 15px}
 .party-seats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .party-seat{min-width:0;position:relative;padding:12px 4px 14px;display:grid;justify-items:center;align-content:end;justify-content:stretch;
  border:1px solid #b69b68;border-radius:5px;background:radial-gradient(ellipse at 50% 38%,#a77951 0%,transparent 64%),linear-gradient(150deg,#71473a,#492f2a)}
@@ -302,10 +302,9 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .seat-state{margin-top:5px;color:#dbcdae;font:12px sans-serif;letter-spacing:0}
 .seat-state.ready{color:#bce5ab}.party-tools{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px auto 0;color:#d4c2a3;font-size:13px}
 .party-code{font:700 18px monospace;letter-spacing:.12em;color:#f9e4be}
-#modal .party-tools button,#modal .party-ready,.party-choice{min-height:44px;border-radius:5px}
+#modal .party-tools button,#modal .party-ready{min-height:44px;border-radius:5px}
 #modal .party-ready{width:min(260px,100%);background:#985037;color:#fff0d9;border:1px solid #ce9460}
 .invite-note{min-height:14px;font-size:12px;color:#eac889}.invite-copy{width:95%}
-.party-choice{color:#f6e8c6;background:#39433b;border:1px solid #928464;padding:6px}
 
 #field{
   --refit-surface:url("assets/refit-grain.png"),linear-gradient(145deg,#343435,#232325 60%,#292729);
@@ -329,7 +328,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .camp-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
 .camp-orders{display:grid;gap:12px;border:1px solid #776858;border-radius:6px;padding:clamp(12px,2.5vw,24px);background:#363437}
 .camp-orders h2{margin:0;color:#f7e6c9;font-size:26px}
-.camp-orders .loadout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.camp-orders .loadout{display:grid}
 .camp-orders .loadout label{display:grid;gap:5px;margin:0;color:#e1d0b7}
 .camp-orders .loadout select{
   appearance:none;color-scheme:dark;width:100%;min-width:0;min-height:44px;
@@ -501,7 +500,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   background:var(--refit-primary);color:var(--refit-primary-ink)
 }
 #modal.home-subpage .party-hall{max-width:600px;margin-inline:auto;text-align:center}
-#modal.home-subpage .party-choice,#modal.home-subpage .party-room-code{margin:0 8px 8px 0}
+#modal.home-subpage .party-room-code{margin:0 8px 8px 0}
 
 #modal.home-subpage .codex-pages{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 14px

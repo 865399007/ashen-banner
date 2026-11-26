@@ -170,6 +170,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
     gradient.addColorStop(0,left);gradient.addColorStop(1,right||left);
     c.fillStyle=gradient;c.fill(outline);
   }
+  const sleeveLight='#b9474a',sleeveShade='#92313e',cuff='#682838',cuffEdge='#c69a60';
   const handSkin='#ddb58b',knuckleLight='#edc9a0',fingerShade='#b98865';
   shadow(c,124,221,28);
   for(const [x,side] of [[138,1],[102,-1]]){
@@ -191,8 +192,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
   shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z','#ad8652','#d6b478');
   shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z','#b27b3c','#a16c35');
-  shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z','#614738','#49372d');
-  shape('M174 131 L181 129 L184 146 L177 148 Z','#596361','#798178');
+  shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z',sleeveLight,sleeveShade);
+  shape('M174 131 L181 129 L184 146 L177 148 Z',cuff);
+  shape('M174 131 L176 130.5 L179 147.5 L177 148 Z',cuffEdge);
   c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);
   shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
   const flagWave=Math.sin(clothPhase-.54);
@@ -220,8 +222,8 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   c.save();c.transform(1,0,-.14,1,155*.14,0);
   // Bring the pauldrons closer to the neck while keeping the helmet proportions.
   c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
-  shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z','#cfb998','#b49a7e');
-  shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z','#af947a','#927862');
+  shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',sleeveLight,sleeveShade);
+  shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',sleeveLight,sleeveShade);
   shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
   shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z','#ad8652','#d6b478');
   c.restore();
@@ -247,8 +249,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   c.save();
   c.translate(91,119);
   c.rotate(swing===null?.72:swing);
-  shape('M-7 0 Q0 -9 9 -4 L29 10 L36 9 L38 19 L29 24 L1 15 Z','#614738','#49372d');
-  shape('M26 9 L33 10 L37 21 L30 24 Z','#596361','#798178');
+  shape('M-7 0 Q0 -9 9 -4 L29 10 L36 9 L38 19 L29 24 L1 15 Z',sleeveLight,sleeveShade);
+  shape('M26 9 L33 10 L37 21 L30 24 Z',cuff);
+  shape('M26 9 L28 9.3 L32 23.1 L30 24 Z',cuffEdge);
   shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
   shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
   shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');

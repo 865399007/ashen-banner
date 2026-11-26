@@ -108,6 +108,7 @@ class Battle extends Phaser.Scene{
  const debugToggle=$('toggle-debug');
  const showDebugButtons=visible=>{
    $('test-army').hidden=!visible;
+   $('debug-final-wave').hidden=!visible;
    debugToggle.setAttribute('aria-pressed',String(visible));
    debugToggle.textContent=visible?'调试按钮：显示':'调试按钮：隐藏';
  };
@@ -116,6 +117,14 @@ class Battle extends Phaser.Scene{
    const visible=$('test-army').hidden;
    showDebugButtons(visible);
    this.camp.data.showDebugButtons=visible;this.camp.save();
+   this.syncStages(previousMode==='title'||previousMode==='camp');
+   if(previousMode==='camp'&&$('modal').querySelector('h2')?.textContent==='战役记录'){
+     this.camp.open(this,'战役记录');this.mode='settings';
+   }
+ };
+ $('debug-final-wave').onclick=()=>{
+   if(this.mode!=='fight'||this.camp.data.showDebugButtons!==true||this.wave>=finalWave)return;
+   this.resetStick();this.wave=finalWave;this.begin();
  };
  const preferences=$('preferences');
  let previousMode;
@@ -148,7 +157,7 @@ class Battle extends Phaser.Scene{
  const leaveRun=()=>{
    this.closeSettings();this.clearField();this.resetRun();this.hero=null;
    $('pause').setAttribute('aria-pressed','false');$('pause').setAttribute('aria-label','暂停');$('pause').title='暂停 / Esc';
-   $('modal').hidden=true;$('wave').textContent='';this.mode='title';this.hud();
+   $('modal').hidden=true;$('wave').textContent='';this.mode='title';this.syncStages(true);this.hud();
    this.cameras.main.centerOn(480,300);$('cover').hidden=false;
  };
  $('restart').onclick=()=>{leaveRun();this.startRun()};
@@ -199,13 +208,17 @@ class Battle extends Phaser.Scene{
 }
  panel(title,desc,homePage=false){this.resetStick();$('cover').hidden=true;let m=$('modal');m.classList.toggle('home-subpage',homePage);m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
- syncStages(){
-   for(const option of $('campaign-choice').options){
+ syncStages(resetSelection=false){
+   const choice=$('campaign-choice');
+   for(const option of choice.options){
      const open=this.camp.stageOpen(option.value);
      option.disabled=!open;option.textContent=campaigns[option.value].name+(open?'':' · 未解锁');
    }
+   if(resetSelection&&!this.camp.stageOpen(choice.value)){
+     choice.value=stageOrder[0];choice.onchange();
+   }
  }
- startRun(){if(!this.camp.stageOpen(this.stageKey))return;this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
+ startRun(){if(!this.camp.stageOpen(this.stageKey)){this.camp.open(this);return}this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin()}
  begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
@@ -213,6 +226,7 @@ class Battle extends Phaser.Scene{
  setupStage(this);this.flagUntil=0;this.bountyTaken=false;
  this.deployMercenaries();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);
+ $('debug-final-wave').disabled=this.wave>=finalWave;
  if(this.wave===finalWave)this.spawn(true);else if(this.campaign.elites.includes(this.wave))this.spawn(false,true);
  this.hud()
  }

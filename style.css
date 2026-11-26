@@ -269,16 +269,17 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 
 .upgrade-card .card-rank,#cards .card-rank{font:700 12px/1.2 var(--game-type);color:#fff1d4;white-space:nowrap}
 
-#test-army[hidden]{display:none}
+#field .battle-debug[hidden]{display:none}
+#debug-final-wave{position:absolute;right:var(--edge-r);top:50%;transform:translateY(-50%);z-index:2;min-height:44px;padding:4px 10px;font-size:13px}
 #test-army{position:absolute;left:var(--edge-l);top:50%;transform:translateY(-50%);display:grid;gap:3px;z-index:2}
 #test-army button{min-height:44px;padding:3px 8px;font-size:13px}
 #test-army button[aria-pressed=true]{background:#865332;outline:1px solid #eed59d}
-#field:has(#cover:not([hidden]),#modal:not([hidden]),#preferences:not([hidden])) #test-army{display:none}
+#field:has(#cover:not([hidden]),#modal:not([hidden]),#preferences:not([hidden])) .battle-debug{display:none}
 @media(max-height:420px){#test-army{grid-template-columns:repeat(2,auto)}}
 
 #test-army{max-height:65%;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
 .coop-status{position:absolute;bottom:calc(var(--edge-b,8px) + 10px);left:50%;transform:translateX(-50%);color:#fff0cc;text-shadow:0 1px 3px #302114;white-space:nowrap;pointer-events:none;z-index:5}
-#field.cooperative #test-army,#field.cooperative #field-controls{display:none}
+#field.cooperative .battle-debug,#field.cooperative #field-controls{display:none}
 #modal input[aria-label="房间号"]{display:block;margin:10px auto;padding:8px;text-align:center;width:9em;font:inherit;border:1px solid #866642;border-radius:5px;background:#f0dfb7;color:#4c3426}
 
 .coop-exit{position:absolute;z-index:8;right:max(8px,env(safe-area-inset-right));top:max(4px,env(safe-area-inset-top));min-width:48px;min-height:44px;padding:0 6px;border:0;background:transparent;box-shadow:none;color:#fff0cf;font-family:inherit;font-weight:700;font-size:16px;text-shadow:0 1px 3px #493428}

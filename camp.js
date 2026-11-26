@@ -20,7 +20,7 @@ class GreyCamp {
   }
   stageOpen(key){
     const i=stageOrder.indexOf(key);
-    return i===0||this.data.legacyStages?.includes(key)||Boolean(this.data.stages[stageOrder[i-1]]?.wins);
+    return i>=0&&(this.data.showDebugButtons===true||i===0||this.data.legacyStages?.includes(key)||Boolean(this.data.stages[stageOrder[i-1]]?.wins));
   }
   troopOpen(id){return id===3?this.data.axe:![5,9].includes(id)||this.data.contracts.includes(id)}
   itemOpen(id){return id<11||this.data.blueprints.includes(id)}
@@ -44,7 +44,7 @@ class GreyCamp {
     game.mode='camp';game.hud();$('wave').textContent='';
     const d=this.data;
     if(!section){
-      game.mode='title';game.hud();$('modal').hidden=true;$('cover').hidden=false;
+      game.mode='title';game.syncStages(true);game.hud();$('modal').hidden=true;$('cover').hidden=false;
       return;
     }
     const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals,true);

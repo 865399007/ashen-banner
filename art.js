@@ -779,6 +779,26 @@ function makeArt(scene){
     c.strokeStyle='#62635b';
     c.stroke(new Path2D('M13 15 L16 7 M16 8 Q19 9 21 8 L20 11 Q18 12 15 11'));
   });
+  paintTexture(scene,'medicine-pouch',72,70,c=>{
+    c.scale(2,2);
+    c.lineJoin='round';c.lineCap='round';
+    const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
+    const stroke=(path,color,width)=>{c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(path))};
+    oval(c,18,30.4,14.8,2.6,'rgba(68,45,31,.28)');
+    // A rolled dressing is tucked under the two loops on the medicine bag.
+    stroke('M8 11 L24 6','#594236',7);
+    stroke('M8 11 L24 6','#e6ceb1',5);
+    stroke('M12 8 L13 12 M20 5.5 L21 9.5','#8c6347',2);
+    const bag='M5 13 Q6 10 11 10 L27 8 Q30 8 30.5 12 L33 24 Q33 27 29 28.5 L11 31 Q6 31 5 27 L3.5 18 Q3 15 5 13Z';
+    fill(bag,'#567083');stroke(bag,'#4b3831',1.8);
+    fill('M5 21 Q8 23 12 22 L28 18 L30 11 L32 24 Q32 27 28 28 L11 30 Q7 30 6 27Z','#364d60');
+    fill('M5 13 Q7 10 12 10 L26 8.5 L28.5 12.5 L27 21 Q24 24 15 25 L9 24Z','#843d32');
+    fill('M5.5 12.8 L26 9 L27.5 12.5 L25 20.5 Q19 23.5 10 22.5Z','#ad513b');
+    stroke('M7 13 L25 10','#d58b63',1);
+    // A large ivory stitch remains readable on the small battlefield sprite.
+    fill('M14.5 11.8 L18.5 11.2 L19.1 15 L24.4 14.2 L25 17.7 L19.6 18.5 L20.2 22.1 L16.2 22.7 L15.6 19.1 L10.4 19.9 L9.9 16.4 L15.1 15.6Z','#fff0ce');
+    stroke('M8 27 Q9 28.5 12 28 L26 25.8','#8f9a94',1);
+  });
   paintTexture(scene,'dust-wisp',48,24,c=>{
     const haze=c.createLinearGradient(0,3,0,23);
     haze.addColorStop(0,'rgba(255,237,202,.92)');

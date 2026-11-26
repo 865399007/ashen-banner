@@ -160,7 +160,7 @@ const COMMANDER_CLOTH_FRAMES=12;
 const commanderForms=[
   {name:'布衣民兵'},
   {name:'铜札战甲',metal:'#a06542',light:'#d7a570',edge:'#f0c388',cloth:'#853d35'},
-  {name:'银翎明铠',metal:'#5f8297',light:'#c9dce1',edge:'#eff5ed',cloth:'#34586c'},
+  {name:'银钢明铠',metal:'#5f8297',light:'#c9dce1',edge:'#eff5ed',cloth:'#34586c'},
   {name:'玄甲虎卫',metal:'#303e49',light:'#66717a',edge:'#d9a44e',cloth:'#652e39'},
   {name:'金翎统帅',metal:'#946327',light:'#dfb765',edge:'#fff0b1',cloth:'#983e38'}
 ];
@@ -187,169 +187,199 @@ function commandPauldron(c,rank){
     fill('M3 14 L13 8 L24 8 L14 11 Z M5 18 L16 12 L22 11 L14 15 Z',edge);
   }
 }
-// Roll the shoulders over the planted foot and soften the rib cage at each footfall.
-function commanderChestMotion(c,step,waistX,waistY){
-  c.translate(waistX,waistY);
-  c.rotate(step*.038);
-  c.scale(1+.014*step*step,1-.025*step*step);
-  c.translate(-waistX,-waistY);
-}
+const bannerUniforms=[
+  {cape:'#536675',lining:'#364451',metal:'#a64e39',shade:'#73392d',light:'#bc6046',trim:'#e5c89a'},
+  {cape:'#a24b36',lining:'#672e2b',metal:'#ae763c',shade:'#714725',light:'#e1ac64',trim:'#e9b762'},
+  {cape:'#327bb1',lining:'#274a67',metal:'#afbec8',shade:'#657683',light:'#edf1ef',trim:'#e8ba6a'},
+  {cape:'#723740',lining:'#482b36',metal:'#414b54',shade:'#242e37',light:'#77828a',trim:'#dfae5e'},
+  {cape:'#a03d35',lining:'#692f30',metal:'#d9a246',shade:'#8d612f',light:'#ffe494',trim:'#f6d383'}
+];
 function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
-  const form=commanderForms[rank];
-  // Draw in portrait coordinates; the feet remain the animation pivot.
-  c.save();c.scale(.21875,.21875);
-  const step=Math.sin(phase);
-  function shape(path,left,right){
-    const outline=new Path2D(path);
-    const gradient=c.createLinearGradient(48,100,190,125);
-    gradient.addColorStop(0,left);gradient.addColorStop(1,right||left);
-    c.fillStyle=gradient;c.fill(outline);
+  const u=bannerUniforms[rank],step=Math.sin(phase),wind=Math.sin(clothPhase-.55);
+  c.save();c.scale(.21875,.21875);c.lineJoin='round';c.lineCap='round';
+  function fill(path,color){c.fillStyle=color;c.fill(new Path2D(path))}
+  function line(path,color,width){c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(path))}
+  function glaze(top,bottom,y1,y2){
+    const g=c.createLinearGradient(0,y1,9,y2);g.addColorStop(0,top);g.addColorStop(1,bottom);return g;
   }
-  const sleeveLight='#946749',sleeveShade='#785038',fold='#5c3d2c',cuff='#51382c',thread='#be9875';
-  const handSkin='#ddb58b',knuckleLight='#edc9a0',fingerShade='#b98865';
-  shadow(c,124,221,28);
-  for(const [x,side] of [[138,1],[102,-1]]){
-    c.save();c.translate(x+step*side*9,step*side*6);
-    shape('M-11 170 Q0 168 11 174 L13 213 Q7 219 -8 217 L-12 190 Z','#31231f','#493326');
-    if(rank){
-      // Each greave follows its boot, with the ankle exposed below the metal rim.
-      shape('M-11 181 Q-1 176 10 181 L11 203 L7 210 L-6 208 L-10 201 Z',form.metal,form.light);
-      shape('M0 184 L8 181 L8 201 L5 206 L1 203 Z','#859087');
-      shape('M-11 186 Q0 190 10 184 L10 188 Q0 194 -11 190 Z','#3b4748');
-      shape('M-8 201 Q0 206 10 200 L9 204 Q1 210 -7 205 Z',form.edge);
-    }else{
-      shape('M-11 178 Q-1 182 10 178 L11 194 Q5 202 -7 201 L-11 194 Z','#474044','#635052');
-      shape('M-9 199 L10 195 L10 199 L-8 203 Z M-7 205 L10 201 L10 204 L-7 208 Z','#9e8070');
-    }
-    c.restore();
-  }
-  c.translate(step*2,-Math.abs(step)*4);
-  shape('M89 109 Q116 97 146 110 L149 148 L158 187 Q126 199 80 191 L94 153 Z','#44231f','#632d27');
-  shape('M97 108 Q121 100 142 109 L143 148 L151 182 Q129 191 95 185 L102 153 Z','#493327','#62412c');
-  if(rank){
-    shape('M96 155 L121 157 L116 188 L107 193 L87 188 Z',form.metal,form.light);
-    shape('M125 157 L148 151 L156 183 L148 189 L122 186 Z',form.metal,form.light);
-    shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
-    shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z',form.edge);
-    shape('M111 157 L130 157 L132 187 L120 200 L108 189 Z',form.cloth);
-    shape('M114 165 L120 174 L127 163 L124 178 L120 185 L115 179 Z',form.edge);
+  const gold=glaze('#ffe198','#b77d3d',105,140);
+  const skin=glaze('#ffe1b4','#e4af7a',70,152);
+  const metal=glaze(u.light,u.metal,94,152);
+  const leather='#654431',hair='#3e302e';
+  shadow(c,128,219,32);
+
+  // The cape turns about its clasp. Its animated hem stays behind the standing legs.
+  c.save();c.translate(111,98);c.rotate(wind*.022);c.translate(-111,-98);
+  if(!rank){
+    fill('M111 96 Q96 98 91 114 Q79 144 50 165 L54 168 L53 179 Q65 173 72 170 L71 181 Q80 163 94 154 L116 112Z',glaze('#647786',u.lining,100,182));
+    fill('M98 112 Q85 154 59 169 Q76 162 88 155 L98 146Z',u.cape);
   }else{
-    shape('M96 143 Q119 151 145 144 L154 177 L134 183 L125 175 L113 186 L85 181 Z','#8a4c45','#ab6453');
-    shape('M103 154 L115 157 L108 181 L102 180 Z M132 156 L142 152 L146 176 L138 177 Z','#834945');
-  }
-  shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z',rank?'#b27b3c':'#5e4440',rank?'#a16c35':'#765549');
-  commanderChestMotion(c,step,120,153);
-  // The far arm counter-swings. The wrist steadies the pole as the elbow moves.
-  c.save();c.translate(149,121);c.rotate(step*.11);c.translate(-149,-121);
-  shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z',sleeveLight,sleeveShade);
-  shape('M155 127 Q161 135 167 135 L163 137 Q158 135 155 127 Z M159 146 Q164 139 172 137 Q166 141 164 146 Z',fold);
-  shape('M174 131 L181 129 L184 146 L177 148 Z',cuff);
-  shape('M175 132 L177 132 L178 137 L176 138 Z M177 141 L179 140 L180 145 L178 146 Z',thread);
-  c.save();c.translate(183,141);c.rotate(-step*.10);c.translate(-183,-141);
-  shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
-  const flagWave=Math.sin(clothPhase-.54);
-  const flagTip=Math.sin(clothPhase-1.1);
-  shape(`M170 22 L219 30 Q${219+flagWave*7} 66 ${213+flagTip*11} ${120+flagWave*4}
-    Q${198+flagTip*7} 116 ${189+flagTip*5} 103 L186 83 L${182+flagWave*4} ${111+flagTip*3}
-    L${166+flagWave*5} 104 Q${167+flagWave*3} 64 170 22 Z`,'#803a2c','#aa5239');
-  shape(`M207 34 Q${215+flagWave*5} 63 ${207+flagTip*7} 103
-    Q${215+flagTip*7} 83 ${213+flagWave*5} 53 Z`,'#a4523a','#b46144');
-  shape('M178 60 Q183 48 193 52 Q190 42 200 43 Q207 44 204 51 Q201 55 197 51 Q203 52 201 47 Q197 45 197 52 Q200 61 190 61 Q182 60 178 69 Z M181 72 Q194 64 204 67 L201 72 Q191 71 180 78 Z','#cc9660','#e7bb7c');
-  shape('M164 13 Q167 10 172 14 L222 26 Q228 28 224 36 L165 24 Q160 22 164 13 Z','#583827','#6e4932');
-  shape('M174 15 L187 18 L187 26 L172 23 Z M202 22 L216 24 L215 32 L201 29 Z','#a9583d','#b66d4a');
-  if(rank>=2){
-    shape(`M171 28 L175 29 Q176 65 ${171+flagWave*4} 101 L${167+flagWave*4} 100 Z`,form.edge);
-    if(rank===4)shape(`M201 32 Q209 35 216 33 Q${224+flagTip*5} 55 ${232+flagTip*5} 61 Q217 56 212 47 L214 61 Q204 48 201 32 Z`,form.edge);
-  }
-  // The fingers wrap in front of the pole and move with it.
-  shape('M180 134 Q180 129 185 128 L188 129 Q195 126 198 132 L197 143 Q196 150 189 150 L182 148 Q179 146 179 141 Z',handSkin);
-  shape('M181 135 Q182 129 186 130 L190 133 L189 136 L185 134 L181 138 Z',knuckleLight);
-  shape('M192 138 L197 137 L197 139 L192 140 Z M192 143 L197 142 L196 144 L192 145 Z',fingerShade);
-  c.restore();
-  c.restore();
-  const capeWave=Math.sin(clothPhase+.8);
-  const capeTip=Math.sin(clothPhase+.13);
-  shape(`M87 110 Q99 111 105 123 Q101 168 ${94+capeWave*3} 203
-    Q${75+capeWave*4} ${202+capeWave*3} ${56+capeTip*9} ${196-capeTip*5}
-    Q${67+capeWave*5} 169 70 138 Z`,form.cloth||'#97483c',rank===2?'#243e4f':'#622d29');
-  shape('M94 107 Q99 115 108 119 L98 164 L92 201 Q96 155 88 146 Z','#78382f','#4c2724');
-  // Align the rib cage over the belt. Keep the helmet and saber rigid at their joints.
-  c.save();c.transform(1,0,-.14,1,155*.14,0);
-  // Bring the pauldrons closer to the neck while keeping the helmet proportions.
-  c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
-  const shoulderLight=rank?sleeveLight:'#667d94',shoulderShade=rank?sleeveShade:'#475c76';
-  shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',shoulderLight,shoulderShade);
-  shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',shoulderLight,shoulderShade);
-  shape('M62 118 Q72 99 89 98 Q74 103 66 118 Z M139 101 Q151 100 158 109 Q150 104 141 105 Z',rank?fold:'#394c64');
-  if(rank){
-    shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
-    shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z',form.edge);
-    c.save();c.translate(46,89);c.scale(2.5,2.5);commandPauldron(c,rank);c.restore();
-  }
-  c.restore();
-  if(rank){
-    shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z',form.metal,form.light);
-    shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
-    oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
-  }else{
-    shape('M98 108 Q112 100 126 101 L144 106 L148 144 L144 151 Q123 157 97 150 Z','#a9524d','#b76555');
-    shape('M102 106 L113 103 L129 115 L122 122 Z','#d2ac8c');
-    shape('M139 102 L148 107 L116 150 L107 151 Z','#e0b99a');
-    shape('M111 145 L148 106 L147 112 L119 149 Z','#8d5149');
-  }
-  c.restore();
-  // Lift the chin slightly around the collar and keep the helmet over the shoulders.
-  c.save();c.translate(122,102);c.rotate(-.055);c.translate(-120,-103);
-  shape('M96 62 Q112 43 138 56 L147 76 L145 99 Q134 110 114 104 L96 93 Z','#614539','#48352c');
-  shape('M114 72 Q128 67 145 73 L145 96 Q142 106 120 103 Q114 99 114 92 Z','#dfb78b','#f0cda2');
-  if(rank){
-    shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');
-    // A crested doumou helmet with a flared neck guard and a gilt brow.
-    shape('M92 72 Q91 48 116 43 Q140 44 145 66 L151 73 Q121 72 96 84 L86 88 Z',form.metal,form.light);
-    shape('M93 72 L103 75 L109 100 L99 106 L86 99 Z','#535a57','#746b58');
-    shape('M91 73 Q115 64 145 65 L152 71 Q126 71 98 80 Z','#a47a48','#e5c68b');
-    shape('M111 66 Q117 52 116 43 L121 44 Q122 55 116 65 Z','#b58b52','#d4b174');
-    shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
-    if(rank===1)shape('M97 72 L98 54 L103 47 L106 66 L121 60 L115 67 Z',form.light,form.edge);
-    if(rank===2)shape('M119 45 Q112 19 87 26 Q72 37 60 32 Q71 45 88 38 L76 46 Q96 46 105 36 L116 48 Z',form.light,form.edge);
-    if(rank===3)shape('M92 73 L83 47 L98 56 L95 40 L110 52 L111 64 Z M124 50 L132 36 L133 52 L143 45 L138 62 Z',form.metal,form.edge);
+    fill('M115 96 Q94 96 84 119 Q68 149 33 181 Q22 191 19 197 Q37 195 56 206 Q82 214 106 195 L127 112Z',glaze(u.cape,u.lining,110,209));
+    fill('M94 118 Q74 168 49 190 Q62 194 73 199 Q89 174 103 135Z',u.cape);
+    line('M22 194 Q38 187 57 200 Q69 204 75 203',u.trim,2.8);
+    fill('M37 188 Q38 178 47 178 Q54 178 51 185 Q49 188 45 185 Q50 185 48 182 Q45 179 42 185 Q43 190 53 189 L56 192 Q46 193 37 188Z',u.trim);
     if(rank===4){
-      shape('M114 48 Q85 -5 47 31 Q35 44 20 44 Q37 53 59 33 Q83 14 111 52 Z','#a74c41',form.edge);
-      shape('M119 47 Q117 17 137 12 Q151 9 164 19 Q141 14 132 27 Q126 37 125 50 Z',form.edge);
-      shape('M91 74 L84 48 L99 59 L94 39 L111 53 L118 47 L123 60 L110 69 Z',form.light,form.edge);
+      fill('M45 181 Q48 167 59 165 Q52 163 48 165 L60 156 L55 156 L73 147 Q68 158 64 161 L72 158 Q69 165 60 168 Q55 170 56 173 Q64 168 70 174 Q77 185 62 186 Q68 183 64 179 Q61 175 54 182Z',u.trim);
     }
-    shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
-  }else{
-    // Bind the ponytail at the crown; the heavier ends trail the head motion.
-    c.save();c.translate(98,53);
-    c.rotate(.055*Math.sin(clothPhase-.65)-step*.065);
-    shape('M3 2 C-4 -16 -21 -18 -29 -5 C-40 12 -29 36 -47 53 Q-52 59 -61 62 Q-43 64 -34 51 Q-36 58 -42 65 C-19 53 -17 32 -18 15 Q-19 -1 -10 2 Q-5 4 -2 9 Z','#282429','#453735');
-    shape('M-5 -5 Q-21 -17 -27 0 C-33 15 -26 34 -39 48 Q-29 43 -25 32 C-20 18 -26 5 -20 -3 Q-16 -10 -5 -5 Z','#574542');
-    c.restore();
-    shape('M94 74 Q87 63 95 52 Q105 38 125 43 Q142 45 148 62 L151 69 Q140 67 133 59 Q132 67 121 72 L124 64 Q116 69 113 84 L109 94 L106 81 L98 87 Z','#30282c','#4b3936');
-    shape('M97 57 Q108 39 129 47 Q115 45 105 55 L99 61 Z','#65504a');
-    shape('M92 51 Q94 47 98 46 L104 55 L100 59 Q96 54 92 53 Z','#ad3c38','#d15a48');
-    shape('M93 51 Q95 48 98 47 L99 49 L95 52 Z','#eb8160');
-    shape('M121 78 L123 75 L131 79 L130 81 Z M138 77 L144 73 L145 75 L139 80 Z','#493731');
   }
-  shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
   c.restore();
-  // The near arm and saber pass in front of the armor during the swing.
-  c.save();
-  c.translate(91,119);
-  c.rotate(swing===null?.72-step*.17:swing);
-  shape('M-7 0 Q0 -9 9 -4 L29 10 L36 9 L38 19 L29 24 L1 15 Z',sleeveLight,sleeveShade);
-  shape('M0 0 Q6 2 12 9 L9 8 Q4 6 0 0 Z M13 17 Q18 11 24 11 Q20 13 17 18 Z',fold);
-  shape('M26 9 L33 10 L37 21 L30 24 Z',cuff);
-  shape('M27 10 L29 10.5 L30.5 14.5 L28.5 15 Z M29.5 18 L31.5 17.5 L33 21.5 L31 22.5 Z',thread);
-  shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
-  shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
-  shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');
-  c.beginPath();c.arc(42,26,4.1,0,TAU);c.strokeStyle='#c69a56';c.lineWidth=2.5;c.stroke();
-  shape('M35 12 Q37 8 42 9 L47 11 Q50 13 48 18 L46 23 Q40 26 35 22 L33 17 Z',handSkin);
-  shape('M35 12 Q38 9 42 10 L46 12 L45 14 L39 13 L35 16 Z',knuckleLight);
-  shape('M44 16 L48 15 L48 17 L44 18 Z M43 20 L47 19 L46 21 L43 22 Z',fingerShade);
+
+  for(const [x,side] of [[145,1],[105,-1]]){
+    c.save();c.translate(x+step*side*6,side*step*3);
+    fill('M-9 172 L10 173 L9 197 L7 207 L-8 207 L-12 189Z','#514237');
+    fill('M-9 188 L9 186 L7 205 L-7 205Z',rank?u.metal:'#b19a79');
+    line('M-7 193 L7 197 M-7 200 L7 195',rank?u.shade:'#806b54',1.6);
+    fill('M-8 202 Q0 199 8 201 L10 210 Q17 212 17 217 Q5 220 -12 218 Q-13 211 -8 202Z',rank===2?u.metal:'#503c32');
+    fill('M-12 215 Q2 217 16 214 L17 218 Q5 221 -12 219Z','#322a26');
+    if(rank)fill('M-9 190 L10 187 L10 192 L-9 195Z',u.trim);
+    c.restore();
+  }
+
+  // Keep the face, sternum and belt on one vertical axis throughout the stride.
+  c.translate(0,-.9*step*step);
+  fill('M99 135 L147 135 L158 182 Q146 187 134 186 L130 176 L127 187 L86 186 Q90 165 99 135Z',glaze(rank?u.metal:'#a45139',rank?u.shade:'#873e2d',142,188));
+  if(rank){
+    for(const [x,dir] of [[92,1],[138,-1]]){
+      c.save();c.translate(x,147);c.transform(1,0,-dir*.17,1,0,0);
+      fill('M0 0 L19 1 L21 34 L-1 35Z',u.shade);
+      for(let y=3;y<=27;y+=8){
+        fill('M1 '+y+' l17 -1 1 6 -19 1Z',glaze(u.light,u.metal,y,y+7));
+        oval(c,4,y+2,1,1,u.trim);
+      }
+      fill('M-1 31 L20 30 L21 34 L-1 35Z',u.trim);c.restore();
+    }
+    fill('M117 145 L134 145 L141 184 L128 190 L113 186Z',u.trim);
+    fill('M119 148 L131 148 L137 181 L128 185 L117 183Z',u.cape);
+    fill('M119 158 L125 161 L128 156 L132 167 L129 165 L128 174 L125 166 L122 166Z',u.trim);
+  }
+
+  // Right arm and standard share a wrist so the grasp stays closed on every frame.
+  c.save();c.translate(151,111);c.rotate(step*.043);c.translate(-151,-111);
+  fill('M145 106 Q156 103 163 116 L167 124 L178 123 L183 137 Q166 143 155 133 L145 122Z',rank?u.shade:'#a4503a');
+  fill('M164 124 L178 122 L181 135 L167 138Z',rank?metal:'#ddbf95');
+  c.save();c.translate(179,134);c.rotate(-step*.04);c.translate(-179,-134);
+  line('M173 216 L190 19','#55392a',6.4);
+  line('M174 213 L191 18','#8c6443',2.1);
+  oval(c,191,16,4.9,6.1,'#805331');oval(c,192,14,2.1,2.5,'#a97649');
+  c.save();c.translate(190,30);c.rotate(wind*.026);c.translate(-190,-30);
+  fill('M175 28 L218 35 L211 104 L195 117 L188 100 L169 99Z',u.trim);
+  fill('M178 32 L215 37 L208 102 L195 111 L189 96 L172 95Z',glaze('#ad5037','#883b2c',30,110));
+  fill('M179 74 Q181 60 192 59 Q190 52 198 52 Q206 53 203 59 Q201 62 198 59 Q202 59 200 56 Q197 54 197 59 Q200 64 192 65 Q184 66 179 74Z M179 81 Q186 71 203 71 L199 76 Q188 75 179 81Z','#f4ce84');
   c.restore();
+  line('M168 26 L223 36','#583c2c',6.8);line('M175 27 L215 34','#e1aa59',5);
+  line('M189 30 L194 31','#ad4830',5.5);
+  fill('M175 127 Q179 122 183 125 L186 127 L185 140 Q182 143 175 140 L173 136Z',skin);
+  line('M180 138 L184 138','#c79668',1.1);c.restore();c.restore();
+
+  // Crossed fabric for the militia, a sash over bronze, then sculpted breastplates.
+  fill('M97 101 Q110 94 123 99 L145 97 Q154 101 156 119 L151 147 Q125 152 91 145 L91 119Z',rank===1||!rank?glaze('#b45e43','#91422e',100,146):metal);
+  if(rank===1){
+    fill('M103 104 Q116 107 124 113 L132 106 L140 110 L130 129 L104 139Z',glaze('#935f36','#67412b',108,143));
+    line('M103 131 L120 120 M109 134 L126 122','#b18150',1.5);
+  }
+  if(rank===4){
+    fill('M137 100 Q147 95 151 86 L153 94 L158 88 L157 97 L163 95 L157 104 L159 108 L150 105 L145 112Z',glaze('#fff8eb','#cfc0a8',88,111));
+  }
+  if(rank<2){
+    fill('M138 95 L148 100 Q137 124 101 143 L92 140 Q126 119 138 95Z','#ead2a5');
+    line('M96 141 Q128 125 143 102','#be956a',1.7);
+  }else{
+    fill('M103 108 Q115 105 126 115 L128 130 Q113 126 103 119Z',u.light);
+    fill('M129 116 L144 102 L152 110 L147 123 L130 132Z',u.shade);
+    fill('M105 127 L123 131 L130 139 L141 128 L151 123 L149 137 L132 146 L116 141Z',u.metal);
+    line('M101 126 Q118 129 128 136 L148 125',rank===2?'#e0e6e7':u.trim,1.8);
+    if(rank===4){
+      fill('M105 110 L121 116 L126 126 L114 122Z M134 127 L144 114 L149 113 L145 123Z',gold);
+      fill('M112 130 L124 134 L128 141 L116 138Z','#f5d18a');
+    }
+    if(rank>=3)fill('M128 106 L135 113 L131 124 L124 117Z',gold);
+  }
+  fill('M91 141 Q121 145 153 138 L154 146 Q123 153 90 149Z',leather);
+  if(!rank){
+    fill('M117 143 Q125 139 128 144 L132 141 L138 145 L134 150 L127 148 L122 152 L116 150Z','#c89c61');
+    fill('M124 148 L129 149 L122 166 L117 161Z M130 148 L134 148 L138 162 L133 159Z','#b78547');
+    fill('M91 151 L109 154 L107 173 Q101 179 85 173 L86 158Z','#855934');
+    fill('M89 151 L110 153 Q110 163 103 165 L87 162Z','#c89354');oval(c,101,161,1.9,1.9,'#8f6537');
+  }else{
+    fill('M119 143 L129 138 L139 142 L138 151 L129 156 L119 151Z',gold);
+    fill('M123 144 L129 147 L135 143 L132 150 L128 152Z',rank===4?'#922f29':u.shade);
+  }
+
+  // The free hand hangs below the shoulder in the reference pose; draw the saber on attack.
+  c.save();c.translate(95,109);c.rotate(swing===null?step*.115:swing-1.22);
+  fill('M-8 -2 Q3 -7 10 1 L6 16 L-2 28 L-16 22Z',rank?u.shade:'#a7543b');
+  fill('M-13 19 L0 22 L-3 39 L-8 47 L-20 42 L-18 32Z',rank?metal:'#e8cda6');
+  line('M-16 28 L-2 31 M-18 34 L-4 37',rank?u.shade:'#ceb08b',1.6);
+  if(rank)line('M-18 36 L-4 40',u.trim,2.3);
+  if(swing!==null){
+    c.save();c.translate(-12,43);c.rotate(.31);
+    fill('M0 -2 L50 -9 Q60 -11 69 -19 L62 -7 Q55 -2 49 -2 L0 4Z',glaze('#edf2e9','#809398',-12,5));
+    line('M3 2 L51 -4 L62 -10','#e5eee7',1.5);
+    line('M0 -6 L2 8','#bf924d',3);line('M-11 3 L1 1',leather,3);c.restore();
+  }
+  fill('M-19 38 Q-13 39 -6 40 Q-4 44 -8 48 Q-12 51 -19 47 Q-22 45 -19 38Z',rank?u.metal:skin);
+  c.restore();
+
+  if(!rank){
+    fill('M89 105 Q103 93 118 96 L145 94 Q141 106 130 111 Q111 108 99 112 L87 118Z',glaze('#687d89','#405261',94,118));
+    line('M98 104 Q115 98 129 104','#85919a',1.6);
+    fill('M83 115 Q91 108 104 112 L100 119 L87 119 L79 125Z','#e8cfaa');
+  }else{
+    fill('M84 108 Q88 94 101 93 Q116 91 121 107 L118 116 L101 114 L79 125Z',metal);
+    fill('M80 115 Q94 105 112 108 L120 110 L117 114 Q94 111 78 120Z',gold);
+    fill('M80 122 Q93 115 107 117 L105 123 L80 130 L75 129Z',u.shade);
+    line('M77 127 Q90 120 105 120',u.trim,2.3);
+    oval(c,114,105,2.3,2.3,u.trim);
+    if(rank===2){
+      fill('M82 109 Q87 98 98 97 L93 102 Q103 99 108 106 Q102 103 96 106 L88 111 L91 106Z','#eaf0ef');
+    }else if(rank===3){
+      fill('M77 104 L81 97 L91 96 L98 90 L102 94 L114 93 L109 100 L114 101 L108 107 L98 109 L90 114 L86 108 L79 112 L76 108Z',gold);
+      fill('M83 101 L91 99 L87 103Z M77 105 L82 104 L80 107Z M88 107 L94 105 L90 110Z','#4d3826');
+      line('M96 98 L102 95 M99 104 L108 100','#946734',1.5);
+    }else if(rank===4){
+      fill('M75 104 Q76 96 84 91 L81 91 Q86 82 97 86 Q100 79 110 81 L107 88 Q117 84 124 91 L114 98 L99 104 L90 110 L92 103 L80 111 L84 103Z',glaze('#fff7e5','#c8b99c',86,111));
+      fill('M82 94 L94 97 L88 87 L102 94 L100 87 L111 94 L114 101 L107 105 L94 104Z',gold);
+      line('M88 96 L107 102 M94 91 L108 100 M102 91 L112 99','#b08341',1.2);
+    }
+  }
+
+  // Broad exposed forehead and a compact jaw under the same brow in all five forms.
+  fill('M103 67 Q102 49 124 48 Q149 46 154 66 L155 88 Q155 99 148 102 Q137 107 117 101 L108 94Z',skin);
+  oval(c,107,84,5.4,6.5,'#d9a57c');
+  if(!rank){
+    c.save();c.translate(104,53);c.rotate(.036*wind-.045*step);
+    fill('M2 3 Q-10 -13 -22 0 C-36 15 -22 38 -41 54 Q-50 62 -61 56 Q-54 67 -39 64 Q-23 61 -16 42 Q-17 56 -28 66 Q-9 60 -6 42 C-3 29 -9 8 1 9Z',glaze('#534039','#302927',-3,66));
+    fill('M-12 0 C-25 3 -24 22 -28 33 Q-22 25 -19 13 Q-17 6 -12 5Z','#674d42');
+    c.restore();
+    fill('M100 73 Q94 56 106 48 Q125 36 144 48 Q156 54 156 73 L151 69 L147 64 L148 73 Q141 70 136 63 L135 70 L127 66 L124 73 L119 70 Q115 77 117 92 L111 88 L109 82 L106 84Z',glaze('#584239',hair,46,93));
+    line('M99 53 Q100 49 106 47','#ac4034',4.6);line('M99 52 L102 49','#de7152',1.6);
+  }else{
+    const plume=rank===2?'#f2f0ed':'#ae3332';
+    const tip=rank===4?31:rank===2?58:67;
+    c.save();c.translate(121,47);c.rotate(wind*.025);c.translate(-121,-47);
+    if(rank===4){
+      fill('M129 48 Q96 -5 55 17 Q41 23 30 39 Q55 29 71 31 Q94 31 115 51Z',glaze('#fff2b9','#dcad54',12,47));
+      fill('M124 46 Q88 -3 52 17 Q36 28 19 47 Q36 43 53 32 Q80 14 114 47Z',glaze('#c45450','#8f2c32',10,46));
+    }else{
+      fill(`M128 48 Q114 17 93 25 Q81 28 ${tip} 44 Q${tip-5} 49 ${tip-14} 44 Q${tip} 61 85 51 Q79 57 70 58 Q88 62 104 46 Q117 34 122 53Z`,glaze(plume,rank===2?'#bfc0c7':'#872e2a',24,58));
+    }
+    if(rank===4)fill('M118 42 Q92 10 67 18 Q48 23 41 32 Q68 13 86 22 Q103 28 118 42Z','#d67665');
+    else fill('M119 41 Q110 26 100 28 Q89 31 79 42 Q91 34 101 34 Q110 32 119 41Z',rank===2?'#fffdf5':'#ca5548');
+    c.restore();
+    fill('M100 71 Q97 54 115 46 L123 42 Q144 42 153 60 L157 70 L145 73 L110 80 L102 89 L94 89Z',glaze(u.light,u.metal,44,82));
+    fill('M100 69 L114 68 L116 81 L112 92 L95 95 L98 82Z',glaze(u.metal,u.shade,69,96));
+    line('M97 88 L112 85',u.trim,1.7);
+    fill('M97 69 Q122 60 154 62 L158 69 Q129 67 99 76Z',gold);
+    line('M120 45 Q132 47 137 62',u.shade,1.6);oval(c,123,44,3.4,2.7,u.trim);
+    fill('M103 65 Q109 50 121 47 L123 49 Q113 53 110 63Z',rank===3?'#596470':u.light);
+    for(const x of [107,121,137])oval(c,x,68-(x-107)*.12,1.3,1.4,'#ac813d');
+    if(rank>=2)fill('M144 67 L149 55 L155 62 L155 72 L150 68 L147 73Z',gold);
+    if(rank>=3){
+      fill('M106 77 Q91 70 83 54 L94 58 L86 47 L110 59 L117 68Z',gold);
+      fill('M89 57 L108 65 L114 69 L104 67Z',u.shade);oval(c,111,73,5,5,u.trim);oval(c,111,73,2.8,2.8,u.shade);
+    }
+  }
+  fill('M127 78 Q130 76 132 78 L132 87 Q130 90 127 87Z M146 76 Q149 75 150 77 L150 85 Q148 88 146 86Z','#362a25');
   c.restore();
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];
@@ -494,9 +524,9 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=null)
     c.save();c.translate(15+side*3.4+side*step*2.1,side*step*2);
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
   }
-  c.translate(step*.65,-Math.abs(step)*1.1);
   const commander=formRank!==null;
-  if(commander)commanderChestMotion(c,step,15,24);
+  if(commander)c.translate(0,-.14*step*step);
+  else c.translate(step*.65,-Math.abs(step)*1.1);
   if(boss){
     stroke('M12 23 L8 2','#514132',1.2);
     paint('M8 2 L2 4 L1 14 L4 12 L6 15 L10 12 Z',enemyCloth.light);

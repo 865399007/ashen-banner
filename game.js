@@ -1,7 +1,7 @@
 const healDropInterval=()=>Phaser.Math.Between(18,36);
 function attachBossName(scene,sprite,name){
  const label=scene.add.text(0,0,name,{
-   fontFamily:'"Noto Sans CJK SC", "Microsoft YaHei", sans-serif',fontSize:'7px',fontStyle:'bold',
+   fontFamily:gameFontFamily,fontSize:'7px',fontStyle:'bold',
    color:'#ffe7aa',stroke:'#36251c',strokeThickness:2,resolution:3
  }).setOrigin(.5,1).setDepth(1001);
  const offset=sprite.displayHeight*sprite.originY;
@@ -236,7 +236,18 @@ class Battle extends Phaser.Scene{
  $('life').style.width=100*this.hp/this.maxHP+'%';
 
 }
- panel(title,desc,homePage=false){this.resetStick();$('cover').hidden=true;let m=$('modal');m.classList.toggle('home-subpage',homePage);m.hidden=false;m.replaceChildren();m.scrollTop=0;let h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=desc;m.append(h,p);return m}
+ panel(title,desc,homePage=false,onBack){
+   this.resetStick();$('cover').hidden=true;
+   const m=$('modal');m.classList.toggle('home-subpage',homePage);
+   m.hidden=false;m.replaceChildren();m.scrollTop=0;
+   const h=document.createElement('h2'),p=document.createElement('p');
+   h.textContent=title;p.textContent=desc;m.append(h);
+   if(onBack){
+     const summary=document.createElement('div');summary.className='camp-page-summary';
+     summary.append(p);this.button(summary,'返回',onBack);m.append(summary);
+   }else m.append(p);
+   return m;
+ }
  button(parent,name,fn,disabled=false){let b=document.createElement('button');b.textContent=name;b.disabled=disabled;b.onclick=fn;parent.append(b);return b}
  startRun(key=this.stageKey){
    if(!this.camp.stageOpen(key)){this.camp.open(this,'选择战役');return}

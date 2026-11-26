@@ -59,7 +59,7 @@ class GreyCamp {
       status.textContent=open?'出征':'通关「'+campaigns[stageOrder[i-1]].name+'」解锁';
       card.append(icon,name,boss,status);
     }
-    game.button(controls,'返回首页',()=>{this.open(game);$('start').focus()});
+    game.button(controls,'返回',()=>{this.open(game);$('start').focus()});
     const last=track.children[stageOrder.indexOf(game.stageKey)];
     const focusCard=last&&!last.disabled?last:track.firstElementChild;
     focusCard.focus({preventScroll:true});track.scrollLeft=focusCard.offsetLeft-track.firstElementChild.offsetLeft;
@@ -72,8 +72,7 @@ class GreyCamp {
       return;
     }
     if(section==='选择战役'){this.chooseCampaign(game);return}
-    const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals,true);
-    game.button(m,'← 首页',()=>this.open(game));
+    const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals,true,()=>this.open(game));
     const body=document.createElement('div');body.className='camp-rows';m.append(body);
     const row=(title,info)=>{
       const box=document.createElement('div'),text=document.createElement('div'),name=document.createElement('strong'),detail=document.createElement('small');

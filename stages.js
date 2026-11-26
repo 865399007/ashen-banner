@@ -38,7 +38,7 @@ function stepStage(scene,dt){
  if(scene.stageTick>0)return;
  scene.stageEvent++;scene.stageTick=event==='reinforce'?14:8;
  if(event==='reinforce'){
-   const label=scene.add.text(h.x,h.y-48,scene.campaign.army+' · 增援',{fontSize:'10px',color:'#fff0ca',stroke:'#704632',strokeThickness:2}).setOrigin(.5).setDepth(990);
+   const label=scene.add.text(h.x,h.y-48,scene.campaign.army+' · 增援',{fontFamily:gameFontFamily,fontSize:'10px',color:'#fff0ca',stroke:'#704632',strokeThickness:2}).setOrigin(.5).setDepth(990);
    scene.tweens.add({targets:label,y:label.y-8,alpha:0,duration:1100,onComplete:()=>label.destroy()});
    for(const skin of reinforcements){
      if(scene.enemies.length>=90)break;

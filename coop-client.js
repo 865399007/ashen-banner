@@ -14,7 +14,7 @@ function installCoop(scene){
      body:JSON.stringify({...session,action}),keepalive:true}).catch(()=>{});
    stop();
  };
- const panel=(title,info,homePage=false)=>scene.panel(title,info,homePage);
+ const panel=(...args)=>scene.panel(...args);
  function stop(){
    exit.hidden=true;clearTimeout(timer);session=null;pending=null;state=null;menuKey='';lastEffect=0;
    scene.fallenEnemies.clear(true,true);sessionStorage.removeItem(key);for(const s of sprites.values())s.destroy();sprites.clear();
@@ -41,7 +41,7 @@ function installCoop(scene){
    canvas.setAttribute('aria-hidden','true');return canvas;
  }
  function partyRoom(){
-   const m=panel('出征备战',campaigns.border.name+' · '+campaignOpposition(campaigns.border),true);
+   const m=panel('出征备战',campaigns.border.name+' · '+campaignOpposition(campaigns.border),true,exit.onclick);
    const hall=node('div','party-hall');
    const seats=node('div','party-seats');hall.append(seats);
    const tools=node('div','party-tools'),code=node('b','party-code',state.code);
@@ -94,14 +94,14 @@ function installCoop(scene){
        state=r.state;paint();poll();
      }catch(e){showLobby(e.message)}finally{running=false}
    }
-   scene.button(m,'创建房间',()=>enter('create')).className='party-create';
-   scene.button(m,'加入房间',()=>enter('join'));
-   scene.button(m,'返回',()=>{if(!running)stop()});
+   const actions=node('div','party-entry-actions');m.append(actions);
+   scene.button(actions,'创建房间',()=>enter('create')).className='party-create';
+   scene.button(actions,'加入房间',()=>enter('join'));
+   scene.button(actions,'返回',()=>{if(!running)stop()}).className='party-back';
  }
  $('coop-entry').onclick=()=>{
    if(location.hostname.endsWith('.github.io')){
-     const m=panel('局域网合作','两台设备连接同一路由器后，请打开房主电脑的局域网地址，端口为 8767。',true);
-     scene.button(m,'返回',stop);return;
+     panel('局域网合作','两台设备连接同一路由器后，请打开房主电脑的局域网地址，端口为 8767。',true,stop);return;
    }
    if(location.port!=='8767'){location.href=location.protocol+'//'+location.hostname+':8767/?coop=1';return}
    showLobby();
@@ -231,7 +231,7 @@ function installCoop(scene){
  function paint(){
    const p=state.players[state.you],other=state.players[1-state.you],me=state.me;
    $('field').classList.add('cooperative');
-   status.hidden=state.phase==='lobby';exit.hidden=!['lobby','fight','refit'].includes(state.phase);
+   status.hidden=state.phase==='lobby';exit.hidden=!['fight','refit'].includes(state.phase);
    showText(status,'房间 '+state.code+' · '+(state.you+1)+'P'+(other&&!other.online?' · 等待队友重连':''));
    if(state.phase==='fight'){
      showBattlefield(scene,'border');

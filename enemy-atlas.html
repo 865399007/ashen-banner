@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#292522">
 <title>全战役敌人图鉴 · 烽烟点将</title>
+<link rel="stylesheet" href="assets/fonts/banner-sans.css">
 <style>
 *{box-sizing:border-box}
 :root{color-scheme:light;--ink:#342c26;--muted:#66594a;--line:#c6b699;--paper:#f3ead7;--gold:#d5af72}
-body{margin:0;background:#292522;color:var(--ink);font:16px/1.5 system-ui,"Noto Sans CJK SC",sans-serif}
+body{margin:0;background:#292522;color:var(--ink);font:16px/1.5 var(--game-type)}
 header,nav,main{width:min(1040px,100%);margin:auto}
 header{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#f7ebd5;padding:26px 24px 16px}
 h1,h2,h3,p,figure{margin:0}
-h1,h2,.boss-name{font-family:"Noto Serif CJK SC","Songti SC",serif}
+h1,h2,.boss-name{font-family:var(--game-type)}
 h1{font-size:clamp(23px,4.2vw,36px)} header a{color:#efcf99;white-space:nowrap;text-underline-offset:4px}
 nav{display:flex;gap:8px;padding:0 24px 18px}
 select,button{font:inherit;border:1px solid #8f7858;border-radius:5px;color:#f9eed9;background:#403830;padding:7px 12px}

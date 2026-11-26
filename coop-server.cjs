@@ -14,8 +14,8 @@ setInterval(()=>{
    for(let i=0;i<steps;i++)tick(r,step,now);
  }
 },16);
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.png':'image/png','.svg':'image/svg+xml'};
-const publicFiles=new Set(['index.html','style.css',...Array.from(fs.readFileSync(path.join(__dirname,'index.html'),'utf8').matchAll(/<script src="([^"?]+)/g),m=>m[1])]);
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.png':'image/png','.svg':'image/svg+xml','.ttf':'font/ttf'};
+const publicFiles=new Set(['index.html','style.css','assets/fonts/banner-sans.css','assets/fonts/banner-sans.ttf',...Array.from(fs.readFileSync(path.join(__dirname,'index.html'),'utf8').matchAll(/<script src="([^"?]+)/g),m=>m[1])]);
 http.createServer(async(req,res)=>{
  const send=(code,data)=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data))};
  try{

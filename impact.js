@@ -2,7 +2,7 @@ function showHealing(scene,sprite,amount){
   if(amount<=0)return;
   const torsoY=()=>sprite.y+(.55-sprite.originY)*sprite.displayHeight;
   const label=scene.add.text(sprite.x,torsoY(),'+'+Number(amount.toFixed(1)),{
-    fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',color:'#85f79a',stroke:'#214a2c',strokeThickness:3
+    fontFamily:gameFontFamily,fontSize:'15px',fontStyle:'bold',color:'#85f79a',stroke:'#214a2c',strokeThickness:3
   }).setOrigin(.5).setDepth(1101).setScale(.8);
   scene.tweens.add({targets:label,alpha:0,duration:720,
     onUpdate:()=>{
@@ -194,7 +194,7 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
     onUpdate:tween=>drawBurst(tween.getValue()),onComplete:()=>burst.destroy()});
   const label=scene.add.text(sprite.x+Phaser.Math.Between(-6,6),sprite.y-bodyHeight*.78,String(Math.round(damage)),{
     resolution:Phaser.Math.Clamp(Math.ceil(scene.cameras.main.zoom),1,4),
-    fontFamily:'Arial',fontSize:heavy?'16px':'13px',fontStyle:'bold',color:critical?'#ff983f':hero?'#ffac92':'#fff1c5',stroke:'#443326',strokeThickness:2
+    fontFamily:gameFontFamily,fontSize:heavy?'16px':'13px',fontStyle:'bold',color:critical?'#ff983f':hero?'#ffac92':'#fff1c5',stroke:'#443326',strokeThickness:2
   }).setOrigin(.5,1).setDepth(1100).setScale(.68);
   scene.tweens.chain({targets:label,tweens:[
     {scale:1.18,duration:45,ease:'Quad.Out'},{scale:1,duration:55,ease:'Quad.InOut'},

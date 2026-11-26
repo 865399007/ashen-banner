@@ -1,3 +1,6 @@
+const gameFontFamily=typeof wx!=='undefined' && wx.loadFont
+  ? (wx.loadFont('assets/fonts/banner-sans.ttf') || 'sans-serif')
+  : '"Banner Sans", sans-serif';
 const finalWave=15;
 const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
 function cardRank(tier){

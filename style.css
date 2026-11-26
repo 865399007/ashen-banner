@@ -1,3 +1,4 @@
+@import url("assets/fonts/banner-sans.css");
 *{box-sizing:border-box}body{margin:0;background:#151914;color:#e2decf;font:15px "Microsoft YaHei",sans-serif}header{height:78px;border-bottom:1px solid #393d32;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;background:#191d17}.brand{font:bold 23px SimSun,serif;letter-spacing:3px;display:flex;align-items:center;gap:13px}.brand i{background:#aa5639;color:#f9df9f;padding:8px;clip-path:polygon(0 0,100% 0,100% 80%,50% 100%,0 80%)}small,.strip,.status{font:11px Consolas,monospace;letter-spacing:2px;color:#aea38c}.status{color:#afbc95}main{max-width:1530px;margin:5vh auto;padding:0 4vw;display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:20px}section,aside{border:1px solid #555344;background:#20251e}.strip,footer,label{display:flex;align-items:center;justify-content:space-between}.strip,footer{padding:13px 18px;background:#262b23}.strip b{color:#d5c9a5}#field{aspect-ratio:16/10;position:relative;overflow:hidden;background:#333b31}canvas{display:block;width:100%!important;height:100%!important;image-rendering:pixelated}#game{position:absolute;inset:0}#cover{position:absolute;bottom:9%;left:6%;text-shadow:0 2px 10px #10130f}#cover small{color:#f0cb88;letter-spacing:5px}h1{font: bold clamp(36px,5vw,84px) SimSun,serif;letter-spacing:.08em;margin:8px 0;color:#fff0ce}#cover p{letter-spacing:4px;color:#eadac3;margin:6px 0 24px}button{cursor:pointer;border:1px solid #776a50;background:#33382b;color:#eee2ca;padding:9px 14px;font:inherit}button:hover{filter:brightness(1.24)}button:disabled{opacity:.45;cursor:default}#start,.primary{background:#b6603d;border:1px solid #d49964;font-weight:bold}footer{font-size:12px;color:#bdb8a6}kbd{border:1px solid #656657;padding:2px 5px;font:11px monospace}footer button{background:none;border:0;font-size:12px}aside{padding:24px 19px}h2{font: bold 26px SimSun,serif;margin:6px 0}hr{border:0;border-top:1px solid #41473a;margin:17px 0}label{margin:9px 0;font-size:13px;color:#bebead}label b{color:#dfcc9d}.meter,#ticks{display:flex;height:5px;background:#393c32}.meter i{background:#ac5f47;width:100%}#ticks{gap:3px;background:none}#ticks i{flex:1;background:#454b3d}#ticks .on{background:#b89b61}#modal{position:absolute;inset:5%;margin:auto;height:fit-content;max-height:90%;overflow:auto;text-align:center;padding:22px;background:#1e251ef5;border:1px solid #928262;box-shadow:0 12px 60px #10140fe8}#modal p{color:#bdb9a5}#cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:14px 0}#cards div{padding:8px;background:#32382c;border:1px solid #545846}#cards button{margin:3px;font-size:13px}#modal>button{margin:4px}@media(max-width:850px){main{grid-template-columns:1fr;margin:12px auto}aside{padding:15px}header{height:58px}.brand small{display:none}}
 canvas{image-rendering:auto}body{background:#25291f}header,.strip,footer{background:#303629}section,aside{border-color:#656b4d}aside{background:#2b3024}.brand i,#start,.primary{background:#9c4331}#start:hover,.primary:hover{background:#ad503b}.meter i{background:#c46648}#modal{background:#292f23fa;border-color:#b3a77d}
 .upgrade-hand{display:flex;justify-content:center;align-items:stretch;gap:clamp(4px,1vw,14px);padding:10px 0}
@@ -72,7 +73,7 @@ button:not(.upgrade-card):disabled{opacity:.55;cursor:default}
 }
 .coin-readout #silver-icon{width:28px!important;height:auto!important;flex:none}
 
-:root{--game-type:"Trebuchet MS","Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;--number-type:"Arial Rounded MT Bold","Trebuchet MS","Microsoft YaHei",sans-serif}
+:root{--number-type:var(--game-type)}
 body,.brand,h1,h2,button:not(.upgrade-card),#start,#modal .primary,#cards button,.upgrade-card,.upgrade-card strong,#cards strong,#cards small,dialog{font-family:var(--game-type)}
 h1,h2,.upgrade-card strong,#cards strong{font-weight:800;letter-spacing:.025em}
 .coin-readout b,.offer-price{font-family:var(--number-type);font-weight:800;font-variant-numeric:tabular-nums}#field{touch-action:manipulation}
@@ -280,6 +281,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #test-army{max-height:65%;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
 .coop-status{position:absolute;bottom:calc(var(--edge-b,8px) + 10px);left:50%;transform:translateX(-50%);color:#fff0cc;text-shadow:0 1px 3px #302114;white-space:nowrap;pointer-events:none;z-index:5}
 #field.cooperative .battle-debug,#field.cooperative #field-controls{display:none}
+#field:has(#modal.home-subpage:not([hidden])):not(:has(#modal .campaign-track)) #settings{display:none}
 #modal input[aria-label="房间号"]{display:block;margin:10px auto;padding:8px;text-align:center;width:9em;font:inherit;border:1px solid #866642;border-radius:5px;background:#f0dfb7;color:#4c3426}
 
 .coop-exit{position:absolute;z-index:8;right:max(8px,env(safe-area-inset-right));top:max(4px,env(safe-area-inset-top));min-width:48px;min-height:44px;padding:0 6px;border:0;background:transparent;box-shadow:none;color:#fff0cf;font-family:inherit;font-weight:700;font-size:16px;text-shadow:0 1px 3px #493428}
@@ -374,18 +376,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 .commander-stats dt{font-size:12px;color:#e0ceb2}
 .commander-stats dd{margin:0;font-weight:bold;font-variant-numeric:tabular-nums}
 
-@font-face {
-  font-family: "Ma Shan Zheng";
-  src: url("assets/fonts/ma-shan-zheng.ttf") format("truetype");
-  font-weight: 400;
-  font-display: swap;
-}
-
-#field :is(h1, h2, h3, .hud-title, .hud-title b, .upgrade-card strong),
-#cards strong {
-  font-family: "Ma Shan Zheng", var(--game-type);
-  font-weight: 400;
-}
+#field, #field * { font-family: var(--game-type) !important; }
 
 /* Field outfitter */
 #field:not(.pause-screen) #modal:has(#cards) {
@@ -477,6 +468,15 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 }
 #modal.home-subpage :is(input,select){max-width:100%;color-scheme:dark}
 #modal.home-subpage>button{margin:0 8px 8px 0}
+#modal.home-subpage .camp-page-summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:4px 0 12px;padding-bottom:4px;border-bottom:1px solid var(--refit-rule)
+}
+#modal.home-subpage .camp-page-summary p{min-width:0;margin:0;color:#e5c794;line-height:1.5}
+#modal.home-subpage .camp-page-summary button{
+  position:relative;flex:none;min-width:80px;height:40px;min-height:40px;margin:0;padding:0 12px;font-size:16px
+}
+#modal.home-subpage .camp-page-summary button::after{content:"";position:absolute;inset:-2px 0}
 #modal.home-subpage .camp-rows{max-width:none;display:grid;gap:10px;margin:10px 0 0}
 #modal.home-subpage :is(.camp-rows>div,.party-seat){
   padding:12px;border:1px solid #756b5f;border-top:3px solid #b9a589;border-radius:5px;
@@ -487,18 +487,29 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   background:var(--refit-primary);color:var(--refit-primary-ink)
 }
 #modal.home-subpage .party-hall{max-width:600px;margin-inline:auto;text-align:center}
-#modal.home-subpage .party-room-code{margin:0 8px 8px 0}
+#field #modal.home-subpage:not([hidden]):has(.party-room-code){
+  display:flex;flex-direction:column;align-items:center;justify-content:safe center;
+  gap:12px;padding:16px;text-align:center
+}
+#field #modal.home-subpage:has(.party-room-code)>p{margin:0;padding:0;border:0}
+#modal.home-subpage .party-room-code{margin:0;text-align:center}
+.party-entry-actions{display:flex;align-items:stretch;justify-content:center;gap:8px}
+#modal.home-subpage .party-back{min-width:80px;font-size:16px}
 
 #modal.home-subpage .codex-pages{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 14px
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:3px;margin:8px 0 14px
 }
-#modal.home-subpage .codex-pages button{padding-inline:4px;font-size:clamp(12px,2.25vw,15px)}
+#modal.home-subpage .codex-pages button{min-width:0;padding-inline:1px;font-size:clamp(8px,2.55vw,14px);white-space:nowrap}
 #modal.home-subpage .codex-pages button[aria-pressed="true"]{
   background:var(--refit-primary);color:var(--refit-primary-ink);border-color:#f4d9a5
 }
 #modal.home-subpage .codex-entries{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}
 
-.codex-entries .general-portrait{width:84px;height:auto;flex:none}
+#modal.home-subpage:not(:has(.campaign-track)){scrollbar-width:thin;scrollbar-color:#97856c #302e30}
+#modal.home-subpage:not(:has(.campaign-track))::-webkit-scrollbar{width:4px}
+#modal.home-subpage:not(:has(.campaign-track))::-webkit-scrollbar-track{background:#302e30}
+#modal.home-subpage:not(:has(.campaign-track))::-webkit-scrollbar-thumb{background:#97856c;border-radius:4px}
+.codex-entries .general-portrait{width:clamp(60px,18vw,84px)!important;height:auto!important;flex:none}
 
 /* The campaign gallery stays in a single row, including on portrait screens. */
 #field #modal.home-subpage:not([hidden]):has(.campaign-track){
@@ -506,36 +517,42 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
   --page-side:max(var(--page-gutter),calc((100% - 1080px)/2))
 }
 .campaign-track{
-  display:flex;flex:none;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+  display:flex;flex:none;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
   padding:4px 3px 12px;scrollbar-color:#ad926d #312e2e
 }
 #modal .campaign-track .campaign-card{
-  flex:0 0 clamp(164px,19vw,192px);display:grid;justify-items:center;gap:9px;scroll-snap-align:start;
-  min-width:0;margin:0;padding:20px 8px 13px;border:1px solid #887660;border-top:4px solid var(--army-color);
+  flex:0 0 min(150px,calc((100% - 16px)/3));display:grid;justify-items:center;gap:6px;scroll-snap-align:start;
+  min-width:0;margin:0;padding:12px 5px 8px;border:1px solid #887660;border-top:4px solid var(--army-color);
   background:linear-gradient(155deg,#494346,#333035);color:#f7e6c8;box-shadow:0 3px 0 #201d1d;
   white-space:normal;text-align:center
 }
 .campaign-card canvas{
-  width:90px!important;height:90px!important;border:2px solid #cdad79;border-radius:50%;
+  width:64px!important;height:64px!important;border:2px solid #cdad79;border-radius:50%;
   background:radial-gradient(ellipse at 38% 28%,#f4e5ca,#c0a47b);image-rendering:auto
 }
-.campaign-card strong{font:600 22px/1.25 var(--game-type)}
-.campaign-card span{font-size:13px;color:#e1d4bf}
-.campaign-card small{width:100%;border-top:1px solid #75695a;padding-top:9px;color:#ffdda1;font:600 12px/1.4 var(--game-type);letter-spacing:0}
+.campaign-card strong{font:600 16px/1.25 var(--game-type)}
+.campaign-card span{font-size:12px;color:#e1d4bf}
+.campaign-card small{width:100%;border-top:1px solid #75695a;padding-top:5px;color:#ffdda1;font:600 12px/1.4 var(--game-type);letter-spacing:0}
 #modal .campaign-track .campaign-card:disabled{filter:grayscale(1);opacity:.65;cursor:not-allowed}
 #modal .campaign-track .campaign-card:enabled:hover{background:#50453c;border-color:#d7b780}
 #modal .campaign-track .campaign-card:focus-visible{outline:2px solid #ffe0a1;outline-offset:1px}
-.campaign-nav{display:flex;gap:8px;align-items:center;margin-top:6px}
-#modal .campaign-nav button{margin:0}
-#modal .campaign-nav button:first-child{margin-right:auto}
+.campaign-nav{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:6px}
+#modal.home-subpage .campaign-nav button{
+  min-width:88px;margin:0;background:#624a35;border-color:#a48660;color:#fff2da
+}
 #field:has(.campaign-track):has(#modal:not([hidden])) #preferences .settings-actions{display:none}
+@media (orientation:landscape){
+  #field:not(.pause-screen) #modal.home-subpage:not([hidden]):has(>.camp-page-summary){
+    padding-top:max(12px,env(safe-area-inset-top))
+  }
+}
 @media (max-height:530px) and (min-width:661px){
   .camp-home{padding-block:18px 12px}
   .camp-heading{margin-bottom:10px;padding-bottom:7px}
   .camp-home h1{font-size:34px}
   #cover #start{margin-top:12px;min-height:48px}
   #field #modal.home-subpage:not([hidden]):has(.campaign-track){padding-block:16px}
-  #field #modal.home-subpage:not([hidden]):has(.campaign-track)>h2{font-size:32px}
+  #field #modal.home-subpage:not([hidden]):has(.campaign-track,>.camp-page-summary)>h2{font-size:32px}
   #modal .campaign-track .campaign-card{padding-block:12px 9px;gap:6px}
-  .campaign-card canvas{width:74px!important;height:74px!important}
+  .campaign-card canvas{width:56px!important;height:56px!important}
 }

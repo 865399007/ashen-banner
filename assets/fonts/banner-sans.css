@@ -1,0 +1,7 @@
+@font-face {
+  font-family: "Banner Sans";
+  src: url("banner-sans.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+:root { --game-type: "Banner Sans", sans-serif; }

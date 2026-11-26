@@ -25,7 +25,10 @@ function prepareHitTextures(scene){
 }
 
 class CombatSound {
-  constructor(){this.volume=.35;this.muted=false}
+  constructor(){
+    this.volume=.35;this.muted=false;
+    this.tracks={camp:{offset:0},battle:{offset:0}};
+  }
   refreshGain(){if(this.master)this.master.gain.value=this.muted?0:this.volume}
   unlock(){
     try{
@@ -49,75 +52,46 @@ class CombatSound {
       this.ctx.resume().catch(()=>{});
     }catch{}
   }
-  makeAmbienceBuffers(){
-    // Use separate noise in each ear for the open-air bed. The mono cues stay centered.
-    const rate=22050,wind=this.ctx.createBuffer(2,rate*5,rate);
-    for(let ch=0;ch<2;ch++){
-      const data=wind.getChannelData(ch);
-      for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.62;
+  async loadTheme(name){
+    const track=this.tracks[name];
+    track.loading=true;
+    try{
+      const response=await fetch('assets/music/'+name+'-theme.mp3');
+      if(!response.ok)throw Error('Music load failed: '+response.status);
+      track.buffer=await this.ctx.decodeAudioData(await response.arrayBuffer());
+    }catch{
+      track.retryAt=performance.now()+10000;
+    }finally{
+      track.loading=false;
     }
-    const flag=this.ctx.createBuffer(1,Math.ceil(rate*.65),rate);
-    const flutter=flag.getChannelData(0);
-    let slow=0,fast=0;
-    for(let i=0;i<flutter.length;i++){
-      const t=i/rate,noise=Math.random()*2-1;
-      slow+=.07*(noise-slow);fast+=.28*(noise-fast);
-      // Three overlapping folds catch the wind, each softer than the first.
-      const fold=Math.exp(-((t-.13)**2)/.003)+.68*Math.exp(-((t-.27)**2)/.0015)+.41*Math.exp(-((t-.43)**2)/.003);
-      flutter[i]=(fast-slow)*fold*.82;
-    }
-    const drum=this.ctx.createBuffer(1,rate,rate);
-    const skin=drum.getChannelData(0);
-    for(let i=0;i<skin.length;i++){
-      const t=i/rate,attack=1-Math.exp(-t*100);
-      const body=Math.sin(TAU*(66*t+.53*(1-Math.exp(-t*31))));
-      const overtone=Math.sin(TAU*(147*t+.21*(1-Math.exp(-t*25))));
-      skin[i]=attack*(.32*body*Math.exp(-t*5.5)+.12*overtone*Math.exp(-t*10));
-    }
-    return {wind,flag,drum};
   }
-  updateAmbience(mode){
+  updateMusic(mode){
     const c=this.ctx;
     if(!c)return;
-    const battle=mode==='fight'||mode==='coopFight';
     const quiet=document.hidden||this.muted||this.volume===0||mode==='paused'||mode==='settings'||mode==='over';
-    if(quiet){
-      if(this.ambience){
-        const {wind,filter,modulation,depth,bus}=this.ambience;
-        bus.gain.setTargetAtTime(0,c.currentTime,.035);
-        wind.onended=()=>{wind.disconnect();filter.disconnect();modulation.disconnect();depth.disconnect();bus.disconnect()};
-        wind.stop(c.currentTime+.18);modulation.stop(c.currentTime+.18);
-        this.ambience=null;
-      }
+    const name=mode==='fight'||mode==='coopFight'?'battle':'camp';
+    const active=this.music,now=c.currentTime;
+    if(active&&(quiet||active.name!==name)){
+      const track=this.tracks[active.name];
+      track.offset=(track.offset+now-active.started)%track.buffer.duration;
+      active.gain.gain.setTargetAtTime(0,now,.035);
+      active.source.stop(now+.18);
+      this.music=null;
+    }
+    if(quiet||this.music||c.state!=='running')return;
+    const track=this.tracks[name];
+    if(!track.buffer){
+      if(!track.loading&&!(track.retryAt>performance.now()))this.loadTheme(name);
       return;
     }
-    if(c.state!=='running')return;
-    const now=c.currentTime;
-    if(!this.ambience){
-      this.ambienceBuffers??=this.makeAmbienceBuffers();
-      const wind=c.createBufferSource(),filter=c.createBiquadFilter(),bus=c.createGain();
-      wind.buffer=this.ambienceBuffers.wind;wind.loop=true;
-      filter.type='bandpass';filter.Q.value=.74;filter.frequency.value=390;
-      const modulation=c.createOscillator(),depth=c.createGain();
-      modulation.frequency.value=.11;depth.gain.value=145;
-      modulation.connect(depth);depth.connect(filter.frequency);
-      wind.connect(filter);filter.connect(bus);bus.connect(this.output);
-      bus.gain.value=0;
-      wind.start(now,Math.random()*wind.buffer.duration);modulation.start(now);
-      this.ambience={wind,filter,bus,modulation,depth};
-    }
-    const bed=this.ambience;
-    if(bed.battle!==battle){
-      bed.battle=battle;bed.nextCue=now+2+Math.random()*2;
-      bed.bus.gain.setTargetAtTime(battle?.24:.19,now,.38);
-      bed.filter.frequency.setTargetAtTime(battle?300:445,now,.65);
-    }
-    if(now<bed.nextCue)return;
-    const cue=c.createBufferSource();
-    cue.buffer=battle?this.ambienceBuffers.drum:this.ambienceBuffers.flag;
-    cue.playbackRate.value=.91+Math.random()*.16;
-    cue.connect(bed.bus);cue.onended=()=>cue.disconnect();cue.start();
-    bed.nextCue=now+(battle?5:6)+Math.random()*5;
+    const source=c.createBufferSource(),gain=c.createGain();
+    source.buffer=track.buffer;source.loop=true;
+    gain.gain.setValueAtTime(0,now);
+    gain.gain.setTargetAtTime(name==='battle'?.45:.50,now,.09);
+    source.connect(gain);gain.connect(this.output);
+    source.onended=()=>{source.disconnect();gain.disconnect()};
+    source.start(now,track.offset);
+    this.music={name,source,gain,started:now};
   }
   play(freq,endFreq,length,volume,noise=false){
     const c=this.ctx;

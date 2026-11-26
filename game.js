@@ -48,17 +48,17 @@ class Battle extends Phaser.Scene{
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
  this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
- // Browsers allow camp ambience to start after the first tap or keyboard action.
+ // Browsers allow the camp theme to start after the first tap or keyboard action.
  const wakeAudio=()=>{if(this.sfx.ctx?.state!=='running')this.sfx.unlock()};
- const syncAmbience=()=>this.sfx.updateAmbience(this.mode);
+ const syncMusic=()=>this.sfx.updateMusic(this.mode);
  document.addEventListener('click',wakeAudio,true);
  document.addEventListener('keydown',wakeAudio,true);
- document.addEventListener('visibilitychange',syncAmbience);
+ document.addEventListener('visibilitychange',syncMusic);
  this.events.once('shutdown',()=>{
    document.removeEventListener('click',wakeAudio,true);
    document.removeEventListener('keydown',wakeAudio,true);
-   document.removeEventListener('visibilitychange',syncAmbience);
-   this.sfx.updateAmbience('over');
+   document.removeEventListener('visibilitychange',syncMusic);
+   this.sfx.updateMusic('over');
  });
  this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,ESC',false);this.keys.ESC.on('down',()=>{if(!$('preferences').hidden)this.closeSettings();else this.pauseRun()});
  window.addEventListener('keydown',event=>{
@@ -580,7 +580,7 @@ class Battle extends Phaser.Scene{
  }
  this.hud()}}
  update(_,ms){
- this.sfx?.updateAmbience(this.mode);
+ this.sfx?.updateMusic(this.mode);
  if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
  let x=Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),y=Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);
  if(!x&&!y){x=this.stickX;y=this.stickY}

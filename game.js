@@ -19,7 +19,7 @@ function appendCommanderStats(panel,name,rows){
 const statNumber=value=>Number(value.toFixed(2));
 class Battle extends Phaser.Scene{
  preload(){
-   this.load.image('ember-arena','assets/field/ember-arena.webp?v=sand-texture');
+   this.load.image('ember-arena','assets/field/ember-arena.webp?v=ground-detail');
    this.load.image('linen-cross','assets/field/linen-cross.png');
  }
  create(){

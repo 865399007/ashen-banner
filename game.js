@@ -35,20 +35,10 @@ class Battle extends Phaser.Scene{
  this.camp=new GreyCamp();
  this.commander=commanders.banner;
  this.stageKey=stageOrder[0];this.campaign=campaigns[this.stageKey];
- const skills=$('commander-passives');
- skills.replaceChildren();
- for(const {name,description} of this.commander.passives){
-   const line=document.createElement('li'), title=document.createElement('strong');
-   title.textContent=name;
-   line.append(title,' · '+description);
-   skills.append(line);
- }
-
  for(const button of $('camp-actions').querySelectorAll('[data-camp-section]')){
    button.onclick=()=>this.camp.open(this,button.dataset.campSection);
  }
  makeArt(this);
- $('home-commander').getContext('2d').drawImage(this.textures.get(commanderTexture(this,1)).getSourceImage(),0,0);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
  this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';

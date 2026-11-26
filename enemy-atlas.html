@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#292522">
+<title>全战役敌人图鉴 · 烽烟点将</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:light;--ink:#342c26;--muted:#66594a;--line:#c6b699;--paper:#f3ead7;--gold:#d5af72}
+body{margin:0;background:#292522;color:var(--ink);font:16px/1.5 system-ui,"Noto Sans CJK SC",sans-serif}
+header,nav,main{width:min(1040px,100%);margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#f7ebd5;padding:26px 24px 16px}
+h1,h2,h3,p,figure{margin:0}
+h1,h2,.boss-name{font-family:"Noto Serif CJK SC","Songti SC",serif}
+h1{font-size:clamp(23px,4.2vw,36px)} header a{color:#efcf99;white-space:nowrap;text-underline-offset:4px}
+nav{display:flex;gap:8px;padding:0 24px 18px}
+select,button{font:inherit;border:1px solid #8f7858;border-radius:5px;color:#f9eed9;background:#403830;padding:7px 12px}
+select{flex:1;min-width:0}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}
+main{padding:0 24px 36px}
+article{--army:#72604e;padding:24px 30px 20px;background:var(--paper);border-top:6px solid var(--army);border-radius:4px}
+.chapter{font-size:13px;letter-spacing:.1em;color:var(--muted)}
+h2{font-size:clamp(29px,4.5vw,42px);line-height:1.27;margin:2px 0 12px}
+.hero{display:flex;align-items:center;gap:22px;border-block:1px solid var(--line);padding:10px 0 12px}
+.portrait{width:118px;height:118px;flex:none;background:radial-gradient(ellipse at center,#e1d1b2,transparent 70%);display:grid;place-items:center}
+.portrait canvas{width:100%;height:100%;object-fit:contain}
+.kicker,.note{font-size:13px;color:var(--muted)}
+.boss-name{font-size:27px;line-height:1.4;display:block}
+section{margin-top:18px}
+h3{font-size:18px;line-height:1.4}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:4px 8px;margin:7px 0}
+.roster{grid-template-columns:repeat(7,minmax(0,1fr))}
+figure{min-width:0;text-align:center;padding:4px 0;border-bottom:1px solid #d4c7ae}
+figure canvas{width:100%;height:65px;object-fit:contain;display:block}
+figcaption{font-size:14px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.pair .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.event-text{margin-top:7px}
+@media(max-width:650px){header{padding:18px 12px 12px}nav{padding:0 12px 12px;gap:5px}main{padding:0 8px 20px}article{padding:16px 14px}select,button{padding:7px}header a{font-size:14px}.roster{grid-template-columns:repeat(4,minmax(0,1fr))}.pair{grid-template-columns:1fr;gap:0}.hero{gap:10px}.portrait{width:76px;height:100px}.hero p{font-size:14px}figure canvas{height:55px}}
+@page{size:A4;margin:13mm}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  header,nav{display:none}body{background:white;font-size:12pt}main{width:100%;padding:0}
+  article{break-after:page;break-inside:avoid;min-height:265mm;border-radius:0;padding:9mm 8mm}
+  article:last-child{break-after:auto}h2{font-size:32pt;margin:3mm 0 6mm}
+  .hero{padding:4mm 0;gap:5mm}.portrait{width:29mm;height:29mm}.hero p{font-size:12pt}
+  section{margin-top:7mm}.roster{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .grid{gap:2mm 1.5mm}.pair{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+  figure canvas{height:17mm}figcaption,.note,.kicker{font-size:9.5pt}
+}
+</style>
+</head>
+<body>
+<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf">全册 PDF</a></header>
+<nav aria-label="选择战役"><button id="prev" type="button">上一关</button><select id="chapters" aria-label="战役"></select><button id="next" type="button">下一关</button></nav>
+<main id="book"></main>
+<script src="rules.js?v=twenty-fields"></script>
+<script src="art.js?v=twenty-fields"></script>
+<script>
+const names={3:'短刀兵',4:'长枪兵',5:'弓兵',8:'突击骑兵',9:'双刃兵',10:'大盾兵',11:'长戟兵',12:'短刃游兵',13:'重剑兵',14:'战镐兵',15:'连枷兵',16:'火把兵',22:'轻骑兵',23:'弩兵'};
+const standardPatrol=[3,4,5,8,9,10,11,12,13,14,15,16,23];
+const moves={
+  rocks:['落石','三处圆形落点同时出现，移出预警圈即可躲避。'],
+  volley:['三箭齐射','三支箭沿扇形射出，留意箭线之间的空隙。'],
+  cleave:['扇形横扫','主将面前出现扇形预警，可绕向侧后方。'],
+  hammer:['近身重击','以主将为中心发动圆形重击，退到圈外可避开。']
+};
+const hazards={fire:'第 4 波起，地面会在指挥官脚下出现火区预警。',rocks:'第 4 波起，落石会瞄准指挥官，在地面标出三处落点。',tower:'第 4 波起，进入箭塔射程会引来三箭齐射。'};
+const eventNames={fire:'地面火区',rocks:'落石',tower:'箭塔',reinforce:'增援'};
+const book=document.querySelector('#book'),chapters=document.querySelector('#chapters');
+function element(tag,cls,text){
+  const el=document.createElement(tag);if(cls)el.className=cls;if(text)el.textContent=text;return el;
+}
+function sprite(key,id,boss){
+  const mounted=id===8||id===22,canvas=element('canvas'),scale=6;
+  canvas.width=(mounted?50:36)*scale;canvas.height=(mounted?45:38)*scale;
+  canvas.setAttribute('aria-hidden','true');
+  const c=canvas.getContext('2d');c.scale(scale,scale);
+  if(boss)campaignGeneral(c,key,0);
+  else miniature(c,(points,color)=>{
+    c.fillStyle=color;c.beginPath();
+    points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();
+  },id,0,0,null,0,'',campaigns[key].colors);
+  return canvas;
+}
+function units(parent,key,ids,cls,elite=false){
+  const grid=element('div','grid '+cls);
+  for(const id of new Set(ids)){
+    const f=element('figure'),count=ids.filter(item=>item===id).length;
+    const label=(elite?'精英':'')+names[id]+(count>1?' ×'+count:'');
+    f.append(sprite(key,id,false),element('figcaption','',label));grid.append(f);
+  }
+  parent.append(grid);
+}
+function section(parent,title){
+  const box=element('section');box.append(element('h3','',title));parent.append(box);return box;
+}
+function campaignPage(key,i){
+  const c=campaigns[key],page=element('article');
+  page.style.setProperty('--army',c.colors.base);
+  page.append(element('p','chapter','烽烟点将　/　敌人图鉴　　'+String(i+1).padStart(2,'0')+' / '+stageOrder.length),element('h2','',c.name));
+  const hero=element('div','hero'),portrait=element('div','portrait'),bio=element('div');
+  portrait.append(sprite(key,c.bossSkin,true));hero.append(portrait,bio);page.append(hero);
+  bio.append(element('span','kicker',c.army+'　·　第 '+finalWave+' 波主将'),element('strong','boss-name',c.boss),
+    element('p','','普通生命 '+c.bossHP.toLocaleString('en-US')+'　·　'+moves[c.bossMove][0]),element('p','note',moves[c.bossMove][1]));
+  const patrol=section(page,'普通兵');
+  const ids=key==='border'?standardPatrol.filter(id=>villagePatrols.some(([,pool])=>pool.includes(id))):[...new Set(c.roster??standardPatrol)];
+  units(patrol,key,ids,'roster');
+  if(key==='border'){
+    const groups=villagePatrols.map(([wave,pool],index)=>{
+      const earlier=villagePatrols.slice(0,index).flatMap(row=>row[1]);
+      const first=[...new Set(pool)].filter(id=>!earlier.includes(id));
+      return '第 '+wave+' 波：'+first.map(id=>names[id]).join('、');
+    });
+    patrol.append(element('p','note','首次出现　'+groups.join('　')+'。'));
+  }else if(!c.roster)patrol.append(element('p','note','巡兵与步兵轮换出场，间有骑兵。第 2 波起可出现弩兵。'));
+  const pair=element('div','pair');page.append(pair);
+  const elite=section(pair,'精英');
+  units(elite,key,[3,4,5],'',true);
+  elite.append(element('p','note','每波共 3–5 名，兵种随机，生命为同波同型普通兵的 5 倍。'));
+  const event=section(pair,c.event==='reinforce'?'增援兵力':'战场事件 · '+eventNames[c.event]);
+  if(c.event==='reinforce'){
+    if(c.reinforcements.every(id=>id==null)){
+      event.append(element('p','event-text','每批最多 3 名，沿用本关普通巡兵的出兵顺序。'));
+    }else units(event,key,c.reinforcements,'');
+    event.append(element('p','note','每波约第 5 秒起增援，随后每 14 秒一批。'));
+  }else event.append(element('p','event-text',hazards[c.event]));
+  return page;
+}
+function render(){
+  const key=stageOrder.includes(location.hash.slice(1))?location.hash.slice(1):stageOrder[0],i=stageOrder.indexOf(key);
+  chapters.value=key;document.querySelector('#prev').disabled=i===0;
+  document.querySelector('#next').disabled=i===stageOrder.length-1;
+  book.replaceChildren(campaignPage(key,i));
+}
+for(const [i,key] of stageOrder.entries())chapters.add(new Option(String(i+1).padStart(2,'0')+'　'+campaigns[key].name+' · '+campaigns[key].boss,key));
+chapters.onchange=()=>{location.hash=chapters.value};
+document.querySelector('#prev').onclick=()=>{location.hash=stageOrder[chapters.selectedIndex-1]};
+document.querySelector('#next').onclick=()=>{location.hash=stageOrder[chapters.selectedIndex+1]};
+window.addEventListener('hashchange',render);
+window.addEventListener('beforeprint',()=>book.replaceChildren(...stageOrder.map(campaignPage)));
+window.addEventListener('afterprint',render);
+render();
+</script>
+</body>
+</html>

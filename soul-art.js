@@ -54,13 +54,9 @@ function drawGeneralSoul(c,general,pose=0){
       shape('M31 23 L44 21 L48 24 L34 26 L28 33 L30 27 L24 29Z',rider?'#65a382':'#7cb2b7');
     }
   }else if(general==='lvbu'){
-    // Sweep the two feather vanes back from a single crown, clear of the halberd.
     shape('M32 27 Q28 27 28 33 L24 37 Q30 37 33 33 L35.5 28Z','#34343e');
     shape('M32 29 Q30 24 33 21 Q38 17 44 20 Q47 21 47 24 L43 24 L38 25 L35 30 L34 32Z','#35343c');
     shape('M35 19 Q33 16 35 14.8 Q38 12.8 40 15 L41 19Z','#3d3537');
-    shape('M38 18 C32 18 28 11 21 9 Q26 8.3 29 10 L27 7.8 Q34 8.6 37 13 Q39 15 38 18Z','#ac4946');
-    shape('M38 17 C35 12 30 8 25 5.5 Q31 5.2 34 8 L32.8 5.8 Q40 9 40 16.3Z','#c85a46');
-    line('M37.5 15.7 Q34.2 10.6 29.7 8.1','#f3ba79',.8);
     shape('M32 23 L33 17 L36.8 19 L39.3 14.8 L41.4 18.8 L45 16.6 L45.3 20.5 L47 22.2 L42 22.2 L38 23.6 L34 26Z','#d6a254');
     line('M33.6 23.2 Q38 20.8 44.9 20.7','#f8d995',1.1);
     shape('M37.3 21.2 L39.4 18.3 L41 20.5 L39.3 22.8Z','#923c35',null);
@@ -184,5 +180,56 @@ function generalSoulFrame(scene,type,frame){
       c.scale(2,2);c.translate(16,0);drawGeneralSoul(c,type.general,poses[frame]);
     });
   }
+  return key;
+}
+
+
+const plumeFrameCount=24;
+function lvbuPlumeFrame(scene,frame){
+  const key='lvbu-plumes-'+frame;
+  if(scene.textures.exists(key))return key;
+  const phase=frame*TAU/plumeFrameCount;
+  paintTexture(scene,key,224,140,c=>{
+    c.scale(2,2);c.translate(16,0);c.lineJoin='round';c.lineCap='round';
+    // Both shafts are clamped at the crown. The wave travels toward the flexible tips.
+    function feather(rootX,rootY,controlX,controlY,bendX,bendY,tipX,tipY,width,lag,base,light){
+      const shaft=t=>{
+        const u=1-t,flex=t*t,wave=phase-3.2*t+lag;
+        return {
+          x:u*u*u*rootX+3*u*u*t*controlX+3*u*t*t*bendX+t*t*t*tipX+flex*1.5*Math.cos(wave),
+          y:u*u*u*rootY+3*u*u*t*controlY+3*u*t*t*bendY+t*t*t*tipY+flex*2.7*Math.sin(wave)
+        };
+      };
+      const points=[];
+      for(let i=0;i<=40;i++){
+        const t=i/40,p=shaft(t),a=shaft(Math.max(0,t-.005)),b=shaft(Math.min(1,t+.005));
+        const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
+        const breadth=width*Math.pow(Math.sin(Math.PI*t),.72)*(.59+.72*t);
+        points.push({x:p.x,y:p.y,nx:-dy/length*breadth,ny:dx/length*breadth});
+      }
+      function edge(i,side){
+        const p=points[i];
+        const notch=i>9&&i<36&&(i+(side>0?2:0))%8===0 ? .65 : 1;
+        return [p.x+side*notch*p.nx,p.y+side*notch*p.ny];
+      }
+      c.beginPath();c.moveTo(rootX,rootY);
+      for(let i=1;i<=40;i++)c.lineTo(...edge(i,1));
+      for(let i=39;i>=0;i--)c.lineTo(...edge(i,-1));
+      c.closePath();c.fillStyle=base;c.fill();
+      c.strokeStyle='#593b3e';c.lineWidth=.65;c.stroke();
+      // Oblique paired bars follow the changing normal of the vane.
+      for(const i of [10,17,24,31]){
+        const p=points[i];
+        c.beginPath();c.moveTo(...edge(i+3,1));c.lineTo(p.x,p.y);c.lineTo(...edge(i+4,-1));
+        c.lineTo(...edge(i+2,-1));c.lineTo(points[i-2].x,points[i-2].y);c.lineTo(...edge(i+1,1));
+        c.closePath();c.fillStyle=light;c.fill();
+      }
+      c.beginPath();c.moveTo(rootX,rootY);
+      for(const p of points.slice(1,-2))c.lineTo(p.x,p.y);
+      c.strokeStyle='#ecc48a';c.lineWidth=.5;c.stroke();
+    }
+    feather(35.5,20,25,6,10,12,1,32,2.1,.8,'#93514a','#d79973');
+    feather(40,18.7,29,1,9,2,-9,20,2.45,0,'#ba5041','#f0a067');
+  });
   return key;
 }

@@ -136,7 +136,9 @@ class GreyCamp {
             const source=game.textures.get(generalSoulFrame(game,type,0)).getSourceImage();
             portrait.width=source.width;portrait.height=source.height;portrait.className='general-portrait';
             portrait.setAttribute('aria-hidden','true');
-            portrait.getContext('2d').drawImage(source,0,0);
+            const ctx=portrait.getContext('2d');
+            if(type.general==='lvbu')ctx.drawImage(game.textures.get(lvbuPlumeFrame(game,0)).getSourceImage(),0,0);
+            ctx.drawImage(source,0,0);
             entry.append(portrait);
           }
         }],

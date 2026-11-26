@@ -235,6 +235,12 @@ class Battle extends Phaser.Scene{
    this.soulFrames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,type,frame));
    this.soulImage=this.add.image(this.hero.x,this.hero.y,this.soulFrames[0]).setOrigin(.5,96/140)
      .setScale(.36+.02*(count-4)).setAlpha(.86);
+   if(type.general==='lvbu'){
+     const plumes=this.add.image(0,0,lvbuPlumeFrame(this,0)).setOrigin(.5,96/140)
+       .setScale(this.soulImage.scaleX).setAlpha(this.soulImage.alpha);
+     this.soulImage.plumes=plumes;
+     this.soulImage.once('destroy',()=>plumes.destroy());
+   }
    this.positionSoul();
  }
  this.actors.slice(1).forEach((unit,slot)=>{
@@ -477,7 +483,13 @@ class Battle extends Phaser.Scene{
  positionSoul(){
    const h=this.hero;
    const back=h.displayWidth*.14*(h.flipX?1:-1);
-   this.soulImage.setPosition(h.x+back,h.y-h.displayHeight*.55).setFlipX(h.flipX).setDepth(h.depth-.5);
+   const soul=this.soulImage;
+   soul.setPosition(h.x+back,h.y-h.displayHeight*.55).setFlipX(h.flipX).setDepth(h.depth-.5);
+   if(soul.plumes){
+     const phase=Math.floor(this.elapsed*15)%plumeFrameCount;
+     soul.plumes.setTexture(lvbuPlumeFrame(this,phase)).setPosition(soul.x,soul.y)
+       .setFlipX(soul.flipX).setDepth(soul.depth-.01);
+   }
  }
  soulBonus(stat){return this.soul?.type.stat===stat?this.soul.bonus:0}
  attack(a,e){

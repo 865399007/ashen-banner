@@ -1,7 +1,7 @@
 const healDropInterval=()=>Phaser.Math.Between(18,36);
 function attachBossName(scene,sprite,name){
  const label=scene.add.text(0,0,name,{
-   fontFamily:'"Noto Sans CJK SC", "Microsoft YaHei", sans-serif',fontSize:'9px',fontStyle:'bold',
+   fontFamily:'"Noto Sans CJK SC", "Microsoft YaHei", sans-serif',fontSize:'7px',fontStyle:'bold',
    color:'#ffe7aa',stroke:'#36251c',strokeThickness:2,resolution:3
  }).setOrigin(.5,1).setDepth(1001);
  const offset=sprite.displayHeight*sprite.originY;

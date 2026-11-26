@@ -190,7 +190,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
     L${166+flagWave*5} 104 Q${167+flagWave*3} 64 170 22 Z`,'#803a2c','#aa5239');
   shape(`M207 34 Q${215+flagWave*5} 63 ${207+flagTip*7} 103
     Q${215+flagTip*7} 83 ${213+flagWave*5} 53 Z`,'#a4523a','#b46144');
-  shape('M190 40 L199 42 L198 56 L208 57 L207 66 L197 65 L195 84 L185 81 L187 64 L178 62 L179 53 L188 55 Z','#cc9660','#e7bb7c');
+  shape('M178 60 Q183 48 193 52 Q190 42 200 43 Q207 44 204 51 Q201 55 197 51 Q203 52 201 47 Q197 45 197 52 Q200 61 190 61 Q182 60 178 69 Z M181 72 Q194 64 204 67 L201 72 Q191 71 180 78 Z','#cc9660','#e7bb7c');
   shape('M164 13 Q167 10 172 14 L222 26 Q228 28 224 36 L165 24 Q160 22 164 13 Z','#583827','#6e4932');
   shape('M174 15 L187 18 L187 26 L172 23 Z M202 22 L216 24 L215 32 L201 29 Z','#a9583d','#b66d4a');
   c.restore();
@@ -205,20 +205,29 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   c.translate(78,121);
   c.rotate(swing===null?.72:swing);
   shape('M-7 0 Q0 -9 9 -4 L31 11 L43 8 L47 18 L29 24 L1 15 Z','#674634','#483326');
-  shape('M38 7 L36 -50 L41 -68 L46 -51 L45 7 Z','#92a4a7','#c8d2cc');
+  shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
   shape('M38 5 L37 -49 L41 -66 L41 5 Z','#e3e7db');
-  shape('M29 5 L52 5 L53 10 L30 11 Z','#bd904e');
+  shape('M32 5 Q41 1 50 5 L48 10 L33 10 Z','#bd904e');
+  c.beginPath();c.arc(42,26,4.1,0,TAU);c.strokeStyle='#c69a56';c.lineWidth=2.5;c.stroke();
   shape('M37 11 Q41 7 47 12 L46 22 Q40 26 35 20 Z','#684834','#493126');
   c.restore();
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z','#cfb998','#b49a7e');
   shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z','#af947a','#927862');
-  shape('M52 122 Q57 99 80 89 Q101 84 117 106 L124 119 Q113 127 98 123 L84 118 Q61 128 52 125 Z','#dfc7a8','#c8ae8e');
+  shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
+  shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z','#ad8652','#d6b478');
+  shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z','#516063','#8b8d7d');
+  shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
   oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
   shape('M96 62 Q112 43 138 56 L147 76 L145 99 Q134 110 114 104 L96 93 Z','#614539','#48352c');
   shape('M114 72 Q128 67 145 73 L145 96 Q142 106 120 103 Q114 99 114 92 Z','#dfb78b','#f0cda2');
   shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');
-  shape('M92 57 L100 58 L100 66 L111 67 L111 59 L121 57 L122 68 L135 67 L135 54 L143 52 L147 58 L148 76 Q123 84 92 78 Z','#b9823e','#ebbc68');
-  shape('M116 44 L121 42 L142 51 L139 62 L134 62 L134 54 Z','#ad7940','#d5a358');
+  // A crested doumou helmet with a flared neck guard and a gilt brow.
+  shape('M92 72 Q91 48 116 43 Q140 44 145 66 L151 73 Q121 72 96 84 L86 88 Z','#394449','#647170');
+  shape('M93 72 L103 75 L109 100 L99 106 L86 99 Z','#535a57','#746b58');
+  shape('M91 73 Q115 64 145 65 L152 71 Q126 71 98 80 Z','#a47a48','#e5c68b');
+  shape('M111 66 Q117 52 116 43 L121 44 Q122 55 116 65 Z','#b58b52','#d4b174');
+  shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
+  shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
   shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
   c.restore();
 }
@@ -243,7 +252,12 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M18 21 L25 21 L22 27 L21 30 L17 30 L18 25 Z','#49382f');
   oval(c,22,9,4,5,'#e2bb90');
   fill('M16 9 Q16 2 21 2 Q26 2 27 7 L26 9 L19 9 L18 12 L16 12 Z','#a59b90');
-  fill('M17 6 Q14 1 9 4 Q12 0 18 1 L22 3 Z','#903f32');
+  fill('M16 7 Q17 1 22 2 Q26 3 27 7 L29 8 L18 9 L18 13 L14 14 Z',ally?'#556b6d':'#6a554d');
+  fill('M18 3 Q15 0 11 2 L7 4 Q12 4 14 3 L19 5 Z',ally?'#47857b':'#ab5340');
+  fill('M16 15 L24 13 L26 19 L17 21 Z','#74786c');
+  fill('M16 17 L25 15 L25 16 L17 18 Z M17 20 L26 18 L26 19 L17 21 Z','#43483f');
+  fill('M35 12 L40 13 L44 19 L41 20 L36 16 Z',ally?'#b39864':'#a07854');
+  fill('M12 23 L15 24 L14 29 L11 28 Z M24 23 L27 22 L26 29 L23 30 Z','#715741');
   c.save();c.translate(21,20);c.rotate(pose*.55);c.translate(-21,-20);
   if(q){c.strokeStyle=ink;c.lineWidth=3.4;if(q===3){c.shadowColor=ink;c.shadowBlur=4}c.stroke(new Path2D('M21 20 L49 2'))}
   c.strokeStyle='#68472d';c.lineWidth=1.35;c.beginPath();c.moveTo(21,20);c.lineTo(45,5);c.stroke();
@@ -295,10 +309,40 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
     }
   }
   paint('M11 7 Q14 4.2 21 6.8 L21 13.5 Q18 16.2 13 14.8 L10.8 13 Z',wash(11,21,'#ba9167','#ebc79a'));
-  const cap=id===3||weapon===2;
-  const hat=cap?(weapon===2&&!enemy?['#9b8257','#d6b782']:['#584233','#85664d']):['#877b79','#ccbeb1'];
-  paint('M9 10.6 Q8.5 4.5 15.8 2.5 Q20 2.9 22 6.8 L22 9.3 Q18 11.5 11 11.3 Z',wash(9,22,...hat));
-  paint('M9.2 9.4 Q15 10.5 21.9 8.1 L22 10 Q16 12 10 11.6 L10.3 13.6 L8.8 13 Z',hat[0]);
+  // Cloth wraps and tied hair give light troops a different silhouette from armored ranks.
+  const lightTroop=[0,2,3,5,9,12,16].includes(id);
+  const allied=recruit||!enemy;
+  const binding=allied?'#476b6a':'#8b4638';
+  const brass=q===3?'#ebc789':'#bc9b66';
+  if(lightTroop){
+    paint('M9 10 Q8 4 14 3 Q20 2 22 7 L21 9 L14 9 L12 13 L9 14 Z',wash(8,22,'#3a302d','#625048'));
+    oval(c,13.6,2.8,3.1,2.3,'#443631');
+    stroke('M11 4 L16 3.8',brass,.85);
+    paint('M8 8 Q14 7 21 6 L22 8 L11 10 L8 14 L4 16 L7 10 Z',binding);
+  }else{
+    paint('M8 9 Q9 3.5 15 2 L16 .6 L18 2.6 Q22 4 22 7 L24 8 L14 10 L12 15 L7 16 Z',wash(7,24,'#454c4c','#92998c'));
+    stroke('M8.5 9 Q15 7 22 7.4',brass,1);
+    stroke('M8.8 12 L12 11.4 M8.5 14 L11.5 13.5','#b1a082',.65);
+  }
+  if(lightTroop){
+    paint('M10 15 L14 15 L20 20 L18 21 Z',brass);
+    stroke('M19 15 L12 22',allied?'#c8be9e':'#c39278',1.35);
+    paint('M10 24 L14 24 L13 30 L10 29 Z',binding);
+  }else{
+    paint('M10 16 Q15 18 21 15 L22 22 Q17 24 10 22 Z',wash(9,22,'#454c49','#838877'));
+    stroke('M10.5 18.5 Q16 20 21 17.8 M11 21 Q16 22 21.5 20','#b9ab88',.68);
+    paint('M10 24 L15 25 L14 30 L8 29 Z M16 25 L21 24 L23 29 L16 30 Z',trim);
+  }
+  if([10,13,14].includes(id)){
+    for(const x of [13,18.4]){
+      oval(c,x,18.9,2.3,2.6,'#514635');
+      oval(c,x+.15,18.5,1.8,1.95,brass);
+    }
+  }
+  if(recruitSkin===23){
+    paint('M10 7 L12 2 L15 1 L18 4 L17 7 Z','#6e4435');
+    stroke('M10 5 L18 4',brass,.9);
+  }
   paint('M16.5 10.9 L17.7 10.7 L17.7 12.8 L16.5 13 Z M20 10.4 L21 10.1 L21 12.1 L20 12.4 Z','#30271f');
   if(q){
     const metal=q===3?['#a2733d','#f0cc83']:['#536979','#bbccd1'];
@@ -309,7 +353,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
     }
     if(q===3){
       paint('M19 5 Q16 0 10 1 Q5 1 2 8 L6 7 L2 14 Q9 12 12 7 Q15 5 19 6 Z',wash(2,19,'#92352e','#ed9758'));
-      paint('M8 8 Q15 5 22 6 L22 10 L18 9 L14 11 L12 15 L8 14 Z',wash(8,22,'#a07845','#efd291'));
+      stroke('M9 9 Q15 7 22 7',brass,1.45);
       stroke('M10 26 Q16 28 21 25','#eac279',1.5);
     }
   }
@@ -374,7 +418,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
     paint('M0 -6 L2 -3 L5 -4 L4 -1 L6 1 L3 2 L2 5 L0 3 L-3 5 L-3 2 L-5 0 L-3 -2 L-4 -4 L-1 -3 Z','#817776');
     oval(c,0,-.5,2.3,2.3,'#c3b6aa');c.restore();
   }else if(id===16){ // Torch raider
-    paint('M7 15 Q6 3 16 2 Q22 2 24 9 L18 8 L12 15 L10 18 Z','#794a40');
+    paint('M11 8 Q8 12 3 11 L6 14 L3 16 Q9 15 12 10 Z','#a35d42');
     stroke('M23 25 L28 11','#694331',2.3);
     paint('M25 13 Q20 9 25 4 L26 7 Q30 5 29 1 Q36 8 30 13 Z','#da7035');
     paint('M26 12 Q24 9 28 7 L29 5 Q31 10 29 12 Z','#ffdc80');
@@ -385,13 +429,13 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0){
   }else if(id===10){
     paint('M18 12 L32 10 L33 29 L25 34 L17 30 Z','#aea097');
     paint('M20 14 L30 13 L30 28 L25 31 L20 28 Z',recruit?'#496477':'#8d4835');
-    stroke('M25 15 L25 28 M21 21 L29 20','#ead6ac',1.8);
+    stroke('M21 20 Q21 17 24 18 Q28 20 28 16 M22 25 Q26 26 28 22','#e3bf86',1.3);
   }else if(id===11){
     stroke('M20 34 L29 5','#654826',2);
     paint('M26 9 L30 1 L32 1 L31 7 L34 5 Q36 11 30 14 L30 10 Z',wash(26,35,'#938782','#e7d3b4'));
     paint('M27 10 L18 11 L17 16 L25 13 Z','#ad4e37');
   }else if(id===12){
-    paint('M7 15 Q6 4 16 2 L22 5 L23 10 L17 8 L12 14 L14 17 Z','#594958');
+    paint('M9 7 L21 6 L22 8 L10 10 L4 13 L6 10 L3 10 Z','#514956');
     paint('M10 15 Q6 20 2 27 L7 25 L5 29 L14 23 Z','#776272');
     stroke('M18 24 L25 20','#5e4331',2);
     paint('M23 20 L32 14 L29 20 L25 23 Z','#d4c9b2');

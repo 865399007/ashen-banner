@@ -170,16 +170,16 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
     gradient.addColorStop(0,left);gradient.addColorStop(1,right||left);
     c.fillStyle=gradient;c.fill(outline);
   }
-  shadow(c,124,221,34);
-  for(const [x,side] of [[145,1],[93,-1]]){
+  shadow(c,124,221,28);
+  for(const [x,side] of [[138,1],[102,-1]]){
     c.save();c.translate(x+step*side*9,step*side*6);
-    shape('M-15 173 Q0 170 14 177 L17 212 Q10 219 -10 217 L-17 192 Z','#31231f','#493326');
+    shape('M-11 170 Q0 168 11 174 L13 213 Q7 219 -8 217 L-12 190 Z','#31231f','#493326');
     c.restore();
   }
   c.translate(step*2,-Math.abs(step)*4);
-  shape('M78 109 Q116 96 150 110 L174 194 Q128 209 64 202 Z','#44231f','#632d27');
-  shape('M93 108 Q121 99 146 109 L165 188 Q133 200 89 192 Z','#493327','#62412c');
-  shape('M91 155 Q122 159 157 151 L159 162 Q121 170 89 165 Z','#b27b3c','#a16c35');
+  shape('M89 109 Q116 97 146 110 L149 148 L158 187 Q126 199 80 191 L94 153 Z','#44231f','#632d27');
+  shape('M97 108 Q121 100 142 109 L143 148 L151 182 Q129 191 95 185 L102 153 Z','#493327','#62412c');
+  shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z','#b27b3c','#a16c35');
   shape('M146 120 Q157 120 166 132 L185 128 L191 146 Q172 154 151 149 Z','#503629','#38271e');
   c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);
   shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
@@ -197,12 +197,12 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M183 127 Q194 124 198 131 L196 147 Q190 155 180 149 L179 137 Z','#493024','#37261e');
   const capeWave=Math.sin(clothPhase+.8);
   const capeTip=Math.sin(clothPhase+.13);
-  shape(`M79 110 Q99 111 105 123 Q102 173 ${94+capeWave*4} 215
-    Q${66+capeWave*5} ${214+capeWave*4} ${34+capeTip*11} ${205-capeTip*6}
-    Q${48+capeWave*8} 174 55 139 Z`,'#97483c','#622d29');
-  shape('M94 107 Q99 115 108 119 L98 169 L92 209 Q96 155 88 146 Z','#78382f','#4c2724');
+  shape(`M87 110 Q99 111 105 123 Q101 168 ${94+capeWave*3} 203
+    Q${75+capeWave*4} ${202+capeWave*3} ${56+capeTip*9} ${196-capeTip*5}
+    Q${67+capeWave*5} 169 70 138 Z`,'#97483c','#622d29');
+  shape('M94 107 Q99 115 108 119 L98 164 L92 201 Q96 155 88 146 Z','#78382f','#4c2724');
   c.save();
-  c.translate(78,121);
+  c.translate(86,119);
   c.rotate(swing===null?.72:swing);
   shape('M-7 0 Q0 -9 9 -4 L31 11 L43 8 L47 18 L29 24 L1 15 Z','#674634','#483326');
   shape('M38 7 L36 -46 Q35 -57 40 -69 L45 -52 L45 7 Z','#92a4a7','#c8d2cc');
@@ -211,10 +211,13 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   c.beginPath();c.arc(42,26,4.1,0,TAU);c.strokeStyle='#c69a56';c.lineWidth=2.5;c.stroke();
   shape('M37 11 Q41 7 47 12 L46 22 Q40 26 35 20 Z','#684834','#493126');
   c.restore();
+  // Bring the pauldrons closer to the neck while keeping the helmet proportions.
+  c.save();c.translate(118,0);c.scale(.78,1);c.translate(-118,0);
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z','#cfb998','#b49a7e');
   shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z','#af947a','#927862');
   shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
   shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z','#ad8652','#d6b478');
+  c.restore();
   shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z','#516063','#8b8d7d');
   shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
   oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');

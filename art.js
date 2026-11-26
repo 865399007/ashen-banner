@@ -175,7 +175,7 @@ const bannerUniforms=[
 function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=false){
   const u=bannerUniforms[rank],step=Math.sin(phase),wind=Math.sin(clothPhase-.55);
   const torsoX=step*1.3,torsoY=-3.4*step*step;
-  const capeSwing=walking?Math.sin(phase-.75):0;
+  const clothAmplitude=walking?.7:.17;
   const plumeSwing=walking?Math.sin(phase-1.05):0;
   c.save();c.scale(.21875,.21875);c.lineJoin='round';c.lineCap='round';
   function fill(path,color){c.fillStyle=color;c.fill(new Path2D(path))}
@@ -190,14 +190,23 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   const leather='#654431',hair='#3e302e';
   shadow(c,128,219,32);
 
-  // The cape turns about its clasp. Its animated hem stays behind the standing legs.
-  c.save();c.translate(111+torsoX,98+torsoY);
-  c.rotate(wind*.022+capeSwing*.095);
-  c.scale(1,1+capeSwing*.033);
-  c.translate(-111,-98);
-  fill('M107 96 Q117 91 147 98 Q152 122 155 146 L163 194 Q146 189 132 195 Q111 204 91 198 Q76 191 52 201 Q73 167 79 134 Q85 107 107 96Z',glaze(u.cape,u.lining,99,204));
-  fill('M106 99 Q96 142 76 194 L55 200 Q73 162 80 129 Q87 107 106 99Z',u.cape);
-  fill('M141 101 Q146 149 157 192 L147 191 Q137 149 133 112Z',u.lining);
+  // Pin the collar to the shoulders. The same bend carries through the folds and lining.
+  function capePoint(x,y){
+    const depth=Math.max(0,(y-110)/92);
+    const wave=clothPhase-.45-1.2*depth;
+    const sway=12*clothAmplitude*depth*Math.sin(wave);
+    const lift=3*clothAmplitude*depth*depth*Math.cos(wave);
+    return `${x+sway} ${y+lift}`;
+  }
+  c.save();c.translate(torsoX,torsoY);
+  fill(`M107 96 Q117 91 147 98 Q${capePoint(152,122)} ${capePoint(155,146)}
+    L${capePoint(163,194)} Q${capePoint(146,189)} ${capePoint(132,195)}
+    Q${capePoint(111,204)} ${capePoint(91,198)} Q${capePoint(76,191)} ${capePoint(52,201)}
+    Q${capePoint(73,167)} ${capePoint(79,134)} Q85 107 107 96Z`,glaze(u.cape,u.lining,99,204));
+  fill(`M106 99 Q${capePoint(96,142)} ${capePoint(76,194)} L${capePoint(55,200)}
+    Q${capePoint(73,162)} ${capePoint(80,129)} Q87 107 106 99Z`,u.cape);
+  fill(`M141 101 Q${capePoint(146,149)} ${capePoint(157,192)} L${capePoint(147,191)}
+    Q${capePoint(137,149)} ${capePoint(133,112)}Z`,u.lining);
   c.restore();
 
   for(const [x,side] of [[145,1],[105,-1]]){
@@ -323,11 +332,10 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M109 68 Q111 53 131 53 Q151 53 155 69 L154 84 Q153 91 147 95 Q143 98 137 98 L130 98 Q122 98 115 94 Q108 90 107 84 Q106 77 109 68Z',skin);
     oval(c,111,82,4.2,5.5,'#d9a57c');
     // Keep the arch at the tie still. The bend travels down the loose hair.
-    const amplitude=walking?.7:.17;
-    const middle=6*amplitude*Math.sin(clothPhase-.55);
-    const lower=10*amplitude*Math.sin(clothPhase-1.1);
-    const tip=15*amplitude*Math.sin(clothPhase-1.65);
-    const lift=3*amplitude*Math.cos(clothPhase-1.65);
+    const middle=6*clothAmplitude*Math.sin(clothPhase-.55);
+    const lower=10*clothAmplitude*Math.sin(clothPhase-1.1);
+    const tip=15*clothAmplitude*Math.sin(clothPhase-1.65);
+    const lift=3*clothAmplitude*Math.cos(clothPhase-1.65);
     c.save();c.translate(103,49);
     fill(`M4 2 C-4 -15 -16 -17 -23 -8
       C-30 1 -30 10 ${-29+middle} 23

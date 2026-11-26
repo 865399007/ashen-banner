@@ -197,7 +197,7 @@ class Battle extends Phaser.Scene{
  createActor(unit,index){
    const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
    const baseTexture=unit.hero?commanderTexture(this,this.level):'man'+skin;
-   const s=this.add.image(480,300,baseTexture).setOrigin(.5,.85).setScale((unit.hero?.62:.5)*2/3);
+   const s=this.add.image(480,300,baseTexture).setOrigin(.5,.85).setScale(unit.hero?COMMANDER_BATTLE_SCALE:1/3);
    return {...unit,skin,baseTexture,stride:0,shots:0,cd:index*.12,s};
  }
  deployMercenaries(){

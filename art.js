@@ -157,6 +157,7 @@ function meadow(c,p,cover) {
 const WALK_FRAMES=12;
 const commanderSwingAngles=[-.8,-.52,.15,.98,1.38,1.08,.7];
 const COMMANDER_CLOTH_FRAMES=12;
+const COMMANDER_BATTLE_SCALE=.34;
 const commanderForms=[
   {name:'布衣民兵'}, {name:'铜札战甲'}, {name:'银钢明铠'}, {name:'玄甲虎卫'}, {name:'金钢统帅'}
 ];

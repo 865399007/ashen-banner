@@ -183,7 +183,7 @@ function installCoop(scene){
    const keys=new Set();
    const draw=(k,...args)=>{keys.add(k);return sprite(k,...args)};
    for(const p of state.players){
-     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,state.level),.42);
+     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,state.level),COMMANDER_BATTLE_SCALE);
      u.bannerCommander=true;
      if(u.previousHealth!==undefined&&p.hp>u.previousHealth)showHealing(scene,u,p.hp-u.previousHealth);
      u.previousHealth=p.hp;

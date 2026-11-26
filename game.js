@@ -222,7 +222,7 @@ class Battle extends Phaser.Scene{
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
  this.healCommander(15+6*this.bag[bandage]);
- setupStage(this);this.flagUntil=0;this.bountyTaken=false;
+ setupStage(this);this.gold+=3*this.bag[coinPurse];this.flagUntil=0;this.eliteDefeated=false;
  this.deployMercenaries();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);
  $('debug-final-wave').disabled=this.wave>=finalWave;
@@ -665,10 +665,17 @@ class Battle extends Phaser.Scene{
  this.enemies.splice(this.enemies.indexOf(e),1);
  fadeDefeatedEnemy(this,e,hitBurst);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
- if(e.elite){delayNextElite(this.eliteArrivals,this.timeLeft);if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
- const chest=e.elite||Math.random()<.006;
+ const firstElite=e.elite&&!this.eliteDefeated;
+ if(e.elite){
+   delayNextElite(this.eliteArrivals,this.timeLeft);
+   if(firstElite)this.gold+=12*this.bag[14];
+   this.eliteDefeated=true;this.earnedIron+=2;
+   if(this.bag[fieldNeedles])this.healCommander(8*this.bag[fieldNeedles]);
+   if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave);
+ }else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
+ const chest=firstElite||Math.random()<(e.elite?.25:.006);
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
- this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});
+ this.drops.push({s:loot,chest,crateTier:chest&&e.elite?eliteChestTier(this.wave):undefined});
  if(this.healDropsRemaining>0&&--this.killsUntilHeal===0){
    const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'medicine-pouch').setScale(.22).setDepth(y+2);
    this.drops.push({s:pack,heal:15,collectAfter:this.elapsed+.45});
@@ -764,7 +771,7 @@ class Battle extends Phaser.Scene{
    const edict=this.bag[19]&&this.bondCounts[4]>=2;
    const guarded=this.actors.some(a=>!a.hero&&a.id===4&&distance(a.s,this.hero)<(edict?70:50));
    const damage=Math.max(1,Math.round(raw*15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18])*(guarded?(edict?.80:.88):1)));
-   this.takeCommanderDamage(damage);this.invul=.65;this.showInvulFade=true;
+   this.takeCommanderDamage(damage);this.invul=.65+.15*this.bag[heartMirror];this.showInvulFade=true;
    impact(this,source,this.actors[0],damage,true);this.hud();
    if(!this.hp)this.end(false);
  }
@@ -781,7 +788,7 @@ class Battle extends Phaser.Scene{
  }
  need(){return 8+this.level*3}
  collect(d){
-   if(d.heal){this.healCommander(d.heal);return}
+   if(d.heal){this.healCommander(d.heal+5*this.bag[herbPowder]);return}
    const previousLevel=this.level;
    this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.pendingLevels.push(++this.level)}
    if(commanderForm(this.level)!==commanderForm(previousLevel))this.updateCommanderForm();
@@ -817,20 +824,31 @@ class Battle extends Phaser.Scene{
    this.gold-=cost;this.upgradeRefreshes++;this.hud();this.reward(q);
  },this.gold<cost);
  return}
- if(this.boxes.length){
-   const q=this.boxes.shift(),id=this.item(q);
-   const m=this.panel('战利品宝箱',id<0?'该品质道具均已达到上限':items[id][0]+' '+roman[q]+' · '+items[id][2]);
+ let recycled=0;
+ while(this.boxes.length){
+   const chestTier=this.boxes.shift();
+   let q=chestTier,id=this.item(q);
+   while(id<0&&q>0)id=this.item(--q);
+   if(id<0){
+     const silver=4*(chestTier+1);
+     this.gold+=silver;recycled+=silver;
+     continue;
+   }
+   const fallback=q<chestTier?roman[chestTier]+' 阶已领满 · ':'';
+   const m=this.panel('战利品宝箱',fallback+items[id][0]+' '+roman[q]+' · '+items[id][2]);
+   if(recycled)m.querySelector('p').append('　·　此前宝箱已折合 '+recycled+' 银币');
    const icon=document.createElement('div'),actions=document.createElement('div');
-   icon.className='loot-icon';icon.setAttribute('aria-hidden','true');
-   if(id<0)icon.textContent='🪙';else icon.append(itemIcon(id));
+   icon.className='loot-icon';icon.setAttribute('aria-hidden','true');icon.append(itemIcon(id));
    m.querySelector('p').before(icon);
    actions.className='loot-actions';m.append(actions);
-   if(id>=0)this.button(actions,'领取',()=>{this.applyItem(id);this.hud();this.reward()}).className='primary';
-   const salvage=id<0?4*(q+1):Math.max(1,Math.floor(refitPrice(false,id,q,this.wave)*.25));
+   this.button(actions,'领取',()=>{this.applyItem(id);this.hud();this.reward()}).className='primary';
+   const salvage=Math.max(q<chestTier?4*(chestTier+1):1,Math.floor(refitPrice(false,id,q,this.wave)*.25));
    this.button(actions,'回收 +'+salvage+' 银币',()=>{this.gold+=salvage;this.hud();this.reward()});
-   return;
+   this.hud();return;
  }
- this.roll();this.shop()}
+ this.roll();this.shop();
+ if(recycled)$('modal').querySelector('p').append('　·　宝箱已折合 '+recycled+' 银币');
+ }
  item(q,bias=false){
    const pool=items.map((it,i)=>it[1]===q&&this.camp.itemOpen(i)&&this.bag[i]<itemCap(i)?i:-1).filter(i=>i>=0);
    if(q>=2&&pool.length&&this.army.length){
@@ -849,7 +867,10 @@ class Battle extends Phaser.Scene{
    }
    return pick(pool)??-1;
  }
- applyItem(id){if(this.bag[id]>=itemCap(id))return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;}
+ applyItem(id){if(this.bag[id]>=itemCap(id))return;this.bag[id]++;if(id===0)this.damage+=.08;if(id===1)this.speed*=1.06;if(id===salvagePermit)this.speed*=.99;if(id===2)this.luck+=15;if(id===11)this.speed*=.98;if(id===16)this.armor--;if(id===17){this.maxHP+=6;this.hp+=6;this.speed*=.99}if(id===18)this.speed*=.97;
+   if(id===scaleVest)this.armor+=2;
+   if(id===tigerManual)this.mercHaste+=.10;
+   if(id===guardSeal)this.critBonus+=.04;}
  roll(){const pool=troops.map((_,id)=>id).filter(id=>this.camp.troopOpen(id));let locked=this.offers.filter(o=>o?.lock),merc=locked.filter(o=>o.merc).length,gear=locked.length-merc;for(let i=0;i<4;i++){if(this.offers[i]?.lock)continue;let isMerc=this.wave<=2?(merc<2&&(gear>=2||Math.random()<(2-merc)/(4-merc-gear))):this.wave<=5&&merc===0&&this.offers.slice(i+1).every(o=>o?.lock)&&i===3?true:Math.random()<.35;
  let q=tier(this.wave,this.luck),id=isMerc?recruitOffer(pool,this.army):this.item(q,true);if(id<0&&this.wave<=2){this.offers[i]=null;gear++;continue}if(id<0){isMerc=true;id=recruitOffer(pool,this.army)}
  if(isMerc)merc++;else gear++;this.offers[i]={merc:isMerc,id,q,price:refitPrice(isMerc,id,q,this.wave),lock:false}}

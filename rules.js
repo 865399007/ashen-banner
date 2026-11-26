@@ -209,6 +209,7 @@ const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1
 // Item IDs are also stored in saved blueprint lists. Append new equipment after the original set.
 const bladeWrap=21,poleFerrule=22,heavyGrip=23,riderSpurs=24,
   finishingBlade=25,formationSpike=26,siegeHead=27,chargeStandard=28;
+const herbPowder=29,coinPurse=30,scaleVest=31,fieldNeedles=32,tigerManual=33,heartMirror=34,guardSeal=35;
 const footBlades=[0,4,7],polearms=[1,8],heavyWeapons=[3,6];
 const weaponTroops={
   3:[2,5],5:[2,5],13:polearms,19:[4],20:[5],
@@ -217,7 +218,7 @@ const weaponTroops={
 };
 const needsBlueprint=id=>id>=11&&id<=20;
 function equippedFor(bag,item,troop){return bag[item]>0&&weaponTroops[item].includes(troop)}
-const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow','blade-wrap','pole-ferrule','heavy-grip','rider-spurs','finishing-blade','formation-spike','siege-head','charge-standard'];
+const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow','blade-wrap','pole-ferrule','heavy-grip','rider-spurs','finishing-blade','formation-spike','siege-head','charge-standard','herb-powder','coin-purse','scale-vest','field-needles','tiger-manual','heart-mirror','guard-seal'];
 function itemIcon(id){
   const image=document.createElement('img');
   image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';
@@ -232,11 +233,15 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['缠丝刀柄',2,'剑士、盾兵、双匕首兵攻速 +15%'],['雁翎枪箍',2,'长枪兵、长戟兵攻击距离 +18%'],
  ['配重铁芯',2,'斧兵、战锤兵伤害 +15%'],['鎏铜马镫',2,'轻骑兵冲锋间隔缩短 15%'],
  ['断锋宝刃',3,'剑士、盾兵、双匕首兵对半血及以下敌人伤害 +35%'],['破阵戟牙',3,'长枪兵、长戟兵一次攻击中对主目标以外的敌人伤害 +45%'],
- ['破城玄铁',3,'斧兵、战锤兵对精英和主将伤害 +35%'],['骁骑冲阵旗',3,'轻骑兵冲锋命中时，波及半径 +50%']];
+ ['破城玄铁',3,'斧兵、战锤兵对精英和主将伤害 +35%'],['骁骑冲阵旗',3,'轻骑兵冲锋命中时，波及半径 +50%'],
+ ['黄芪散',1,'拾取血包时额外恢复 5 生命'],['军饷钱串',1,'每波开始获得 3 银币'],
+ ['鱼鳞甲',2,'指挥官护甲 +2'],['行医针囊',2,'击杀精英时恢复 8 生命'],
+ ['虎符兵书',3,'佣兵攻速 +10%'],['护心宝镜',3,'指挥官受击后的无敌时间延长 0.15 秒'],
+ ['羽林将印',3,'全队暴击率 +4 个百分点']];
 const satchel=7,bandage=8,salvagePermit=9,lastStand=10;
-const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1}[id]??itemStackLimit);
+const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1,[herbPowder]:3,[coinPurse]:2,[scaleVest]:2,[fieldNeedles]:2,[tigerManual]:2,[heartMirror]:2,[guardSeal]:2}[id]??itemStackLimit);
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-const troopBasePrices=[10,12,13,15,11,15,16,12,14,18],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40];
+const troopBasePrices=[10,12,13,15,11,15,16,12,14,18],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40];
 function refitPrice(merc,id,q,wave){
  const base=merc?troopBasePrices[id]+9*q:itemBasePrices[id];
  return Math.floor(base+wave+base*wave/10);
@@ -246,6 +251,12 @@ function refreshPrice(wave,previous){
 }
 function tier(w,luck){let n=Math.random(),k=1+luck/100;
  return n<Math.min(.08,Math.max(0,w-7)*.0023*k)?3:n<Math.min(.25,Math.max(0,w-3)*.02*k)?2:n<Math.min(.6,Math.max(0,w-1)*.06*k)?1:0}
+
+function eliteChestTier(wave){
+ const roll=Math.random();
+ if(wave>=8)return roll<.30?3:roll<.80?2:1;
+ return roll<(wave>=4?.55:.25)?2:1;
+}
 
 // Each row is a weighted patrol for the village, starting at the listed wave.
 const villagePatrols=[

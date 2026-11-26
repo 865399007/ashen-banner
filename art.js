@@ -322,9 +322,12 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     c.rotate(headBeat*.018);
     c.translate(-131,-98);
   }
+  // The same three-quarter face sits beneath the fringe and all four helmets.
+  fill('M115 64 Q125 52 140 55 L151 62 L155 73 L153 86 L150 93 L140 102 L135 103 L122 96 L115 87 L112 75Z',
+    glaze('#f4cda4','#e4aa7e',69,102));
+  fill('M114 69 L121 70 L120 84 L124 91 L137 100 L140 100 L137 103 L134 102 L121 96 L115 87 L112 75Z','#c48c69');
+  fill('M113 78 Q108 74 109 81 Q110 87 116 88 L116 81Z','#d29a73');
   if(!rank){
-    fill('M109 68 Q111 53 131 53 Q151 53 155 69 L155 85 Q154 93 145 97 Q138 101 131 99 L118 94 L111 87Z',skin);
-    oval(c,111,82,4.2,5.5,'#d9a57c');
     // Keep the arch at the tie still. The bend travels down the loose hair.
     const amplitude=walking?.7:.17;
     const middle=6*amplitude*Math.sin(clothPhase-.55);
@@ -348,8 +351,6 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M122 61 Q133 46 144 46 Q151 47 154 55 Q147 49 141 52 Q134 53 122 61Z','#624b42');
     line('M97 49 Q99 43 104 41','#a23a30',4.6);line('M97 47 Q99 43 102 42','#dc7050',1.6);
   }else{
-    fill('M103 67 Q102 49 125 48 Q151 46 158 66 L159 87 Q159 99 150 102 Q136 107 117 101 L108 94Z',skin);
-    oval(c,107,84,5.4,6.5,'#d9a57c');
     const plume=rank===2?'#fffdf6':'#bc4937';
     c.save();c.translate(119,48);c.rotate(wind*.025+plumeSwing*.14);c.translate(-119,-48);
     if(rank===4){
@@ -365,7 +366,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M103 65 Q103 51 117 45 Q112 51 111 59 L106 65Z',glaze(u.light,u.metal,43,67));
     line('M102 67 Q101 52 116 45',u.shade,1.15);
     fill('M99 66 L111 71 L113 80 L109 93 L98 97 L90 92 L97 86Z',glaze(u.metal,u.shade,66,96));
-    fill('M149 66 L155 65 Q160 75 161 86 L159 94 L156 91 L155 76Z',u.shade);
+    fill('M148 65 L154 65 Q159 73 158 82 L154 91 L152 89 L153 77Z',u.shade);
     fill('M98 77 Q101 72 106 72 L109 81 L105 88 L96 90 L100 84Z',u.metal);
     line('M94 90 L102 92 L108 88',u.trim,1.8);
     fill('M99 68 L114 66 L132 55 L150 61 L156 69 L153 72 L147 66 L134 64 L114 72 L103 76Z',rank===2?'#b29b6a':helmGold);
@@ -383,11 +384,11 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M137 61 L140 56 L143 61 L140 66Z',rank===2?'#a0e0f0':'#fff0ba');
     oval(c,118,42,4,3,u.trim);line('M116 41 L120 40',u.shade,1.3);
   }
-  // At battlefield scale each eye needs its own clear patch of skin.
-  const eyeXs=rank?[121,141]:[122,140];
-  for(const x of eyeXs){
-    fill(`M${x} 81 a4 4 0 0 1 8 0 v${rank?6:5} a4 4 0 0 1 -8 0Z`,'#352922');
-  }
+  // Keep the far eye inside the cheek and give the near brow a longer sweep.
+  fill('M120 75 L124 74 L132 77 L131 79 L124 77Z M140 77 L148 73 L150 74 L147 77 L140 79Z','#684637');
+  fill('M121 80 Q125 78 131 81 L130 85 Q128 88 125 86Z M140 81 Q144 78 149 78 L147 84 Q145 87 142 85Z','#392c29');
+  fill('M136 82 L140 89 L136 91 L134 90 L137 88Z','#c38a65');
+  line('M134 95 Q138 95.8 142 94','#a16d53',1.4);
   c.restore();
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];

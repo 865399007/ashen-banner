@@ -65,6 +65,7 @@ button:not(.upgrade-card):disabled{opacity:.55;cursor:default}
 #field-controls button{display:grid;place-items:center;width:36px;height:36px;padding:0;color:#493428;background:transparent;border:0;box-shadow:none;font:700 25px/1 Georgia,serif;text-shadow:0 1px 2px #ffe6b3}
 #field-controls button:focus-visible{outline:2px dotted #735333}
 #field:has(#cover:not([hidden])) #pause{visibility:hidden}
+#field:has(#cover:not([hidden])) #preferences .settings-actions{display:none}
 .coin-readout{display:flex;align-items:center;gap:7px;margin-top:5px;width:max-content;font:bold 21px/1.15 Georgia,serif;color:#ffe6a2;text-shadow:1px 1px 1px #50391f,-1px -1px 1px #715331}
 .coin-readout i{display:block;width:16px;height:19px;transform:rotate(-32deg);border:2px solid #5e6770;border-radius:50%;background:linear-gradient(110deg,#abb6bf,#f5f8fa 60%,#939fa9);box-shadow:inset 0 0 0 2px #e9eef2,inset 0 0 0 3px #87929c,-2px 1px #9da7b0,-3px 2px #55616b}
 

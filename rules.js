@@ -80,6 +80,31 @@ const campaigns={
   jiange:{
     name:'剑阁之战',army:'伐蜀魏军',boss:'钟会',colors:{shadow:'#414354',base:'#6a7286',light:'#b8b7a7'},
     event:'tower',bossMove:'cleave',bossSkin:10,pace:.86,march:1.12,bossHP:12000
+  },
+  jieqiao:{
+    name:'界桥之战',army:'幽州骑军',boss:'公孙瓒',colors:{shadow:'#424f59',base:'#829295',light:'#e2dcd1'},
+    roster:[8,8,4,11,5],event:'reinforce',reinforcements:[8,8,11],
+    bossMove:'cleave',bossSkin:11,pace:.88,march:1.14,bossHP:12500
+  },
+  chencang:{
+    name:'陈仓之围',army:'凉州联军',boss:'王国',colors:{shadow:'#624537',base:'#ab7651',light:'#d5b389'},
+    roster:[8,9,13,16,23],event:'fire',
+    bossMove:'volley',bossSkin:5,pace:.85,march:1.13,bossHP:13000
+  },
+  jingxian:{
+    name:'泾县之战',army:'山越部众',boss:'祖郎',colors:{shadow:'#3b4c39',base:'#718457',light:'#bbbd86'},
+    roster:[5,9,12,12,14],event:'rocks',
+    bossMove:'cleave',bossSkin:9,pace:.86,march:1.17,bossHP:13600
+  },
+  xiangping:{
+    name:'襄平之战',army:'辽东守军',boss:'公孙渊',colors:{shadow:'#45394f',base:'#78627b',light:'#bcabb3'},
+    roster:[10,10,11,5,23],event:'tower',
+    bossMove:'volley',bossSkin:23,pace:.83,march:1.13,bossHP:14300
+  },
+  nanzhong:{
+    name:'南中之战',army:'南中部众',boss:'孟获',colors:{shadow:'#62423c',base:'#a06250',light:'#d5b474'},
+    roster:[4,9,11,13,15],event:'reinforce',reinforcements:[11,13,15],
+    bossMove:'hammer',bossSkin:13,pace:.82,march:1.15,bossHP:15000
   }
 };
 const stageOrder=Object.keys(campaigns);

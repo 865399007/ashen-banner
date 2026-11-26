@@ -282,8 +282,12 @@ class Battle extends Phaser.Scene{
    // Alternate infantry reinforcements with the existing patrols.
    const reinforcement=!boss&&!elite&&this.ordinarySpawns%2===0;
    const variant=(this.ordinarySpawns/2-1)%8;
-   const villageSkin=this.stageKey==='border'&&!boss&&!elite?villageEnemy(this.wave):null;
-   const skin=forcedSkin??villageSkin??(boss?this.campaign.bossSkin:reinforcement&&variant===7&&this.wave>=2&&this.ordinarySpawns%32===16?23:reinforcement?9+variant:mounted?8:3+type);
+   let patrolSkin=null;
+   if(!boss&&!elite&&forcedSkin==null){
+     if(this.stageKey==='border')patrolSkin=villageEnemy(this.wave);
+     else if(this.campaign.roster)patrolSkin=pick(this.campaign.roster);
+   }
+   const skin=forcedSkin??patrolSkin??(boss?this.campaign.bossSkin:reinforcement&&variant===7&&this.wave>=2&&this.ordinarySpawns%32===16?23:reinforcement?9+variant:mounted?8:3+type);
    const infantry=skin>=9&&skin<=16?skin-9:-1;
    const baseType=skin>=3&&skin<=5?skin-3:skin===8?3:type;
    const pace=infantry>=0?[47,24,33,58,29,38,32,54][infantry]:skin===23?54:31+baseType*8;

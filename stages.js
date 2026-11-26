@@ -1,5 +1,5 @@
 const towerPositions={
- keep:{x:358,y:245},fancheng:{x:605,y:298},jiange:{x:521,y:208}
+ keep:{x:358,y:245},fancheng:{x:605,y:298},jiange:{x:521,y:208},xiangping:{x:560,y:174}
 };
 
 function setupStage(scene){

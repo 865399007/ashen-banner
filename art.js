@@ -768,7 +768,7 @@ function campaignGeneral(c,stageKey,phase){
   const line=(d,color,width)=>{c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(d))};
   c.lineJoin='round';c.lineCap='round';
   const priest=stageKey==='border';
-  const helmet=['keep','xiapi','tongguan','dingjun','fancheng','changban','shiting'].includes(stageKey);
+  const helmet=['keep','xiapi','tongguan','dingjun','fancheng','changban','shiting','jieqiao','chencang','xiangping'].includes(stageKey);
   const armored=helmet||['camp','bailang','jiange'].includes(stageKey);
   shadow(c,16,34,8);
   for(const side of [-1,1]){
@@ -794,7 +794,7 @@ function campaignGeneral(c,stageKey,phase){
     fill('M9 7 L22 5.5 L23 7.8 L12 9.4 L8 14 L4 15 L7.5 10 L4 11Z','#f4c34d');
     fill('M12 12 L15 14 L19 13.5 L21 12.4 L20 16 L16 20 L15 17 L13 17Z','#6d5740');
   }else if(helmet){
-    const silver=stageKey==='tongguan';
+    const silver=stageKey==='tongguan'||stageKey==='jieqiao';
     fill('M8 9 Q8 4 14 3 L16 1 L19 3 Q23 4 23 7 L24 8 L14 9 L12 14 L8 15Z',silver?'#bfcbd0':'#444d52');
     if(stageKey==='xiapi'){
       line('M14 5 Q9 -2 4 2 L1 7 M16 4 Q15 0 9 .8 Q6 1 4 5','#da7353',1.6);
@@ -802,6 +802,10 @@ function campaignGeneral(c,stageKey,phase){
     }else if(stageKey==='fancheng'){
       fill('M8 8 L12 9 L11 15 L7 15Z M20 7 L23 7 L24 13 L22 13Z','#68798b');
       line('M14 3 L17 2 L19 6','#c5ab72',1.3);
+    }else if(stageKey==='xiangping'){
+      fill('M9 7 L12 1 L15 4 L18 0 L21 5 L22 7Z','#a48c62');
+    }else if(stageKey==='chencang'){
+      fill('M10 6 Q8 2 3 2 L1 5 Q6 4 10 8Z',cloth.light);
     }else if(stageKey==='changban'){
       fill('M10 5 L8 1 L13 3 L18 2 L20 .8 L21 6Z','#a78456');
     }else if(stageKey==='shiting'){
@@ -824,6 +828,11 @@ function campaignGeneral(c,stageKey,phase){
     }else if(stageKey==='jiange'){
       fill('M10 7 L10 2 L15 3 L17 0 L20 1 L22 6Z','#414857');
       line('M11 6 L21 5 M16 1.5 L17 5','#d3bd8b',1);
+    }else if(stageKey==='jingxian'){
+      fill('M8 7 L13 4 L21 5 L22 7 L13 7 L9 9 L5 13 L6 8Z',cloth.base);
+    }else if(stageKey==='nanzhong'){
+      fill('M8 7 Q10 2 15 3 L21 4 L23 7 L15 7 L10 9Z','#9b713f');
+      line('M10 6 L13 5 L15 6 L17 4 L20 5','#e4c788',1);
     }else if(stageKey==='jieting'){
       fill('M9 7 Q9 2 13 2 L20 3 L22 6 L14 6 L8 10 L5 9Z',cloth.base);
     }else if(stageKey==='wuzhang'){
@@ -848,14 +857,21 @@ function campaignGeneral(c,stageKey,phase){
     line('M-4 13 L9 -16','#734c37',1.6);
     fill('M7 -12 L11 -20 L10 -13 L8 -10Z M7 -10 Q12 -11 11 -16 Q16 -11 8 -8Z','#d7dfd8');
     line('M6 -9 L10 -8','#d6ab62',1);
-  }else if(stageKey==='tongguan'||stageKey==='changban'){
+  }else if(['tongguan','changban','jieqiao'].includes(stageKey)){
     line('M-4 13 L8 -14','#695047',1.5);
     fill('M6 -12 L8 -17 L11 -20 L10 -14 L8 -11Z','#f0eeea');
     fill('M7 -12 Q4 -10 3 -6 L6 -8 L5 -5 L9 -11Z','#b75644');
-  }else if(['dingjun','shiting','bailang'].includes(stageKey)){
+  }else if(['dingjun','shiting','bailang','chencang','xiangping'].includes(stageKey)){
     line('M1 -11 Q13 -2 7 10','#ad804a',1.8);
     line('M1 -11 L2 -1 L7 10','#e4ceab',.65);
     line('M-1 1 L11 -3','#d8cbb3',.9);
+  }else if(stageKey==='nanzhong'){
+    line('M-3 9 L8 -13','#694b34',2.1);
+    fill('M4 -13 L7 -17 L11 -17 L14 -14 L12 -10 L8 -9Z','#a89576');
+    line('M6 -14 L8 -15.5 L11 -15.5','#d8c3a1',1);
+  }else if(stageKey==='jingxian'){
+    fill('M0 1 L5 -10 L10 -14 Q11 -8 7 -5 L3 0Z','#bfc9b9');
+    line('M-1 -1 L4 1','#a38754',1.4);
   }else if(stageKey==='fancheng'){
     fill('M0 -7 L9 -8 L12 -5 L10 3 L6 7 L0 3 L-2 -3Z','#b79a65');
     fill('M1 -5 L8 -6 L10 -4 L8 2 L6 4 L2 2Z','#455773');

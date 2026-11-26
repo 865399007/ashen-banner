@@ -103,6 +103,42 @@ const battlefieldPlates = {
     trail('foot','M22 623 L157 483 Q245 385 333 355 T493 257 Q574 140 662 110 L844 -22',40);
     mark('planks',311,367,1.2,-.41); mark('planks',482,267,.96,-.89); mark('pine',218,236);
     mark('cairn',659,332,1.15); mark('pine',718,288,.85);
+  }},
+  jieqiao: { earth:'#b9ae90', draw({patch,trail,mark}) {
+    patch('steppe','M-12 10 H407 Q337 68 225 89 T-12 201Z');
+    patch('water','M339 -18 Q283 103 362 244 T381 448 Q349 523 404 621 H459 Q397 522 431 446 T405 234 Q322 91 397 -18Z');
+    trail('hoof','M-20 389 Q178 344 389 302 T691 250 L983 117',35);
+    mark('bridge',409,297,1.36,-.22); mark('reeds',357,215); mark('shield',608,269,.8);
+    mark('grass',145,107,1.2); mark('reeds',416,486);
+  }},
+  chencang: { earth:'#c2a084', draw({patch,trail,mark}) {
+    patch('bluff','M-15 -12 H776 L695 39 L510 45 L397 102 L269 94 L172 162 L-15 193Z');
+    patch('ash','M741 620 Q637 498 680 423 T807 378 Q894 357 986 365 V620Z');
+    trail('cart','M986 464 Q742 512 575 384 T277 249 Q100 226 -20 261',53);
+    mark('fascine',575,368,1.15,.25); mark('wheel',604,402,1.1); mark('stump',775,472);
+    mark('masonry',237,236); mark('sacks',127,202); mark('branch',761,489);
+  }},
+  jingxian: { earth:'#9faa85', draw({patch,trail,mark}) {
+    patch('moss','M-10 -10 H746 Q664 140 518 109 T262 181 Q151 239 -10 187Z');
+    patch('slate','M604 624 Q630 497 712 459 L763 371 L869 342 L986 225 V624Z');
+    trail('foot','M42 630 Q90 401 287 377 T504 266 Q542 184 681 186 T987 82',29);
+    mark('bamboo',217,166,1.3); mark('bamboo',243,170,.78); mark('bamboo',536,216);
+    mark('bamboo',764,405,1.15); mark('branch',651,462); mark('cairn',874,351);
+  }},
+  xiangping: { earth:'#a8aea4', draw({patch,trail,mark}) {
+    patch('paving','M228 -15 H974 V221 L597 190 L318 180Z');
+    patch('water','M154 -16 H209 L303 194 L610 208 L979 250 V293 L584 245 L272 232Z');
+    patch('mud','M-14 506 Q141 451 241 485 T412 494 Q263 559 165 528 T-14 572Z');
+    trail('cart','M113 632 Q265 437 421 339 T692 175',32);
+    mark('bridge',605,229,1.04,-.95); mark('masonry',488,175,1.26); mark('gauge',347,232);
+    mark('reeds',828,267); mark('shield',462,331,.85);
+  }},
+  nanzhong: { earth:'#b2a382', draw({patch,trail,mark}) {
+    patch('terrace','M-12 40 Q128 21 243 115 T472 166 Q384 248 267 188 T81 166 L-12 197Z');
+    patch('water','M-15 540 Q159 570 281 471 T519 422 Q641 450 777 368 T987 345 V399 Q901 374 795 425 T507 471 Q385 452 309 516 T-15 602Z');
+    trail('foot','M-22 265 Q160 327 328 283 T616 299 Q783 375 982 225',40);
+    mark('drum',404,248,1.16); mark('bamboo',164,138); mark('skiff',597,438,.9,-.08);
+    mark('bamboo',717,351,.9); mark('reeds',275,492); mark('oar',612,426,.82);
   }}
 };
 
@@ -204,6 +240,16 @@ function paintTrail(c,kind,outline,width,random){
 
 // Low relief landmarks: warm rim light, a muted local color and a short cast shadow.
 const groundMarks={
+  bamboo(f,s){
+    s('M-4 1 L-7 -18 M0 1 L1 -24 M3 0 L8 -17','#747f55',1.6);
+    s('M-7 -13 l2 -.4 M0 -16 h2 M5 -10 l2 .4','#b3ad7d');
+    f('M0 -13 Q-5 -19 -9 -19 Q-7 -14 0 -13Z M1 -18 Q4 -24 9 -24 Q8 -20 1 -18Z M6 -9 Q11 -15 15 -14 Q12 -10 6 -9Z','#829266');
+  },
+  drum(f,s){
+    f('M-9 -9 Q0 -14 9 -10 L8 -2 Q0 3 -8 -1Z','#9c7458');
+    f('M-9 -9 Q-1 -15 9 -10 Q4 -4 -9 -9Z','#c6a771');
+    s('M-7 -7 L-4 -2 L-1 -6 L3 -2 L6 -7 M-9 1 L10 3','#836e50',1.1);
+  },
   sheaf(f,s){
     f('M-12 1 Q-8 -3 -5 -11 L-6 -13 L-3 -11 L0 -18 L1 -14 L4 -16 L4 -11 Q9 -4 12 1 Q0 5 -12 1Z','#b48b48');
     s('M-8 0 L-2 -11 M-3 0 L0 -9 M4 0 L2 -10 M8 0 L4 -6','#dfc080',1.2);

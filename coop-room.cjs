@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -14,7 +14,7 @@ function player(hero,index){
 }
 function room(code){return {code,phase:'lobby',wave:1,level:1,xp:0,time:0,spawn:0,serial:0,players:[],enemies:[],loot:[],effects:[],clock:0}}
 function start(r){
-  r.phase='fight';r.time=30+5*(r.wave-1);r.spawn=0;r.enemies=[];r.loot=[];r.effects=[];
+  r.phase='fight';r.time=waveDurationSeconds(r.wave);r.spawn=0;r.enemies=[];r.loot=[];r.effects=[];
   for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;p.revision++}
   if(r.wave===finalWave)spawn(r,true);
   r.wildlifeArrivals=wildlifeArrivals(r.wave,r.time);
@@ -112,7 +112,7 @@ function tick(r,dt,now=Date.now()){
    r.loot.splice(i,1);p.gold+=2;if(l.box)p.boxes.push(pick(goods));r.xp++;
    if(r.xp>=8+r.level*3){r.xp-=8+r.level*3;r.level++;for(const teammate of r.players)teammate.pending++}
  }
- if(r.time<=0&&r.wave<finalWave&&r.players.every(p=>p.hp>0))refit(r);
+ if(r.time<=0&&r.wave<finalWave)refit(r);
 }
 function action(r,p,a){
  if(!a||!Number.isSafeInteger(a.seq)||a.seq<=p.seq)return;

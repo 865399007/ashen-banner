@@ -99,7 +99,9 @@ class Battle extends Phaser.Scene{
    if(!width||!height)return;
    // Fit a portrait combat view, revealing more terrain on the longer axis.
    // At the arena edges the finite background must still cover the canvas.
-   const worldScale=Math.max(Math.min(width/portraitWorldWidth,height/480),width/960,height/600);
+   const fitScale=Math.max(Math.min(width/portraitWorldWidth,height/480),width/960,height/600);
+   const phoneLandscape=typeof wx!=='undefined'&&typeof wx.createCanvas==='function'&&width>height&&height<=540;
+   const worldScale=phoneLandscape?fitScale*1.4:fitScale;
    const density=Math.min(window.devicePixelRatio||1,3,Math.sqrt(4000000/(width*height)));
    const pixelsW=Math.max(1,Math.round(width*density));
    const pixelsH=Math.max(1,Math.round(height*density));
@@ -254,7 +256,7 @@ class Battle extends Phaser.Scene{
    this.stageKey=key;this.campaign=campaigns[key];
    this.sfx.unlock();this.resetRun();$('cover').hidden=true;this.begin();
  }
- begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=30+5*(this.wave-1);this.spawnIn=.1;this.wildlifeArrivals=wildlifeArrivals(this.wave,this.timeLeft);this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
+ begin(){this.ordinarySpawns=0;this.healDropsRemaining=Phaser.Math.Between(2,3);this.killsUntilHeal=healDropInterval();this.hitStop=0;this.nextImpactBeat=0;this.clearField();$('modal').hidden=true;this.mode='fight';this.timeLeft=waveDurationSeconds(this.wave);this.spawnIn=.1;this.wildlifeArrivals=wildlifeArrivals(this.wave,this.timeLeft);this.elapsed=0;this.invul=1;this.showInvulFade=false;this.dir=[1,0];this.lastStandSpent=false;
  this.actors=[this.createActor({id:this.commander.weapon,q:0,hero:true},0)];
  this.hero=this.actors[0].s;
  this.healCommander(15+6*this.bag[bandage]);
@@ -279,15 +281,16 @@ class Battle extends Phaser.Scene{
    this.army.forEach((unit,i)=>this.actors.push(this.createActor(unit,i+1)));
    this.clearSouls();
    this.souls=armySouls(this.army);
-   this.soulStrike=0;
+   this.nextSoulIndex=0;
    for(const spirit of this.souls){
      const {type,level}=spirit;
      spirit.frames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,type,frame,level-1));
      const image=this.add.image(this.hero.x,this.hero.y,spirit.frames[0]).setOrigin(.5,soulBeltOriginY)
        .setScale(.34+.02*(level-1)).setAlpha(.86);
      spirit.image=image;
+     spirit.strikeTime=0;
      if(type.general==='lvbu'){
-       image.plumes=this.add.image(0,0,lvbuPlumeFrame(this,0)).setOrigin(.5,soulBeltOriginY)
+       image.plumes=this.add.image(0,0,lvbuPlumeFrame(this,0,level-1)).setOrigin(.5,soulBeltOriginY)
          .setScale(image.scaleX).setAlpha(image.alpha);
        image.once('destroy',()=>image.plumes.destroy());
      }
@@ -561,25 +564,45 @@ class Battle extends Phaser.Scene{
  }
  positionSouls(){
    const h=this.hero,back=h.flipX?1:-1;
-   this.souls.forEach(({image},i)=>{
+   this.souls.forEach(({image,level},i)=>{
      const offset=this.souls.length===1 ? .14 : (i===0 ? .44 : -.24);
      image.setPosition(h.x+back*h.displayWidth*offset,h.y-h.displayHeight*(.55+.17*i))
        .setFlipX(h.flipX).setDepth(h.depth-.5-.1*i);
      if(image.plumes){
        const phase=Math.floor(this.elapsed*15)%plumeFrameCount;
-       image.plumes.setTexture(lvbuPlumeFrame(this,phase)).setPosition(image.x,image.y)
+       image.plumes.setTexture(lvbuPlumeFrame(this,phase,level-1)).setPosition(image.x,image.y)
          .setFlipX(image.flipX).setDepth(image.depth-.01);
      }
    });
  }
  soulBonus(stat){return this.souls.reduce((sum,s)=>sum+(s.type.stat===stat?s.bonus:0),0)}
+ commanderAttackRange(){
+   const baseBonus=this.souls.length?soulBaseRangePercent/100:0;
+   return this.commander.range*(1+baseBonus+this.soulBonus('reach'));
+ }
+ commanderDamage(){
+   const passive=this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1);
+   return this.commander.baseDamage*(1+this.soulBonus('power'))*this.damage*passive;
+ }
+ soulAttack(a,target){
+   const spirit=this.souls[this.nextSoulIndex];
+   this.nextSoulIndex=(this.nextSoulIndex+1)%this.souls.length;
+   spirit.strikeTime=.22;this.positionSouls();
+   const area=soulStrikeArea(spirit.type.general,a.s,target.s);
+   const hit=this.rollAttackDamage(a);
+   const damage=hit.damage*soulAttackMultiplier(spirit.level);
+   showSoulStrike(this,spirit,target.s,area,()=>{
+     for(const enemy of [...this.enemies]){
+       if(this.mode!=='fight')break;
+       if(enemy.hp<=0||!soulStrikeContains(area,enemy.s)||this.arrowBlocked(a,enemy))continue;
+       const power=enemy===target?1:soulSecondaryDamage;
+       this.applyHitDamage(spirit.image,enemy,damage*power,hit.critical);
+     }
+   });
+ }
  attack(a,e){
  if(a.hero){
    a.s.setFlipX(e.s.x<a.s.x);
-   if(this.souls.length){
-     this.soulStrike=.22;this.positionSouls();
-     for(const spirit of this.souls)showSoulStrike(this,spirit,e.s);
-   }
  }
  if(a.hero&&a.skin===6){
    a.swingTime=.21;
@@ -587,8 +610,11 @@ class Battle extends Phaser.Scene{
  }
  this.sfx.swing(a.id===5?2:a.id);
  if(a.hero){
-   this.weaponEffect(a,e);
-   if(!this.arrowBlocked(a,e))this.dealHit(a,e,1);
+   if(this.souls.length)this.soulAttack(a,e);
+   else{
+     this.weaponEffect(a,e);
+     if(!this.arrowBlocked(a,e))this.dealHit(a,e,1);
+   }
    return;
  }
  const count=this.bondCounts[a.id];
@@ -695,12 +721,22 @@ class Battle extends Phaser.Scene{
    if((a.id!==2&&a.id!==5)||e.skin!==10||!shieldFront(e,a.s))return false;
    shieldSpark(this,e.s);return true;
  }
+ rollAttackDamage(a){
+   const critical=Math.random()<.05+this.critBonus+(a.hero?this.soulBonus('crit'):0);
+   const base=a.hero?this.commanderDamage():troops[a.id][1]*[1,1.32,1.72,2.22][a.q]
+     *this.damage*(1+.02*this.camp.level('arms'))*(1-.03*this.bag[12]);
+   return {damage:base*(critical?1.5:1),critical};
+ }
  dealHit(a,e,power){
- if(e.hp<=0)return;
- const critical=Math.random()<.05+this.critBonus+(a.hero?this.soulBonus('crit'):0);
+   if(e.hp<=0)return;
+   const hit=this.rollAttackDamage(a);
+   this.applyHitDamage(a.s,e,hit.damage*power,hit.critical);
+ }
+ applyHitDamage(attacker,e,damage,critical){
  if(e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
- const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
- const hitBurst=impact(this,a.s,e,damage,false,critical);
+ if(this.elapsed<e.markUntil)damage*=1.12;
+ e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
+ const hitBurst=impact(this,attacker,e,damage,false,critical);
  if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
  const {x,y}=e.s;
  this.enemies.splice(this.enemies.indexOf(e),1);
@@ -718,8 +754,8 @@ class Battle extends Phaser.Scene{
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:chest&&e.elite?eliteChestTier(this.wave):undefined});
  if(this.healDropsRemaining>0&&--this.killsUntilHeal===0){
-   const pack=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'medicine-pouch').setScale(.22).setDepth(y+2);
-   this.drops.push({s:pack,heal:15,collectAfter:this.elapsed+.45});
+   const jar=this.add.image(Phaser.Math.Clamp(x+12,8,952),Phaser.Math.Clamp(y,8,592),'dukang-wine-jar').setScale(.26).setDepth(y+2);
+   this.drops.push({s:jar,heal:15,collectAfter:this.elapsed+.45});
    this.healDropsRemaining--;
    this.killsUntilHeal=healDropInterval();
  }
@@ -773,7 +809,7 @@ class Battle extends Phaser.Scene{
    const candidates=i&&![2,5].includes(a.id)&&nearby.length?nearby:this.enemies;
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
- const range=a.hero?this.commander.range*(1+(this.souls.length ? .25 : 0)+this.soulBonus('reach')):this.mercRange(a);
+ const range=a.hero?this.commanderAttackRange():this.mercRange(a);
  if(i)this.follow(a,i-1,target,x||y,dt);
  if(i&&a.id===4&&target){a.facing=Math.atan2(target.s.y-a.s.y,target.s.x-a.s.x);a.s.setFlipX(Math.cos(a.facing)<0)}
  a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<range&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}
@@ -782,10 +818,12 @@ class Battle extends Phaser.Scene{
    if(this.mode!=='fight')return;
  }
  if(this.souls.length){
-   const frame=this.soulStrike>0?Math.min(6,Math.floor((1-this.soulStrike/.22)*7)):0;
-   for(const s of this.souls)s.image.setTexture(s.frames[frame]);
+   for(const s of this.souls){
+     const frame=s.strikeTime>0?Math.min(6,Math.floor((1-s.strikeTime/.22)*7)):0;
+     s.image.setTexture(s.frames[frame]);
+     s.strikeTime=Math.max(0,s.strikeTime-dt);
+   }
    this.positionSouls();
-   this.soulStrike=Math.max(0,this.soulStrike-dt);
  }
  for(let drop of [...this.drops]){
    if(this.elapsed<(drop.collectAfter??0))continue;
@@ -935,13 +973,13 @@ class Battle extends Phaser.Scene{
  if(this.wave<=5&&!merc){let o=this.offers.find(o=>o&&!o.lock);if(o){const id=recruitOffer(pool,this.army);Object.assign(o,{merc:true,id,price:refitPrice(true,id,o.q,this.wave)})}}}
  showCommanderStats(panel){
    const c=this.commander,percent=value=>statNumber(value*100)+'%';
-   const damage=c.baseDamage*(1+this.soulBonus('power'))*this.damage*c.passives.reduce((v,p)=>v*(p.damageMultiplier?.(this)??1),1);
+   const damage=this.commanderDamage()*(this.souls.length?soulAttackMultiplier(this.souls[0].level):1);
    const interval=this.attackInterval({hero:true,id:c.weapon});
    const reduction=1-15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18]);
    appendCommanderStats(panel,c.name,[
      ...this.souls.map(s=>['战魂',s.type.name+' · '+s.level+' 级 · '+s.type.label+' +'+s.type.values[s.level-1]+'%']),
      ['等级',this.level],['装束',commanderForms[commanderForm(this.level)].name],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
-     ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.souls.length ? .25 : 0)+this.soulBonus('reach')))],
+     ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(this.commanderAttackRange())],
      ['暴击率',percent(Math.min(1,.05+this.critBonus+this.soulBonus('crit')))],['暴击伤害','150%'],['护甲',this.armor],['常驻减伤',percent(reduction)],
      ['移速',statNumber(this.speed)],['幸运',this.luck],['拾取范围',statNumber(70*(1+.05*this.camp.level('sense'))*(1+.2*this.bag[satchel]))],
      ['宝箱拾取范围',statNumber(94*(1+.2*this.bag[satchel]))],['开波恢复',15+6*this.bag[bandage]],['佣兵攻速加成',percent(this.mercHaste)]

@@ -143,76 +143,185 @@ function drawSoulWeapon(g,form,color){
   }
 }
 
-function showSoulStrike(scene,spirit,target){
+function soulStrikeArea(general,source,target){
+  const {form}=soulStrikes[general];
+  const dx=target.x-source.x,dy=target.y-source.y,angle=Math.atan2(dy,dx);
+  const reach=Math.hypot(dx,dy);
+  if(form==='shield'||form==='hammer'){
+    return {shape:'circle',x:target.x,y:target.y,angle:0,radius:form==='hammer'?34:25};
+  }
+  if(['spear','halberd','arrow','bolts'].includes(form)){
+    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12}[form];
+    return {shape:'line',x:source.x,y:source.y,angle,length:reach+28,halfWidth};
+  }
+  const halfAngle={swords:.8,axe:.95,twinJi:.72,crescent:1.05}[form];
+  return {shape:'sector',x:source.x,y:source.y,angle,radius:reach+14,halfAngle};
+}
+function soulStrikeContains(area,point){
+  const dx=point.x-area.x,dy=point.y-area.y;
+  if(area.shape==='circle')return Math.hypot(dx,dy)<=area.radius;
+  const cos=Math.cos(area.angle),sin=Math.sin(area.angle);
+  const forward=dx*cos+dy*sin,side=dy*cos-dx*sin;
+  if(area.shape==='line')return forward>=0&&forward<=area.length&&Math.abs(side)<=area.halfWidth;
+  return Math.hypot(dx,dy)<=area.radius&&Math.abs(Math.atan2(side,forward))<=area.halfAngle;
+}
+function drawSoulStrikeArea(g,area,color){
+  g.setPosition(area.x,area.y).setRotation(area.angle).fillStyle(color,.25).lineStyle(1,color,.8);
+  if(area.shape==='circle'){
+    g.fillCircle(0,0,area.radius).strokeCircle(0,0,area.radius);
+  }else if(area.shape==='line'){
+    g.fillRect(0,-area.halfWidth,area.length,2*area.halfWidth);
+    g.strokeRect(0,-area.halfWidth,area.length,2*area.halfWidth);
+  }else{
+    const points=[{x:0,y:0}];
+    for(let i=0;i<=24;i++){
+      const a=area.halfAngle*(i/12-1);
+      points.push({x:area.radius*Math.cos(a),y:area.radius*Math.sin(a)});
+    }
+    g.fillPoints(points,true).strokePoints(points,true);
+  }
+}
+
+// Local x follows the weapon from the spirit's hand towards the target.
+function drawSoulWake(g,level,form,rim,front,travel,t){
+  const tail=Math.min(front,[0,15,32,36,48][level]);
+  if(tail<1)return;
+  const back=front-tail;
+  switch(level){
+    case 1:
+      strikeShard(g,back,0,tail,0,1.4,rim);
+      break;
+    case 2:
+      for(const sign of [-1,1]){
+        const points=[];
+        for(let i=0;i<=16;i++){
+          const u=i/16;
+          points.push({x:back+u*tail,y:sign*7*Math.sin(u*Math.PI*2)*Math.sin(u*Math.PI)});
+        }
+        g.lineStyle(2,sign===1?rim:0xbfefff).strokePoints(points);
+      }
+      break;
+    case 3:
+      for(let i=2;i>=1;i--){
+        const scale=1-i*.16;
+        g.save().translateCanvas(front-tail*i/2,-i*4*travel).rotateCanvas(-i*.24).scaleCanvas(scale,scale);
+        drawSoulWeapon(g,form,i===2?0x9159c5:rim);
+        g.restore();
+      }
+      break;
+    case 4:
+      for(const sign of [-1,1]){
+        const points=[{x:front,y:0}];
+        for(let i=1;i<=8;i++){
+          const u=i/8,edge=(i%2?13:5)*(1-u)*Math.min(1,tail/16);
+          points.push({x:front-tail*u,y:sign*edge*(.9+.15*Math.sin(17*t+i))});
+        }
+        g.fillStyle(rim,.9).fillPoints(points,true);
+      }
+      strikeShard(g,back,0,tail,0,4,0xffc559);
+      for(let i=1;i<=3;i++){
+        const u=i/4,y=(i%2?1:-1)*(4+3*i)*travel;
+        strikeShard(g,front-u*tail,y,-3-u*6,y*.3,1.3,0xffdb73);
+      }
+      break;
+  }
+}
+
+function drawSoulImpact(g,level,rim,burst,heavy){
+  const radius=(heavy?26:21)*(1-(1-burst)**2)+3;
+  switch(level){
+    case 1:{
+      const size=4+5*(1-burst);
+      strikeShard(g,-size,-size,size*2,size*2,1.6,rim);
+      strikeShard(g,-size*.55,size*.55,size*1.1,-size*1.1,1,rim);
+      break;
+    }
+    case 2:
+      for(const sign of [-1,1]){
+        g.save().translateCanvas(0,sign*burst*4).rotateCanvas(sign===1?0:Math.PI);
+        bladeRibbon(g,radius,-1.24+burst*.6,1.24+burst*.6,3.5,rim);
+        bladeRibbon(g,radius-2,-.85+burst*.6,.92+burst*.6,1,0xd7f4ff);
+        g.restore();
+      }
+      break;
+    case 3:
+      for(let i=0;i<3;i++){
+        const a=i*Math.PI*2/3+burst*.85;
+        g.save().rotateCanvas(a);
+        bladeRibbon(g,radius+2,-.74,.77,3,rim);
+        strikeShard(g,radius-3,0,10,0,2.6,0xedd3ff);
+        g.restore();
+      }
+      break;
+    case 4:{
+      const outer=radius*1.27;
+      for(let i=0;i<8;i++){
+        g.save().rotateCanvas(i*Math.PI/4+.14);
+        const ray=(i%2?7:13)*(1-burst*.55);
+        strikeShard(g,outer-3,0,ray,0,i%2?2:3,i%2?rim:0xffdc75);
+        bladeRibbon(g,outer,-.33,.29,3.6,rim);
+        g.restore();
+      }
+      if(burst>.22){
+        const inner=(burst-.22)*radius;
+        g.lineStyle(2,0xffcf60).strokeCircle(0,0,inner);
+      }
+      break;
+    }
+  }
+}
+
+function showSoulStrike(scene,spirit,target,area,onImpact){
   const {image:soul,type,level}=spirit;
-  const {form,color}=soulStrikes[type.general],light=0xfff2ce;
+  const {form,color}=soulStrikes[type.general];
   const rim=Phaser.Display.Color.HexStringToColor(soulRimColors[level-1]).color;
   // The painted grip is eight drawing units forward and five above the belt anchor.
   const scale=soul.scaleX*2,side=soul.flipX?-1:1;
   const x=soul.x+side*8*scale,y=soul.y-5*scale;
-  const dx=target.x-x,dy=target.y-target.displayHeight*.4-y;
+  const aimX=area.shape==='line'?area.x+Math.cos(area.angle)*area.length:target.x;
+  const aimY=area.shape==='line'?area.y+Math.sin(area.angle)*area.length:target.y;
+  const dx=aimX-x,dy=aimY-target.displayHeight*.4-y;
   const angle=Math.atan2(dy,dx),reach=Math.hypot(dx,dy);
   const g=scene.add.graphics().setPosition(x,y).setRotation(angle).setDepth(998);
+  const footprint=scene.add.graphics().setDepth(1);
+  drawSoulStrikeArea(footprint,area,color);
+  let landed=false;
   const heavy=form==='hammer'||form==='shield'||form==='axe';
   const sweep=['swords','twinJi','crescent','axe'].includes(form);
   function paint(t){
     g.clear();
     const travel=Phaser.Math.Clamp((t-.12)/.5,0,1);
     const front=reach*(1-(1-travel)**2);
-    if(t<.73){
-      const fade=Phaser.Math.Clamp((.73-t)/.15,0,1);
-      g.setAlpha(fade);
-      const tail=Math.min(front,10+level*5);
-      if(tail>1&&level>=2){
-        // Two tapering streamers spiral in behind the travelling weapon.
-        for(const sign of [-1,1]){
-          const points=[];
-          for(let i=0;i<=12;i++){
-            const u=i/12,spread=Math.sin(Math.PI*u);
-            const y=sign*spread*(4+2.5*Math.sin(5*u-7*t));
-            points.push({x:front-tail*(1-u),y});
-          }
-          g.lineStyle(1,rim,.85).strokePoints(points);
-          const spark=points[sign>0?4:8],size=1.6*travel;
-          strikeShard(g,spark.x-size,spark.y,size*2+.01,0,size*.7,light);
-        }
-      }
-      if(tail>1)strikeShard(g,front-tail,0,tail,0,1.4,rim);
-      if(level>=3&&travel>.15){
-        g.save().translateCanvas(front-tail*.7,0).scaleCanvas(.58,.58);
-        drawSoulWeapon(g,form,rim);
+    g.setAlpha(t<=.5?1:1-((t-.5)*2)**2);
+    if(level===4&&t<.2){
+      const charge=1-t/.2;
+      for(let i=0;i<4;i++){
+        g.save().rotateCanvas(i*Math.PI/2+t*3);
+        strikeShard(g,4+12*charge,0,3+5*charge,0,1.8,0xffd169);
         g.restore();
       }
-      g.save().translateCanvas(front,0).scaleCanvas(.55+.45*travel,.55+.45*travel);
+    }
+    if(t<.73){
+      drawSoulWake(g,level,form,rim,front,travel,t);
+      const size=(.55+.45*travel)*Phaser.Math.Clamp((.73-t)/.11,0,1);
+      g.save().translateCanvas(front,0).scaleCanvas(size,size);
       if(sweep)g.rotateCanvas(side*(-.75+travel*1.25));
       drawSoulWeapon(g,form,color);
       g.restore();
     }
-    if(t>.5){
-      const burst=(t-.5)*2,r=(heavy?25:17)*burst+2;
-      g.setAlpha(1-burst).save().translateCanvas(reach,0);
-      const sparks=2+level*2;
-      for(let i=0;i<sparks;i++){
-        const a=i*2*Math.PI/sparks+.24,u=Math.cos(a),v=Math.sin(a);
-        strikeShard(g,r*u,r*v,(3+5*burst)*u,(3+5*burst)*v,1.3,i%2?light:rim);
-      }
-      if(level>=3){
-        for(const a of [.3,Math.PI+.3])bladeRibbon(g,r,a+burst*.5,a+2.3+burst*.5,heavy?2.6:1.4,rim);
-      }
-      if(level===4&&burst>.2){
-        const ring=(burst-.2)*(heavy?37:28);
-        g.lineStyle(1.8,rim,.9).strokeCircle(0,0,ring);
-        for(let i=0;i<4;i++){
-          const a=i*Math.PI/2+.65,u=Math.cos(a),v=Math.sin(a);
-          strikeShard(g,ring*u,ring*v,8*u,8*v,2,rim);
-        }
-      }
+    if(t>=.5){
+      g.save().translateCanvas(reach,0);
+      drawSoulImpact(g,level,rim,(t-.5)*2,heavy);
       g.restore();
     }
   }
   paint(0);
   const animation=scene.tweens.addCounter({from:0,to:1,duration:heavy?390:330,
-    onUpdate:tween=>paint(tween.getValue()),onComplete:()=>{soul.off('destroy',cancel);g.destroy()}});
-  function cancel(){animation.remove();g.destroy()}
+    onUpdate:tween=>{
+      const t=tween.getValue();paint(t);
+      footprint.setAlpha(t<.5?.45:2*(1-t));
+      if(!landed&&t>=.5){landed=true;onImpact()}
+    },onComplete:()=>{soul.off('destroy',cancel);footprint.destroy();g.destroy()}});
+  function cancel(){animation.remove();footprint.destroy();g.destroy()}
   soul.once('destroy',cancel);
 }

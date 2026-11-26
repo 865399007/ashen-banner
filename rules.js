@@ -2,6 +2,10 @@ const gameFontFamily=typeof wx!=='undefined' && wx.loadFont
   ? (wx.loadFont('assets/fonts/banner-sans.ttf') || 'sans-serif')
   : '"Banner Sans", sans-serif';
 const finalWave=15;
+function waveDurationSeconds(wave){
+  const duration=30+5*(wave-1);
+  return wave===finalWave?duration:Math.min(duration,60);
+}
 const $=id=>document.getElementById(id), roman=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'];
 function cardRank(tier){
   const label=document.createElement('span');
@@ -184,6 +188,10 @@ const commanders={
     ]
   }
 };
+const soulBaseRangePercent=28;
+const soulSecondaryDamage=.6;
+const soulAttackBonusPercent=[15,25,35,50];
+function soulAttackMultiplier(level){return 1+soulAttackBonusPercent[level-1]/100}
 const soulTypes=[
   {general:'liubei',name:'刘备',weapon:'雌雄双股剑',stat:'haste',label:'攻速',values:[6,12,20,30]},
   {general:'zhaoyun',name:'赵云',weapon:'龙胆亮银枪',stat:'reach',label:'射程',values:[8,15,25,35]},
@@ -237,7 +245,7 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['配重铁芯',2,'斧兵、战锤兵伤害 +15%'],['鎏铜马镫',2,'轻骑兵冲锋间隔缩短 15%'],
  ['断锋宝刃',3,'剑士、盾兵、双匕首兵对半血及以下敌人伤害 +35%'],['破阵戟牙',3,'长枪兵、长戟兵一次攻击中对主目标以外的敌人伤害 +45%'],
  ['破城玄铁',3,'斧兵、战锤兵对精英和主将伤害 +35%'],['骁骑冲阵旗',3,'轻骑兵冲锋命中时，波及半径 +50%'],
- ['黄芪散',1,'拾取血包时额外恢复 5 生命'],['军饷钱串',1,'每波开始获得 3 银币'],
+ ['黄芪散',1,'拾取杜康酒坛时额外恢复 5 生命'],['军饷钱串',1,'每波开始获得 3 银币'],
  ['鱼鳞甲',2,'指挥官护甲 +2'],['行医针囊',2,'击杀精英时恢复 8 生命'],
  ['虎符兵书',3,'佣兵攻速 +10%'],['护心宝镜',3,'指挥官受击后的无敌时间延长 0.15 秒'],
  ['羽林将印',3,'全队暴击率 +4 个百分点']];
@@ -305,4 +313,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};

@@ -319,12 +319,9 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     // Let the head settle after each footfall while keeping the eye line level.
     c.translate(0,1.1*Math.sin(2*phase-.6));
   }
-  // Both cheekbones and the tapered jaw are centered on the bridge at x=134.
-  fill('M114 71 Q114 55 134 54 Q154 55 154 71 L153 85 L149 93 L139 101 Q134 104 129 101 L119 93 L115 85Z',
-    glaze('#f4cda4','#e4aa7e',69,102));
-  fill('M114 71 L118 71 L118 84 L122 92 L131 100 Q134 101.5 137 100 L139 101 Q134 104 129 101 L119 93 L115 85Z','#d29a74');
-  fill('M115 78 Q110 75 111 81 Q111 86 116 87Z','#d29a73');
   if(!rank){
+    fill('M109 68 Q111 53 131 53 Q151 53 155 69 L154 84 Q153 89 149 93 L139 99 Q135 102 131 99 L121 93 Q117 90 115 84Z',skin);
+    oval(c,111,82,4.2,5.5,'#d9a57c');
     // Keep the arch at the tie still. The bend travels down the loose hair.
     const amplitude=walking?.7:.17;
     const middle=6*amplitude*Math.sin(clothPhase-.55);
@@ -348,6 +345,8 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M122 61 Q133 46 144 46 Q151 47 154 55 Q147 49 141 52 Q134 53 122 61Z','#624b42');
     line('M97 49 Q99 43 104 41','#a23a30',4.6);line('M97 47 Q99 43 102 42','#dc7050',1.6);
   }else{
+    fill('M103 67 Q102 49 125 48 Q151 46 158 66 L156 84 Q154 90 150 94 L140 101 Q135 104 130 101 L120 94 Q116 90 114 84Z',skin);
+    oval(c,107,84,5.4,6.5,'#d9a57c');
     const plume=rank===2?'#fffdf6':'#bc4937';
     c.save();c.translate(119,48);c.rotate(wind*.025+plumeSwing*.14);c.translate(-119,-48);
     if(rank===4){
@@ -363,7 +362,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M103 65 Q103 51 117 45 Q112 51 111 59 L106 65Z',glaze(u.light,u.metal,43,67));
     line('M102 67 Q101 52 116 45',u.shade,1.15);
     fill('M99 66 L111 71 L113 80 L109 93 L98 97 L90 92 L97 86Z',glaze(u.metal,u.shade,66,96));
-    fill('M148 65 L154 65 Q159 73 158 82 L154 91 L152 89 L153 77Z',u.shade);
+    fill('M149 66 L155 65 Q160 75 161 86 L159 94 L156 91 L155 76Z',u.shade);
     fill('M98 77 Q101 72 106 72 L109 81 L105 88 L96 90 L100 84Z',u.metal);
     line('M94 90 L102 92 L108 88',u.trim,1.8);
     fill('M99 68 L114 66 L132 55 L150 61 L156 69 L153 72 L147 66 L134 64 L114 72 L103 76Z',rank===2?'#b29b6a':helmGold);
@@ -381,15 +380,11 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
     fill('M137 61 L140 56 L143 61 L140 66Z',rank===2?'#a0e0f0':'#fff0ba');
     oval(c,118,42,4,3,u.trim);line('M116 41 L120 40',u.shade,1.3);
   }
-  // Mirror the brow and eye around the facial centerline.
-  for(const side of [-1,1]){
-    c.save();c.translate(134,0);c.scale(side,1);
-    fill('M4 76 L12 73.5 L14 74.5 L12 76.4 L4 78Z','#684637');
-    fill('M5 80.5 Q9 79 13 80 L12 84.5 Q9.5 87 6.5 85Z','#392c29');
-    c.restore();
+  // At battlefield scale each eye needs its own clear patch of skin.
+  const eyeXs=rank?[121,141]:[122,140];
+  for(const x of eyeXs){
+    fill(`M${x} 81 a4 4 0 0 1 8 0 v${rank?6:5} a4 4 0 0 1 -8 0Z`,'#352922');
   }
-  fill('M134 83 L136 89 L134 90 L132 89Z','#c8926c');
-  line('M130 95 Q134 96 138 95','#a16d53',1.4);
   c.restore();
 }
 const mercSkins=[0,1,2,7,17,18,19,20,21,22];

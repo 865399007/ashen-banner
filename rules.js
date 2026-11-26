@@ -149,6 +149,7 @@ function takeWildlife(arrivals,timeLeft,stageKey,wave){
   return campaign.wildlife;
 }
 function eliteArrivalTimes(wave,duration){
+  if(wave===1)return [10,18,26].map(elapsed=>duration-elapsed);
   const count=3+Math.floor(Math.random()*3);
   // Countdown thresholds: leave one full interval to fight the last regular-wave elite.
   return Array.from({length:count},(_,i)=>wave===finalWave?duration:duration*(1-i/count));

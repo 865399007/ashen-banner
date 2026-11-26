@@ -418,11 +418,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,boss=false){
     c.restore();
   }
   if(q>0&&!recruit){
-    if(id===0){
-      const blade='M23 21 L29 10 L34 5 L32 12 L26 23 Z';
-      stroke(blade,weaponInk,2.6);
-      paint(blade,wash(23,34,'#928984','#e4dac6'));
-    }else if(id===1){
+    if(id===1){
       stroke('M20.3 34 L29 5',weaponInk,4);
       stroke('M27.3 7.6 L29.4 2.5 L32 .5 L31.5 6.3 L29 8.8 Z',weaponInk,2.6);
     }else if(id===2){
@@ -487,9 +483,13 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,boss=false){
       stroke('M19 25 L23 21','#5a4030',1.8);
       paint('M18 18 L21 18.5 L23 21.4 L20.3 23 L17.8 21 Z','#cfaa80');
     }else{
-      paint('M19 16.6 Q23 15 29 14.4 Q30 14.4 30 16 L29.7 28.8 Q27.4 31.7 19 31 Z',wash(19,30,'#a59587','#ddc7a8'));
-      paint('M20.6 17.7 L28.3 16 L28 28.4 Q26 30 20.6 29.6 Z',wash(20,28,'#745540','#956e50'));
-      paint('M23.2 21.5 L25.8 21 L26 24.6 L23.3 25.1 Z','#c2aa88');
+      const blade='M22.5 19.7 L29.5 8.8 L34 5 L32.4 11.2 L25 21.5 Z';
+      if(q)stroke(blade,weaponInk,2.2);
+      paint(blade,wash(22,34,'#859399','#e5dfcc'));
+      stroke('M24 19.5 L32.5 7.5','#e4e8db',.8);
+      stroke('M20.2 25.4 L24 20.1','#594033',1.9);
+      stroke('M21.4 18.8 L26.6 22',q>=2?'#e1b774':'#ab885c',1.6);
+      paint('M16.7 18.4 Q18.2 17.6 19.7 19 L20.8 21.5 Q22.8 20.4 23.6 22.1 L22.4 24.2 Q19.6 24.8 18.4 22.8 Z','#cea780');
     }
   }else if(weapon===1){
     stroke('M20.3 34 L29 5','#694831',1.65);
@@ -504,11 +504,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,boss=false){
     stroke('M16 18 L33 17.1','#63482b',.72);
     p([[32,16.2],[35,17],[32,18.1]],'#776953');c.restore();
   }
-  if(q && id===0){
-    paint('M20 18 L28 16 L28 27 Q26 30 21 30 Z',['','#486569','#514065','#9d4330'][q]);
-    stroke('M21 22 L24 25 L27 20','#edcf99',1.6);
-    if(q===3)stroke('M21 25 L24 28 L27 23','#edcf99',1.4);
-  }else if(q && id===1){
+  if(q && id===1){
     paint('M28 8 Q24 8 22 7 L'+(23-q*3)+' '+(10+q*2)+' Q22 13 27 12 Z',['','#527371','#695477','#a84c34'][q]);
   }else if(q && id===2&&!recruit){
     stroke('M26 9 Q32 11 32 16 M32 22 Q31 26 27 28',['','#adc8bd','#b8a1c4','#efc47a'][q],1.8);

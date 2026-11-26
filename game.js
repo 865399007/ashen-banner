@@ -96,7 +96,7 @@ class Battle extends Phaser.Scene{
    $('settings').setAttribute('aria-expanded','true');
    $('sound').focus({preventScroll:true});
  };
- $('settings-backdrop').onclick=$('close-settings').onclick=()=>this.closeSettings();
+ $('settings-backdrop').onclick=()=>this.closeSettings();
  $('sound').onclick=()=>{
    this.sfx.muted=!this.sfx.muted;this.sfx.refreshGain();
    $('sound').textContent=this.sfx.muted?'声音：关':'声音：开';

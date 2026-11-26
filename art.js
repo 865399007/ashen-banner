@@ -157,10 +157,38 @@ function meadow(c,p,cover) {
 const WALK_FRAMES=12;
 const commanderSwingAngles=[-.8,-.52,.15,.98,1.38,1.08,.7];
 const COMMANDER_CLOTH_FRAMES=12;
-function commanderIdleTexture(ms){
-  return 'man6cloth'+(Math.floor(ms/100)%COMMANDER_CLOTH_FRAMES);
+const commanderForms=[
+  {name:'初阵'},
+  {name:'铜札战甲',metal:'#a06542',light:'#d7a570',edge:'#f0c388',cloth:'#853d35'},
+  {name:'银翎明铠',metal:'#5f8297',light:'#c9dce1',edge:'#eff5ed',cloth:'#34586c'},
+  {name:'玄甲虎卫',metal:'#303e49',light:'#66717a',edge:'#d9a44e',cloth:'#652e39'},
+  {name:'金翎统帅',metal:'#946327',light:'#dfb765',edge:'#fff0b1',cloth:'#983e38'}
+];
+function commanderForm(level){return Math.min(4,Math.floor(level/5))}
+function commanderIdleTexture(ms,base='man6'){
+  return base+'cloth'+(Math.floor(ms/100)%COMMANDER_CLOTH_FRAMES);
 }
-function bannerCommander(c,phase,swing=null,clothPhase=phase){
+// Draw the shoulder insignia in local coordinates so it fits each commander's build.
+function commandPauldron(c,rank){
+  const {metal,light,edge}=commanderForms[rank];
+  const fill=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
+  if(rank===1){
+    fill('M1 7 L11 1 L22 2 L28 8 L22 12 L12 11 L2 16 Z',metal);
+    fill('M2 8 L11 3 L21 4 L23 6 L12 6 L2 12 Z M5 13 L14 8 L24 8 L22 10 L14 10 L5 15 Z',light);
+  }else if(rank===2){
+    fill('M0 11 Q4 3 15 0 L25 2 L31 8 L20 9 L11 13 L2 18 Z',metal);
+    fill('M2 10 L12 3 L23 3 L16 6 L6 13 Z M6 14 L19 7 L26 7 L17 11 L5 17 Z',light);
+  }else if(rank===3){
+    fill('M0 8 L4 0 L10 3 L18 1 L24 0 L28 8 L25 16 L20 11 L14 17 L8 13 L3 18 Z',metal);
+    fill('M3 4 L10 5 L13 9 L5 7 Z M16 8 L20 4 L25 4 L23 7 Z M8 10 L14 12 L20 9 L15 15 Z',edge);
+  }else{
+    fill('M0 1 L12 5 L9 0 L25 4 L31 9 L17 14 L3 20 L8 12 L1 14 L6 8 Z',metal);
+    fill('M1 2 L16 7 L11 2 L24 5 L29 8 L16 10 Z',light);
+    fill('M3 14 L13 8 L24 8 L14 11 Z M5 18 L16 12 L22 11 L14 15 Z',edge);
+  }
+}
+function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
+  const form=commanderForms[rank];
   // Draw in portrait coordinates; the feet remain the animation pivot.
   c.save();c.scale(.21875,.21875);
   const step=Math.sin(phase);
@@ -177,20 +205,24 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
     c.save();c.translate(x+step*side*9,step*side*6);
     shape('M-11 170 Q0 168 11 174 L13 213 Q7 219 -8 217 L-12 190 Z','#31231f','#493326');
     // Each greave follows its boot, with the ankle exposed below the metal rim.
-    shape('M-11 181 Q-1 176 10 181 L11 203 L7 210 L-6 208 L-10 201 Z','#516063','#8b8d7d');
+    shape('M-11 181 Q-1 176 10 181 L11 203 L7 210 L-6 208 L-10 201 Z',form.metal||'#516063',form.light||'#8b8d7d');
     shape('M0 184 L8 181 L8 201 L5 206 L1 203 Z','#859087');
     shape('M-11 186 Q0 190 10 184 L10 188 Q0 194 -11 190 Z','#3b4748');
-    shape('M-8 201 Q0 206 10 200 L9 204 Q1 210 -7 205 Z','#ad8652','#d6b478');
+    shape('M-8 201 Q0 206 10 200 L9 204 Q1 210 -7 205 Z',form.edge||'#ad8652',form.edge||'#d6b478');
     c.restore();
   }
   c.translate(step*2,-Math.abs(step)*4);
   shape('M89 109 Q116 97 146 110 L149 148 L158 187 Q126 199 80 191 L94 153 Z','#44231f','#632d27');
   shape('M97 108 Q121 100 142 109 L143 148 L151 182 Q129 191 95 185 L102 153 Z','#493327','#62412c');
   // Split thigh plates sit beneath the belt and overlap the greaves.
-  shape('M96 155 L121 157 L116 188 L107 193 L87 188 Z','#516063','#8b8d7d');
-  shape('M125 157 L148 151 L156 183 L148 189 L122 186 Z','#516063','#8b8d7d');
+  shape('M96 155 L121 157 L116 188 L107 193 L87 188 Z',form.metal||'#516063',form.light||'#8b8d7d');
+  shape('M125 157 L148 151 L156 183 L148 189 L122 186 Z',form.metal||'#516063',form.light||'#8b8d7d');
   shape('M93 166 L119 169 L118 172 L92 169 Z M90 177 L117 180 L116 183 L90 180 Z M125 167 L151 161 L152 164 L124 171 Z M124 178 L153 172 L154 175 L123 182 Z','#3b4748');
-  shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z','#ad8652','#d6b478');
+  shape('M88 185 L107 189 L116 185 L116 188 L107 193 L87 188 Z M123 183 L147 185 L155 180 L156 183 L148 189 L122 186 Z',form.edge||'#ad8652',form.edge||'#d6b478');
+  if(rank){
+    shape('M111 157 L130 157 L132 187 L120 200 L108 189 Z',form.cloth);
+    shape('M114 165 L120 174 L127 163 L124 178 L120 185 L115 179 Z',form.edge);
+  }
   shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z','#b27b3c','#a16c35');
   shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z',sleeveLight,sleeveShade);
   shape('M174 131 L181 129 L184 146 L177 148 Z',cuff);
@@ -207,6 +239,10 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M178 60 Q183 48 193 52 Q190 42 200 43 Q207 44 204 51 Q201 55 197 51 Q203 52 201 47 Q197 45 197 52 Q200 61 190 61 Q182 60 178 69 Z M181 72 Q194 64 204 67 L201 72 Q191 71 180 78 Z','#cc9660','#e7bb7c');
   shape('M164 13 Q167 10 172 14 L222 26 Q228 28 224 36 L165 24 Q160 22 164 13 Z','#583827','#6e4932');
   shape('M174 15 L187 18 L187 26 L172 23 Z M202 22 L216 24 L215 32 L201 29 Z','#a9583d','#b66d4a');
+  if(rank>=2){
+    shape(`M171 28 L175 29 Q176 65 ${171+flagWave*4} 101 L${167+flagWave*4} 100 Z`,form.edge);
+    if(rank===4)shape(`M201 32 Q209 35 216 33 Q${224+flagTip*5} 55 ${232+flagTip*5} 61 Q217 56 212 47 L214 61 Q204 48 201 32 Z`,form.edge);
+  }
   // The fingers wrap in front of the pole and move with it.
   shape('M180 134 Q180 129 185 128 L188 129 Q195 126 198 132 L197 143 Q196 150 189 150 L182 148 Q179 146 179 141 Z',handSkin);
   shape('M181 135 Q182 129 186 130 L190 133 L189 136 L185 134 L181 138 Z',knuckleLight);
@@ -216,7 +252,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   const capeTip=Math.sin(clothPhase+.13);
   shape(`M87 110 Q99 111 105 123 Q101 168 ${94+capeWave*3} 203
     Q${75+capeWave*4} ${202+capeWave*3} ${56+capeTip*9} ${196-capeTip*5}
-    Q${67+capeWave*5} 169 70 138 Z`,'#97483c','#622d29');
+    Q${67+capeWave*5} 169 70 138 Z`,form.cloth||'#97483c',rank===2?'#243e4f':'#622d29');
   shape('M94 107 Q99 115 108 119 L98 164 L92 201 Q96 155 88 146 Z','#78382f','#4c2724');
   // Align the rib cage over the belt. Keep the helmet and saber rigid at their joints.
   c.save();c.transform(1,0,-.14,1,155*.14,0);
@@ -225,9 +261,12 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M126 91 Q142 82 155 91 Q164 98 168 114 Q161 123 142 122 L129 113 Z',sleeveLight,sleeveShade);
   shape('M49 123 Q53 102 76 90 Q98 82 117 103 L128 120 Q118 132 98 129 L84 124 Q59 139 49 130 Z',sleeveLight,sleeveShade);
   shape('M51 124 Q55 101 77 91 Q96 84 114 102 L125 116 Q102 111 84 122 L61 137 L47 134 Z','#4e5958','#859087');
-  shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z','#ad8652','#d6b478');
+  shape('M48 128 Q63 125 78 112 Q95 101 116 108 L120 112 Q95 108 80 119 L58 135 L46 135 Z',form.edge||'#ad8652',form.edge||'#d6b478');
+  if(rank){
+    c.save();c.translate(46,89);c.scale(2.5,2.5);commandPauldron(c,rank);c.restore();
+  }
   c.restore();
-  shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z','#516063','#8b8d7d');
+  shape('M99 133 L124 124 L145 135 L141 153 L99 158 Z',form.metal||'#516063',form.light||'#8b8d7d');
   shape('M100 142 L140 138 L140 141 L101 146 Z M99 151 L138 147 L137 150 L98 154 Z','#3b4748');
   oval(c,135,125,11,12,'#704a30');oval(c,135,122,10,10,'#e6bc73');
   c.restore();
@@ -237,11 +276,19 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase){
   shape('M114 72 Q128 67 145 73 L145 96 Q142 106 120 103 Q114 99 114 92 Z','#dfb78b','#f0cda2');
   shape('M99 59 Q108 47 120 47 Q141 47 144 63 L140 77 L98 78 Z','#796254','#9a7d60');
   // A crested doumou helmet with a flared neck guard and a gilt brow.
-  shape('M92 72 Q91 48 116 43 Q140 44 145 66 L151 73 Q121 72 96 84 L86 88 Z','#394449','#647170');
+  shape('M92 72 Q91 48 116 43 Q140 44 145 66 L151 73 Q121 72 96 84 L86 88 Z',form.metal||'#394449',form.light||'#647170');
   shape('M93 72 L103 75 L109 100 L99 106 L86 99 Z','#535a57','#746b58');
   shape('M91 73 Q115 64 145 65 L152 71 Q126 71 98 80 Z','#a47a48','#e5c68b');
   shape('M111 66 Q117 52 116 43 L121 44 Q122 55 116 65 Z','#b58b52','#d4b174');
   shape('M115 47 Q111 38 101 39 Q85 42 75 33 Q88 37 94 30 Q108 21 119 37 L122 44 Z','#903c32','#be6651');
+  if(rank===1)shape('M97 72 L98 54 L103 47 L106 66 L121 60 L115 67 Z',form.light,form.edge);
+  if(rank===2)shape('M119 45 Q112 19 87 26 Q72 37 60 32 Q71 45 88 38 L76 46 Q96 46 105 36 L116 48 Z',form.light,form.edge);
+  if(rank===3)shape('M92 73 L83 47 L98 56 L95 40 L110 52 L111 64 Z M124 50 L132 36 L133 52 L143 45 L138 62 Z',form.metal,form.edge);
+  if(rank===4){
+    shape('M114 48 Q85 -5 47 31 Q35 44 20 44 Q37 53 59 33 Q83 14 111 52 Z','#a74c41',form.edge);
+    shape('M119 47 Q117 17 137 12 Q151 9 164 19 Q141 14 132 27 Q126 37 125 50 Z',form.edge);
+    shape('M91 74 L84 48 L99 59 L94 39 L111 53 L118 47 L123 60 L110 69 Z',form.light,form.edge);
+  }
   shape('M98 96 L104 94 L104 96 L98 99 Z M92 90 L101 87 L102 89 L93 93 Z','#bb9d71');
   shape('M124 81 L130 80 L130 89 Q127 92 124 90 Z M139 79 L144 78 L144 87 Q141 90 139 88 Z','#35261f','#30231c');
   c.restore();
@@ -380,7 +427,7 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=0){
   const boss=variant==='boss',mercenary=variant==='mercenary';
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
   const recruit=id>=17&&id<=22;
@@ -499,6 +546,21 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant=''){
         stroke('M9 9 Q15 7 22 7',brass,1.45);
         stroke('M10 26 Q16 28 21 25','#eac279',1.5);
       }
+    }
+  }
+  if(formRank){
+    const form=commanderForms[formRank];
+    paint('M9 15 L14 16 L11 28 L9 31 L3 30 L6 22 Z',form.cloth);
+    paint('M12 16 Q17 18 21 15 L22 21 L17 24 L12 22 Z',wash(12,22,form.metal,form.light));
+    stroke('M12 19 Q16 21 21 18 M14 25 L13 29 M18 25 L19 28',form.edge,.85);
+    c.save();c.translate(4.4,13.6);c.scale(.34,.34);commandPauldron(c,formRank);c.restore();
+    paint('M8 8 Q10 3 16 2 L19 3 L22.5 7 L24 8 L14 9 L11 14 L7 15 Z',wash(7,22,form.metal,form.light));
+    stroke('M8 9 Q14 7 22 7.6',form.edge,1);
+    if(formRank===2)paint('M17 4 Q11 .2 7 3 L2 9 L6 8 L3 12 Q10 10 13 5 Z',form.light);
+    if(formRank===3)paint('M8 9 L5 2 L10 5 L9 1 L15 4 L16 7 Z',form.edge);
+    if(formRank===4){
+      paint('M16 4 Q8 -1 4 3 Q2 6 1 10 Q6 7 8 4 Q11 2 16 6 Z M17 4 Q20 .2 24 1 Q27 2 28 5 Q23 2 20 5 Z',form.edge);
+      paint('M8 10 L5 4 L10 6 L9 2 L15 5 L16 7 Z',form.light);
     }
   }
   c.save();c.translate(20,21);if(id===1)c.translate(5*pose,0);
@@ -657,16 +719,6 @@ function makeArt(scene){
     haze.addColorStop(1,'rgba(168,139,111,.18)');
     c.fillStyle=haze;c.fill(new Path2D('M2 18 Q9 19 14 14 Q12 9 18 8 Q20 2 26 4 Q32 4 33 10 Q39 7 41 13 Q45 13 46 17 Q42 21 34 19 Q28 23 23 19 Q18 22 15 18 Q8 22 2 18Z'));
   });
-  commanderSwingAngles.forEach((angle,frame)=>{
-    paintTexture(scene,'commanderSwing'+frame,112,112,c=>{
-      c.scale(2,2);bannerCommander(c,0,angle,frame*.55);
-    });
-  });
-  for(let frame=0;frame<COMMANDER_CLOTH_FRAMES;frame++){
-    paintTexture(scene,'man6cloth'+frame,112,112,c=>{
-      c.scale(2,2);bannerCommander(c,0,null,TAU*frame/COMMANDER_CLOTH_FRAMES);
-    });
-  }
   const leaderSkins=new Set(Object.values(campaigns).map(stage=>stage.bossSkin));
   function unitFrames(id,key,q,variant){
     const rider=id===8||id===22;
@@ -682,12 +734,33 @@ function makeArt(scene){
   for(const [type,id] of mercSkins.entries()){
     for(let q=0;q<4;q++)unitFrames(id,'man'+troopSkin(type,q),q,'mercenary');
   }
-  // Two commanders use the original archer and lancer uniforms.
-  unitFrames(2,'man'+commanders.scout.skin,2);
-  unitFrames(1,'man'+commanders.guard.skin,3);
+  for(const hero of Object.values(commanders))commanderTexture(scene,hero.skin,1);
   for(let id=0;id<=23;id++){
-    if(mercSkins.includes(id))continue;
+    if(id===6||mercSkins.includes(id))continue;
     unitFrames(id,'man'+id,0);
     if(leaderSkins.has(id))unitFrames(id,'man'+id+'boss',0,'boss');
   }
+}
+
+// Cache a promoted uniform only once a commander reaches that level.
+function commanderTexture(scene,skin,level){
+  const rank=commanderForm(level),base='man'+skin+(rank?'form'+rank:'');
+  if(scene.textures.exists(base))return base;
+  const banner=skin===commanders.banner.skin,scout=skin===commanders.scout.skin;
+  const q=scout?2:3;
+  const ink=getComputedStyle(document.documentElement).getPropertyValue('--tier-'+q).trim();
+  function frame(key,phase,swing=null,cloth=phase){
+    paintTexture(scene,key,banner?112:72,banner?112:80,(c,p)=>{
+      c.scale(2,2);
+      if(banner)bannerCommander(c,phase,swing,cloth,rank);
+      else miniature(c,p,scout?2:1,phase,q,ink,0,'',rank);
+    });
+  }
+  frame(base,0);
+  for(let i=0;i<WALK_FRAMES;i++)frame(base+'walk'+i,TAU*i/WALK_FRAMES);
+  if(banner){
+    for(let i=0;i<COMMANDER_CLOTH_FRAMES;i++)frame(base+'cloth'+i,0,null,TAU*i/COMMANDER_CLOTH_FRAMES);
+    commanderSwingAngles.forEach((angle,i)=>frame(base+'swing'+i,0,angle,i*.55));
+  }
+  return base;
 }

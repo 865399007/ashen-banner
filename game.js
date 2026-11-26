@@ -47,7 +47,7 @@ class Battle extends Phaser.Scene{
  makeArt(this);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
- this.footDust=this.add.group();prepareHitTextures(this);this.sfx=new CombatSound();placeField(this);this.mode='title';
+ this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
  // Browsers allow the camp theme to start after the first tap or keyboard action.
  const wakeAudio=()=>{if(this.sfx.ctx?.state!=='running')this.sfx.unlock()};
  const syncMusic=()=>this.sfx.updateMusic(this.mode);
@@ -196,8 +196,9 @@ class Battle extends Phaser.Scene{
  }
  createActor(unit,index){
    const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
-   const s=this.add.image(480,300,'man'+skin).setOrigin(.5,.85).setScale((unit.hero?.62:.5)*2/3);
-   return {...unit,skin,stride:0,shots:0,cd:index*.12,s};
+   const baseTexture=unit.hero?commanderTexture(this,skin,this.level):'man'+skin;
+   const s=this.add.image(480,300,baseTexture).setOrigin(.5,.85).setScale((unit.hero?.62:.5)*2/3);
+   return {...unit,skin,baseTexture,stride:0,shots:0,cd:index*.12,s};
  }
  deployMercenaries(){
    for(const unit of this.actors.splice(1))unit.s.destroy();
@@ -308,7 +309,7 @@ class Battle extends Phaser.Scene{
  }
  animateWalk(unit,dx,dy,stepLength){
    const s=unit.s,travel=Math.hypot(dx,dy);
-   let key='man'+unit.skin+(unit.boss?'boss':'');
+   let key=unit.baseTexture??('man'+unit.skin+(unit.boss?'boss':''));
    if(travel>.001){
      const next=unit.stride+travel/stepLength;
      if(Math.floor(next*2)>Math.floor(unit.stride*2)){
@@ -318,7 +319,7 @@ class Battle extends Phaser.Scene{
      key+='walk'+Math.floor(unit.stride*WALK_FRAMES);
      if(Math.abs(dx)>.001)s.setFlipX(dx<0);
    }else if(unit.hero&&unit.skin===6){
-     key=commanderIdleTexture(this.elapsed*1000);
+     key=commanderIdleTexture(this.elapsed*1000,unit.baseTexture);
    }
    if(s.texture.key!==key)s.setTexture(key);
  }
@@ -458,7 +459,7 @@ class Battle extends Phaser.Scene{
  }
  if(a.hero&&a.skin===6){
    a.swingTime=.21;
-   if(!a.hit)a.s.setTexture('commanderSwing0');
+   if(!a.hit)a.s.setTexture(a.baseTexture+'swing0');
  }
  this.sfx.swing(a.id===5?2:a.id);
  if(a.hero){
@@ -592,7 +593,7 @@ class Battle extends Phaser.Scene{
  if(commander.swingTime>0){
    commander.swingTime=Math.max(0,commander.swingTime-dt);
    const frame=Math.min(commanderSwingAngles.length-1,Math.floor((.21-commander.swingTime)/.03));
-   if(!commander.hit)h.setTexture('commanderSwing'+frame);
+   if(!commander.hit)h.setTexture(commander.baseTexture+'swing'+frame);
  }
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
@@ -674,7 +675,17 @@ class Battle extends Phaser.Scene{
  need(){return 8+this.level*3}
  collect(d){
    if(d.heal){this.healCommander(d.heal);return}
-   this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}}
+   const previousForm=commanderForm(this.level);
+   this.gold+=2;this.xp+=1;if(d.chest){this.gold+=8*this.bag[salvagePermit];this.boxes.push(d.crateTier??tier(this.wave,this.luck))}while(this.xp>=this.need()){this.xp-=this.need();this.level++;this.pending++}
+   if(commanderForm(this.level)!==previousForm){
+     const hero=this.actors[0],oldBase=hero.baseTexture;
+     const pose=hero.hit?hero.normalTexture:hero.s.texture.key;
+     hero.baseTexture=commanderTexture(this,hero.skin,this.level);
+     const key=hero.baseTexture+pose.slice(oldBase.length);
+     if(hero.hit)hero.normalTexture=key;
+     hero.s.setTexture(hero.hit&&hero.hit.age<.095?hitTexture(this,key):key);
+   }
+ }
  reward(keptTier){if(this.pending){let lv=this.level-this.pending+1,q=keptTier??(lv%5===0?(lv>=25?3:lv>=10?2:1):tier(lv,this.luck)),n=q+1,m=this.panel('战后升级 · '+roman[q],'等级 '+lv+'　 /　剩余 '+this.pending+' 次强化');let options=[['体魄　生命 +'+10*n,()=>{this.maxHP+=10*n;this.hp+=10*n}],['力量　伤害 +'+8*n+'%',()=>this.damage+=.08*n],['步法　移速 +'+5*n,()=>this.speed+=5*n],['幸运　+'+8*n,()=>this.luck+=8*n],
  ['操练　佣兵攻速 +'+5*n+'%',()=>this.mercHaste+=.05*n],
  ['锐眼　暴击率 +'+(1+2*n)+'%',()=>this.critBonus+=(1+2*n)/100],
@@ -730,7 +741,7 @@ class Battle extends Phaser.Scene{
    const reduction=1-15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18]);
    appendCommanderStats(panel,c.name,[
      ...(this.soul?[['战魂',this.soul.type.name+' · '+this.soul.type.weapon]]:[]),
-     ['等级',this.level],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
+     ['等级',this.level],['甲胄',commanderForms[commanderForm(this.level)].name],['经验',this.xp+' / '+this.need()],['生命',statNumber(this.hp)+' / '+this.maxHP],
      ['普攻伤害',statNumber(damage)],['攻击间隔',statNumber(interval)+' 秒'],['攻击距离',statNumber(c.range*(1+(this.soul?.25:0)+this.soulBonus('reach')))],
      ['暴击率',percent(Math.min(1,.05+this.critBonus+this.soulBonus('crit')))],['暴击伤害','150%'],['护甲',this.armor],['常驻减伤',percent(reduction)],
      ['移速',statNumber(this.speed)],['幸运',this.luck],['拾取范围',statNumber(70*(1+.05*this.camp.level('sense'))*(1+.2*this.bag[satchel]))],

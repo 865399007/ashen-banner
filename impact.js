@@ -12,16 +12,18 @@ function showHealing(scene,sprite,amount){
     onComplete:()=>label.destroy()});
 }
 
-function prepareHitTextures(scene){
-  for(const key of scene.textures.getTextureKeys().filter(name=>name.startsWith('man')||name.startsWith('commanderSwing'))){
+function hitTexture(scene,key){
+  const hitKey='hit-'+key;
+  if(!scene.textures.exists(hitKey)){
     const source=scene.textures.get(key).getSourceImage();
-    const flash=scene.textures.createCanvas('hit-'+key,source.width,source.height);
+    const flash=scene.textures.createCanvas(hitKey,source.width,source.height);
     flash.context.drawImage(source,0,0);
     flash.context.globalCompositeOperation='source-in';
     flash.context.fillStyle='#ff4842';
     flash.context.fillRect(0,0,source.width,source.height);
     flash.refresh();
   }
+  return hitKey;
 }
 
 class CombatSound {
@@ -180,7 +182,7 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
   }
   const amplitude=victim.boss ? 0.15 : victim.elite ? 0.18 : 0.23;
   victim.hit={amplitude,age:0,dx:Math.cos(angle),dy:Math.sin(angle),last:0,force:hero?3:victim.boss?4:10};
-  sprite.setTexture('hit-'+victim.normalTexture);
+  sprite.setTexture(hitTexture(scene,victim.normalTexture));
   sprite.setScale(victim.hitBase*(1+amplitude),victim.hitBase*(1-amplitude));
 }
 

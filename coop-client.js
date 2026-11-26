@@ -137,7 +137,7 @@ function installCoop(scene){
    const dx=x-s.x,dy=y-s.y,moving=Math.abs(dx)+Math.abs(dy)>.025;
    let tex=s.baseTexture;
    if(moving&&tex.startsWith('man'))tex+='walk'+Math.floor(now/90)%WALK_FRAMES;
-   else if(tex==='man6'&&s.angle===0)tex=commanderIdleTexture(now);
+   else if(s.bannerCommander&&s.angle===0)tex=commanderIdleTexture(now,tex);
    if(s.texture.key!==tex)s.setTexture(tex);
    if(moving){s.setPosition(x,y);if(Math.abs(dx)>.025)s.setFlipX(dx<0)}
    if(s.depth!==y)s.setDepth(y);
@@ -193,7 +193,8 @@ function installCoop(scene){
    const keys=new Set();
    const draw=(k,...args)=>{keys.add(k);return sprite(k,...args)};
    for(const p of state.players){
-     const u=draw('p'+p.index,p.x,p.y,'man'+commanders[p.hero].skin,.42);
+     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,commanders[p.hero].skin,state.level),.42);
+     u.bannerCommander=p.hero==='banner';
      if(u.previousHealth!==undefined&&p.hp>u.previousHealth)showHealing(scene,u,p.hp-u.previousHealth);
      u.previousHealth=p.hp;
      u.setAlpha(p.down>0?.5:1).setAngle(p.down>0?70:0);
@@ -285,7 +286,7 @@ function installCoop(scene){
      }
      button(m,p.ready?'已准备 · 等待队友':'准备下一波','ready',0,p.ready);
      const hero=commanders[p.hero];
-     appendCommanderStats(m,hero.name,[['团队等级',state.level],['团队经验',state.xp],['生命',statNumber(p.hp)+' / '+p.max],
+     appendCommanderStats(m,hero.name,[['团队等级',state.level],['甲胄',commanderForms[commanderForm(state.level)].name],['团队经验',state.xp],['生命',statNumber(p.hp)+' / '+p.max],
        ['普攻伤害',statNumber(hero.baseDamage*p.power)],['攻击间隔',statNumber(troops[hero.weapon][2]*.75)+' 秒'],
        ['攻击距离',hero.range],['移速',statNumber(p.speed)],['幸运',p.luck]]);
      return;

@@ -206,7 +206,18 @@ function armySouls(army){
 }
 const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞'];
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57]];
-const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow'];
+// Item IDs are also stored in saved blueprint lists. Append new equipment after the original set.
+const bladeWrap=21,poleFerrule=22,heavyGrip=23,riderSpurs=24,
+  finishingBlade=25,formationSpike=26,siegeHead=27,chargeStandard=28;
+const footBlades=[0,4,7],polearms=[1,8],heavyWeapons=[3,6];
+const weaponTroops={
+  3:[2,5],5:[2,5],13:polearms,19:[4],20:[5],
+  [bladeWrap]:footBlades,[finishingBlade]:footBlades,[poleFerrule]:polearms,[formationSpike]:polearms,
+  [heavyGrip]:heavyWeapons,[siegeHead]:heavyWeapons,[riderSpurs]:[9],[chargeStandard]:[9]
+};
+const needsBlueprint=id=>id>=11&&id<=20;
+function equippedFor(bag,item,troop){return bag[item]>0&&weaponTroops[item].includes(troop)}
+const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow','blade-wrap','pole-ferrule','heavy-grip','rider-spurs','finishing-blade','formation-spike','siege-head','charge-standard'];
 function itemIcon(id){
   const image=document.createElement('img');
   image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';
@@ -217,11 +228,15 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['轻型行囊',0,'拾取范围 +20%'],['临时绷带',0,'每波开始恢复 6 生命'],
  ['拾荒许可',0,'拾取宝箱 +8 银币，移速 -1%'],['不屈战魂',3,'每波首次致命受击保留 1 生命'],
  ['战术号角',1,'羁绊协同冷却 -12%，移速 -2%'],['军需凭证',1,'下次整备免费刷新，佣兵伤害 -3%'],['短枪加固套',1,'长柄射程 +15%，攻击间隔 +5%'],['军功悬赏令',2,'本波首次击杀精英 +12 银币'],['战术标记旗',2,'命中首领 10 次，使其受到伤害 +12%，持续 4 秒'],
- ['旧皮护腕',0,'全队攻速 +5%，指挥官护甲 -1'],['军用干粮',0,'生命上限 +6，移速 -1%'],['铁制护肩',1,'指挥官减伤 +5%，移速 -3%'],['铁壁军令',2,'至少两名盾兵时护卫半径增至 70，护卫额外减伤 8%'],['破军重弩机',3,'每轮弩射追加 1 箭，装填间隔 +15%']];
+ ['旧皮护腕',0,'全队攻速 +5%，指挥官护甲 -1'],['军用干粮',0,'生命上限 +6，移速 -1%'],['铁制护肩',1,'指挥官减伤 +5%，移速 -3%'],['铁壁军令',2,'至少两名盾兵时护卫半径增至 70，护卫额外减伤 8%'],['破军重弩机',3,'每轮弩射追加 1 箭，装填间隔 +15%'],
+ ['缠丝刀柄',2,'剑士、盾兵、双匕首兵攻速 +15%'],['雁翎枪箍',2,'长枪兵、长戟兵攻击距离 +18%'],
+ ['配重铁芯',2,'斧兵、战锤兵伤害 +15%'],['鎏铜马镫',2,'轻骑兵冲锋间隔缩短 15%'],
+ ['断锋宝刃',3,'剑士、盾兵、双匕首兵对半血及以下敌人伤害 +35%'],['破阵戟牙',3,'长枪兵、长戟兵一次攻击中对主目标以外的敌人伤害 +45%'],
+ ['破城玄铁',3,'斧兵、战锤兵对精英和主将伤害 +35%'],['骁骑冲阵旗',3,'轻骑兵冲锋命中时，波及半径 +50%']];
 const satchel=7,bandage=8,salvagePermit=9,lastStand=10;
-const itemCap=id=>({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1}[id]??itemStackLimit);
+const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1}[id]??itemStackLimit);
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-const troopBasePrices=[10,12,13,15,11,15,16,12,14,18],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42];
+const troopBasePrices=[10,12,13,15,11,15,16,12,14,18],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40];
 function refitPrice(merc,id,q,wave){
  const base=merc?troopBasePrices[id]+9*q:itemBasePrices[id];
  return Math.floor(base+wave+base*wave/10);

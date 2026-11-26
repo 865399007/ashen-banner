@@ -23,7 +23,7 @@ class GreyCamp {
     return i>=0&&(this.data.showDebugButtons===true||i===0||this.data.legacyStages?.includes(key)||Boolean(this.data.stages[stageOrder[i-1]]?.wins));
   }
   troopOpen(id){return id===3?this.data.axe:![5,9].includes(id)||this.data.contracts.includes(id)}
-  itemOpen(id){return id<11||this.data.blueprints.includes(id)}
+  itemOpen(id){return !needsBlueprint(id)||this.data.blueprints.includes(id)}
   save(){
     try{localStorage.setItem(campKey,JSON.stringify(this.data));this.saveWarning=false}catch{this.saveWarning=true}
   }
@@ -105,7 +105,7 @@ class GreyCamp {
       unlock(d.contracts,9,'轻骑兵契约','签约后加入商店佣兵池。',24,3);
     }
     if(section==='装备图纸'){
-      for(let id=11;id<items.length;id++)
+      for(let id=11;id<items.length;id++)if(needsBlueprint(id))
         unlock(d.blueprints,id,items[id][0]+'图纸',items[id][2]+'。解锁后可从商店或宝箱获得。',12+4*items[id][1],items[id][1]);
     }
     if(section==='战役记录'){

@@ -578,12 +578,13 @@ class Battle extends Phaser.Scene{
    const count=this.bondCounts[a.id];
    let haste=this.mercHaste+.05*this.bag[16]+(this.elapsed<this.flagUntil?.20:0);
    if((a.id===0||a.id===2)&&count>=2)haste+=a.id===0&&count>=4?.16:.08;
+   if(equippedFor(this.bag,bladeWrap,a.id))haste+=.15;
    if(a.id>=4)haste+=Math.floor(count/2)*.08;
-   return troops[a.id][2]*(a.id===5?1+.15*this.bag[20]:1)*([1,8].includes(a.id)?1+.05*this.bag[13]:1)/(1+haste);
+   return troops[a.id][2]*(equippedFor(this.bag,riderSpurs,a.id)?.85:1)*(a.id===5?1+.15*this.bag[20]:1)*([1,8].includes(a.id)?1+.05*this.bag[13]:1)/(1+haste);
  }
  mercRange(a){
    const count=this.bondCounts[a.id];
-   return troops[a.id][3]*([1,8].includes(a.id)?1+.15*this.bag[13]:1)*(a.id===1&&count>=2?1.1:a.id===3&&count>=2?1.08:1);
+   return troops[a.id][3]*(equippedFor(this.bag,poleFerrule,a.id)?1.18:1)*([1,8].includes(a.id)?1+.15*this.bag[13]:1)*(a.id===1&&count>=2?1.1:a.id===3&&count>=2?1.08:1);
  }
  closestInRange(a){
    let target=null,limit=this.mercRange(a);
@@ -614,7 +615,7 @@ class Battle extends Phaser.Scene{
        const x=other.s.x-a.s.x,y=other.s.y-a.s.y;
        const along=x*dx+y*dy,side=Math.abs(x*dy-y*dx);
        if(sweeping){
-         const radius=a.id===9?19:a.id===3&&count===6?r*1.4:r;
+         const radius=a.id===9?(this.bag[chargeStandard]?28.5:19):a.id===3&&count===6?r*1.4:r;
          if(a.id===9||a.id===6){if(distance(other.s,e.s)<=(a.id===6?17:radius))extra.push(other);continue}
          if(along>=Math.hypot(x,y)*.5&&Math.hypot(x,y)<=radius)extra.push(other);
        }else if(along>0&&along<=r&&side<=6&&(!piercing||along>=distance(a.s,e.s)))extra.push(other);
@@ -636,7 +637,11 @@ class Battle extends Phaser.Scene{
        victim.s.y=Phaser.Math.Clamp(victim.s.y+dy*5,8,592);
      }
      const heavy=victim.boss||victim.elite||[4,8,10,13].includes(victim.skin);
-     const power=(piercing?.9:1)*(a.id===5&&heavy?1.25:a.id===3&&count>=4?1.15:1);
+     let power=(piercing?.9:1)*(a.id===5&&heavy?1.25:a.id===3&&count>=4?1.15:1);
+     if(equippedFor(this.bag,heavyGrip,a.id))power*=1.15;
+     if(equippedFor(this.bag,finishingBlade,a.id)&&victim.hp<=victim.max*.5)power*=1.35;
+     if(equippedFor(this.bag,formationSpike,a.id)&&victim!==e)power*=1.45;
+     if(equippedFor(this.bag,siegeHead,a.id)&&(victim.elite||victim.boss))power*=1.35;
      this.dealHit(a,victim,power);
      if(this.mode==='fight'&&victim.hp>0&&this.bag[6]){
        victim.comboHits=(victim.comboHits||0)+1;
@@ -827,6 +832,15 @@ class Battle extends Phaser.Scene{
  this.roll();this.shop()}
  item(q,bias=false){
    const pool=items.map((it,i)=>it[1]===q&&this.camp.itemOpen(i)&&this.bag[i]<itemCap(i)?i:-1).filter(i=>i>=0);
+   if(q>=2&&pool.length&&this.army.length){
+     // Favour weapons the player fields, while keeping off-build cards possible.
+     const weighted=pool.flatMap(id=>{
+       const units=weaponTroops[id];
+       const copies=units?(this.army.some(a=>units.includes(a.id))?6:1):3;
+       return Array(copies).fill(id);
+     });
+     return pick(weighted);
+   }
    const tags={3:[2,5],5:[2,5],6:[0,7],11:[0,2],13:[1,8],15:[2,5,7],16:[0,7],18:[4,6],19:[4],20:[5]};
    if(bias&&Math.random()<.05){
      const match=pool.filter(i=>this.army.some(a=>tags[i]?.includes(a.id)));

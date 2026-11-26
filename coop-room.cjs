@@ -67,7 +67,7 @@ function tick(r,dt,now=Date.now()){
  if(r.phase!=='fight')return;
  r.clock+=dt;r.time-=dt;r.spawn-=dt;r.effects=r.effects.filter(f=>f.until>r.clock);
  spawnDueElites(r.eliteArrivals,r.time,()=>spawn(r,false,true));
- if(r.spawn<=0&&r.enemies.length<75){spawn(r,false,false,takeWildlife(r.wildlifeArrivals,r.time,'border'));r.spawn=Math.max(.32,.85-r.wave*.035)}
+ if(r.spawn<=0&&r.enemies.length<75){spawn(r,false,false,takeWildlife(r.wildlifeArrivals,r.time,'border',r.wave));r.spawn=Math.max(.32,.85-r.wave*.035)}
  for(const p of r.players){
    if(p.hp<=0)continue;
    const d=Math.max(1,Math.hypot(p.dx,p.dy));p.x=clamp(p.x+p.dx/d*p.speed*dt,12,948);p.y=clamp(p.y+p.dy/d*p.speed*dt,24,584);

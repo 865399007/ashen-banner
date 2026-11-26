@@ -284,6 +284,7 @@ class Battle extends Phaser.Scene{
      const hp=Math.round((beast.health+3*this.wave)*(this.camp.data.veteran?1.25:1));
      const enemy={s,skin:forcedSkin,beast,baseTexture,stride:Math.random(),hp,max:hp,
        speed:beast.speed+this.wave,elite:false,boss:false};
+     if(beast.move){enemy.move=beast.move;enemy.reload=.5}
      if(forcedSkin==='boar')enemy.charge={phase:'ready',remaining:.6};
      this.enemies.push(enemy);return;
    }
@@ -669,7 +670,7 @@ class Battle extends Phaser.Scene{
  }
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
- advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn(false,false,takeWildlife(this.wildlifeArrivals,this.timeLeft,this.stageKey));this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
+ advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn(false,false,takeWildlife(this.wildlifeArrivals,this.timeLeft,this.stageKey,this.wave));this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  this.spawnWaveElites();
  for(const e of this.enemies){
    advanceImpact(e,dt);

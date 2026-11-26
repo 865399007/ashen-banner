@@ -36,7 +36,7 @@ const campaigns={
     bossMove:'cleave',bossSkin:10,pace:1,march:.95,bossHP:7400
   },
   pursuit:{
-    wildlife:'boar',
+    predator:'tiger',wildlife:'boar',
     event:'reinforce',reinforcements:[10,13],
     name:'夷陵之战',army:'东吴军',boss:'陆逊',colors:{shadow:'#783c2b',base:'#b65b3c',light:'#e39a62'},
     bossMove:'cleave',bossSkin:13,pace:.84,march:1.22,bossHP:4400
@@ -54,7 +54,7 @@ const campaigns={
     bossMove:'cleave',bossSkin:11,pace:.92,march:1.15,bossHP:8000
   },
   dingjun:{
-    wildlife:'boar',
+    predator:'bear',wildlife:'boar',
     name:'定军山之战',army:'汉中守军',boss:'夏侯渊',colors:{shadow:'#464931',base:'#797b45',light:'#d0b478'},
     event:'rocks',
     bossMove:'volley',bossSkin:5,pace:1,march:1.06,bossHP:8400
@@ -72,7 +72,7 @@ const campaigns={
     bossMove:'rocks',bossSkin:14,pace:.90,march:1.08,bossHP:9600
   },
   bailang:{
-    wildlife:'wolf',
+    predator:'tiger',wildlife:'wolf',
     name:'白狼山之战',army:'乌桓骑军',boss:'蹋顿',colors:{shadow:'#61412e',base:'#94704e',light:'#dcc19b'},
     event:'reinforce',reinforcements:[8,16,8],bossMove:'volley',bossSkin:5,pace:.91,march:1.15,bossHP:9900
   },
@@ -82,7 +82,7 @@ const campaigns={
     event:'reinforce',reinforcements:[8,8,22],bossMove:'cleave',bossSkin:11,pace:.88,march:1.18,bossHP:10400
   },
   jieting:{
-    wildlife:'boar',
+    predator:'bear',wildlife:'boar',
     name:'街亭之战',army:'蜀汉守军',boss:'马谡',colors:{shadow:'#4c4630',base:'#7e794a',light:'#cbb480'},
     event:'rocks',bossMove:'rocks',bossSkin:14,pace:.92,march:1.09,bossHP:10900
   },
@@ -92,7 +92,7 @@ const campaigns={
     event:'reinforce',reinforcements:[10,5,13],bossMove:'volley',bossSkin:5,pace:.88,march:1.12,bossHP:11400
   },
   jiange:{
-    wildlife:'boar',
+    predator:'bear',wildlife:'boar',
     name:'剑阁之战',army:'伐蜀魏军',boss:'钟会',colors:{shadow:'#414354',base:'#6a7286',light:'#b8b7a7'},
     event:'tower',bossMove:'cleave',bossSkin:10,pace:.86,march:1.12,bossHP:12000
   },
@@ -109,7 +109,7 @@ const campaigns={
     bossMove:'volley',bossSkin:5,pace:.85,march:1.13,bossHP:13000
   },
   jingxian:{
-    wildlife:'boar',
+    predator:'tiger',wildlife:'boar',
     name:'泾县之战',army:'山越部众',boss:'祖郎',colors:{shadow:'#3b4c39',base:'#718457',light:'#bbbd86'},
     roster:[5,9,12,12,14],event:'rocks',
     bossMove:'cleave',bossSkin:9,pace:.86,march:1.17,bossHP:13600
@@ -121,7 +121,7 @@ const campaigns={
     bossMove:'volley',bossSkin:23,pace:.83,march:1.13,bossHP:14300
   },
   nanzhong:{
-    wildlife:'snake',
+    predator:'tiger',wildlife:'snake',
     name:'南中之战',army:'南中部众',boss:'孟获',colors:{shadow:'#62423c',base:'#a06250',light:'#d5b474'},
     roster:[4,9,11,13,15],event:'reinforce',reinforcements:[11,13,15],
     bossMove:'hammer',bossSkin:13,pace:.82,march:1.15,bossHP:15000
@@ -129,6 +129,8 @@ const campaigns={
 };
 const stageOrder=Object.keys(campaigns);
 const wildBeasts={
+  tiger:{name:'山虎',speed:55,health:58,move:'pounce',habit:'伏低身躯后沿预警线扑出，向侧面移动可避开。'},
+  bear:{name:'黑熊',speed:34,health:78,move:'swipe',habit:'抬起前爪后横扫身前，退出扇形即可躲避。'},
   wolf:{name:'山狼',speed:66,health:15,reach:12,damage:4,habit:'步伐快，会贴近指挥官撕咬。'},
   boar:{name:'野猪',speed:35,health:29,reach:14,damage:6,habit:'靠近时会低头蓄力，随后沿直线冲撞。'},
   snake:{name:'泽蛇',speed:44,health:12,reach:10,damage:4,habit:'贴地游动，近身后啮咬。'}
@@ -138,9 +140,13 @@ function wildlifeArrivals(wave,duration){
   const first=duration-(7+Math.random()*5);
   return wave<=3?[first]:[first,duration*(.26+Math.random()*.12)];
 }
-function takeWildlife(arrivals,timeLeft,stageKey){
+const predatorWaves=[4,8,12];
+function takeWildlife(arrivals,timeLeft,stageKey,wave){
   if(!arrivals.length||timeLeft>arrivals[0])return null;
-  arrivals.shift();return campaigns[stageKey].wildlife;
+  arrivals.shift();
+  const campaign=campaigns[stageKey];
+  if(campaign.predator&&!arrivals.length&&predatorWaves.includes(wave))return campaign.predator;
+  return campaign.wildlife;
 }
 function eliteArrivalTimes(wave,duration){
   const count=3+Math.floor(Math.random()*3);

@@ -1,10 +1,12 @@
 const enemyMoves={
+  pounce:{reach:66,wind:.68,reload:2.2,speed:240,radius:12,damage:9},
+  swipe:{reach:26,wind:.78,reload:1.8,radius:31,arc:1.15,damage:12},
   bow:{reach:100,wind:.48,reload:1.65,speed:132,damage:5},
   bolt:{reach:112,wind:.82,reload:2.5,speed:181,damage:9},
   hammer:{reach:29,wind:.72,reload:1.35,radius:31,damage:12},
   volley:{reach:135,wind:.95,reload:2.3,speed:151,damage:14},
   rocks:{reach:115,wind:1.05,reload:2.6,radius:19,damage:18},
-  cleave:{reach:53,wind:.83,reload:1.4,radius:59,damage:17}
+  cleave:{arc:1.05,reach:53,wind:.83,reload:1.4,radius:59,damage:17}
 };
 function shieldFront(defender,source){
   const dx=source.x-defender.s.x,dy=source.y-defender.s.y;
@@ -22,15 +24,22 @@ function makeEnemyCast(scene,e){
   const marks=e.move==='rocks'?[-1,0,1].map(i=>({x:h.x-i*34*Math.sin(angle),y:h.y+i*34*Math.cos(angle)})):[{x:s.x,y:s.y}];
   const g=scene.add.graphics().setDepth(s.y-2);
   g.fillStyle(0xb4422d,.2).lineStyle(1.4,0xffb170,.9);
-  if(move.speed){
+  if(e.move==='pounce'){
+    const length=Math.min(74,distance(s,h)+8);
+    const target={x:Phaser.Math.Clamp(s.x+length*Math.cos(angle),0,960),y:Phaser.Math.Clamp(s.y+length*Math.sin(angle),0,600)};
+    marks[0]=target;
+    g.lineStyle(2,0xe5af68,.9).lineBetween(s.x,s.y,target.x,target.y);
+    g.strokeCircle(target.x,target.y,move.radius);
+  }else if(move.speed){
     if(e.move!=='bow')for(const dir of directions)g.lineBetween(s.x,s.y,s.x+Math.cos(dir)*(move.reach+18),s.y+Math.sin(dir)*(move.reach+18));
-  }else if(e.move==='cleave'){
-    g.beginPath().moveTo(s.x,s.y).arc(s.x,s.y,move.radius,angle-1.05,angle+1.05).closePath().fillPath().strokePath();
+  }else if(move.arc){
+    g.beginPath().moveTo(s.x,s.y).arc(s.x,s.y,move.radius,angle-move.arc,angle+move.arc).closePath().fillPath().strokePath();
   }else{
     for(const m of marks)g.fillCircle(m.x,m.y,move.radius).strokeCircle(m.x,m.y,move.radius);
   }
   const stones=e.move==='rocks'?scene.add.graphics().setDepth(999):null;
   e.facing=angle;s.setFlipX(Math.cos(angle)<0);
+  if(e.beast)s.setTexture(e.baseTexture+'aim');
   return {x:s.x,y:s.y,angle,directions,marks,g,stones,aimRange:Math.max(1,distance(s,h)),left:move.wind};
 }
 function stepEnemyMove(scene,e,dt){
@@ -53,11 +62,24 @@ function stepEnemyMove(scene,e,dt){
       cast.stones.fillStyle(0xc29b74).fillEllipse(m.x-1,m.y-height-2,6,3);
     }
   }
+  if(e.move==='pounce'&&cast.left<=0){
+    const target=cast.marks[0],s=e.s;
+    cast.g.setVisible(false);s.setTexture(e.baseTexture+'leap').setAngle(0);
+    scene.move(s,target.x,target.y,move.speed*dt);
+    const hit=!cast.connected&&distance(s,scene.hero)<=move.radius;
+    if(hit)cast.connected=true;
+    if(distance(s,target)<.1){
+      cast.g.destroy();e.cast=null;e.reload=move.reload;s.setTexture(e.baseTexture);
+    }
+    if(hit)scene.enemyHit(s,move.damage+scene.wave);
+    return true;
+  }
   cast.g.setAlpha(.62+.38*Math.abs(Math.sin(9*cast.left)));
   e.s.setAngle((e.s.flipX?-1:1)*(move.speed?4:10)*(1-Math.max(0,cast.left)/move.wind));
   if(cast.left>0)return true;
   cast.stones?.destroy();
   e.cast=null;e.reload=move.reload;e.s.setAngle(0);
+  if(e.beast)e.s.setTexture(e.baseTexture);
   const damage=move.damage+scene.wave;
   if(move.speed){
     cast.g.destroy();
@@ -73,12 +95,24 @@ function stepEnemyMove(scene,e,dt){
       scene.hostileShots.push(shot);
     }
   }else{
-    cast.g.setAlpha(1);
+    if(e.move==='pounce'&&cast.left<=0){
+    const target=cast.marks[0],s=e.s;
+    cast.g.setVisible(false);s.setTexture(e.baseTexture+'leap').setAngle(0);
+    scene.move(s,target.x,target.y,move.speed*dt);
+    const hit=!cast.connected&&distance(s,scene.hero)<=move.radius;
+    if(hit)cast.connected=true;
+    if(distance(s,target)<.1){
+      cast.g.destroy();e.cast=null;e.reload=move.reload;s.setTexture(e.baseTexture);
+    }
+    if(hit)scene.enemyHit(s,move.damage+scene.wave);
+    return true;
+  }
+  cast.g.setAlpha(1);
     scene.tweens.add({targets:cast.g,alpha:0,duration:160,onComplete:()=>cast.g.destroy()});
     const h=scene.hero;
     const inside=cast.marks.some(m=>distance(h,m)<=move.radius);
     const dir=Math.atan2(h.y-cast.y,h.x-cast.x);
-    if(inside&&(e.move!=='cleave'||Math.cos(dir-cast.angle)>=Math.cos(1.05)))scene.enemyHit(cast,damage);
+    if(inside&&(!move.arc||Math.cos(dir-cast.angle)>=Math.cos(move.arc)))scene.enemyHit(cast,damage);
   }
   return true;
 }

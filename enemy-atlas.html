@@ -52,11 +52,11 @@ figcaption{font-size:14px}
 </style>
 </head>
 <body>
-<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf?v=wild-beasts">全册 PDF</a></header>
+<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf?v=mountain-beasts">全册 PDF</a></header>
 <nav aria-label="选择战役"><button id="prev" type="button">上一关</button><select id="chapters" aria-label="战役"></select><button id="next" type="button">下一关</button></nav>
 <main id="book"></main>
-<script src="rules.js?v=wild-beasts"></script>
-<script src="art.js?v=wild-beasts"></script>
+<script src="rules.js?v=mountain-beasts"></script>
+<script src="art.js?v=mountain-beasts"></script>
 <script>
 const names={3:'短刀兵',4:'长枪兵',5:'弓兵',8:'突击骑兵',9:'双刃兵',10:'大盾兵',11:'长戟兵',12:'短刃游兵',13:'重剑兵',14:'战镐兵',15:'连枷兵',16:'火把兵',22:'轻骑兵',23:'弩兵'};
 const standardPatrol=[3,4,5,8,9,10,11,12,13,14,15,16,23];
@@ -127,10 +127,14 @@ function campaignPage(key,i){
     }else units(event,key,c.reinforcements,'');
     event.append(element('p','note','每波约第 5 秒起增援，随后每 14 秒一批。'));
   }else event.append(element('p','event-text',hazards[c.event]));
-  const wild=section(page,'战场野怪'),kind=c.wildlife,beast=wildBeasts[kind];
-  const row=element('div','beast-row');
-  row.append(sprite(key,kind,false),element('p','',beast.name+'　'+beast.habit));
-  wild.append(row);return page;
+  const wild=section(page,'战场野怪');
+  for(const kind of [c.wildlife,c.predator].filter(Boolean)){
+    const row=element('div','beast-row'),beast=wildBeasts[kind];
+    const waves=kind===c.predator?'第 '+predatorWaves.join('、')+' 波出没。':'';
+    row.append(sprite(key,kind,false),element('p','',beast.name+'　'+waves+beast.habit));
+    wild.append(row);
+  }
+  return page;
 }
 function render(){
   const key=stageOrder.includes(location.hash.slice(1))?location.hash.slice(1):stageOrder[0],i=stageOrder.indexOf(key);

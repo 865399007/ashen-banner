@@ -52,10 +52,10 @@ figcaption{font-size:14px}
 </style>
 </head>
 <body>
-<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf?v=mountain-beasts">全册 PDF</a></header>
+<header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf?v=midwave-elites">全册 PDF</a></header>
 <nav aria-label="选择战役"><button id="prev" type="button">上一关</button><select id="chapters" aria-label="战役"></select><button id="next" type="button">下一关</button></nav>
 <main id="book"></main>
-<script src="rules.js?v=mountain-beasts"></script>
+<script src="rules.js?v=midwave-elites"></script>
 <script src="art.js?v=mountain-beasts"></script>
 <script>
 const names={3:'短刀兵',4:'长枪兵',5:'弓兵',8:'突击骑兵',9:'双刃兵',10:'大盾兵',11:'长戟兵',12:'短刃游兵',13:'重剑兵',14:'战镐兵',15:'连枷兵',16:'火把兵',22:'轻骑兵',23:'弩兵'};
@@ -119,7 +119,7 @@ function campaignPage(key,i){
   const pair=element('div','pair');page.append(pair);
   const elite=section(pair,'精英');
   units(elite,key,[3,4,5],'',true);
-  elite.append(element('p','note','每波共 3–5 名，兵种随机，生命为同波同型普通兵的 5 倍。'));
+  elite.append(element('p','note','第 '+firstEliteWave+' 波起，后半段才会出现精英，每次一名。击败后至少间隔 '+eliteRecoverySeconds+' 秒。精英生命为同波同型普通兵的 5 倍。'));
   const event=section(pair,c.event==='reinforce'?'增援兵力':'战场事件 · '+eventNames[c.event]);
   if(c.event==='reinforce'){
     if(c.reinforcements.every(id=>id==null)){

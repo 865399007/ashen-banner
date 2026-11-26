@@ -148,17 +148,23 @@ function takeWildlife(arrivals,timeLeft,stageKey,wave){
   if(campaign.predator&&!arrivals.length&&predatorWaves.includes(wave))return campaign.predator;
   return campaign.wildlife;
 }
+const firstEliteWave=6;
+const eliteRecoverySeconds=6;
 function eliteArrivalTimes(wave,duration){
-  if(wave===1)return [10,18,26].map(elapsed=>duration-elapsed);
-  const count=3+Math.floor(Math.random()*3);
-  // Countdown thresholds: leave one full interval to fight the last regular-wave elite.
-  return Array.from({length:count},(_,i)=>wave===finalWave?duration:duration*(1-i/count));
+  if(wave<firstEliteWave)return [];
+  const count=wave<10?3:wave<13?4:5;
+  const first=duration/2,last=5;
+  const interval=(first-last)/(count-1);
+  return Array.from({length:count},(_,i)=>first-i*interval);
 }
-function spawnDueElites(arrivals,timeLeft,spawn){
-  while(arrivals.length&&timeLeft<=arrivals[0]){
-    arrivals.shift();
-    spawn();
-  }
+function spawnDueElite(arrivals,timeLeft,enemies,spawn){
+  if(!arrivals.length||timeLeft<4||timeLeft>arrivals[0])return;
+  if(enemies.some(enemy=>enemy.elite))return;
+  arrivals.shift();
+  spawn();
+}
+function delayNextElite(arrivals,timeLeft){
+  if(arrivals.length)arrivals[0]=Math.min(arrivals[0],timeLeft-eliteRecoverySeconds);
 }
 function campaignOpposition(campaign){
   return '敌军：'+campaign.army+'　·　主将：'+campaign.boss;
@@ -263,4 +269,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElites,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance};

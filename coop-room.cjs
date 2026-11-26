@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElites,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -19,7 +19,6 @@ function start(r){
   if(r.wave===finalWave)spawn(r,true);
   r.wildlifeArrivals=wildlifeArrivals(r.wave,r.time);
   r.eliteArrivals=eliteArrivalTimes(r.wave,r.time);
-  spawnDueElites(r.eliteArrivals,r.time,()=>spawn(r,false,true));
 }
 function spawn(r,boss=false,elite=false,wildlife=null){
   const h=pick(r.players.filter(p=>p.hp>0));if(!h)return;
@@ -57,6 +56,7 @@ function hit(r,p,a,e,damage){
  if(e.hp>0)return;
  r.enemies.splice(r.enemies.indexOf(e),1);
  if(e.boss){r.phase='won';return}
+ if(e.elite)delayNextElite(r.eliteArrivals,r.time);
  r.loot.push({id:++r.serial,x:e.x,y:e.y,box:Math.random()<.015});
 }
 function tick(r,dt,now=Date.now()){
@@ -66,7 +66,7 @@ function tick(r,dt,now=Date.now()){
  }
  if(r.phase!=='fight')return;
  r.clock+=dt;r.time-=dt;r.spawn-=dt;r.effects=r.effects.filter(f=>f.until>r.clock);
- spawnDueElites(r.eliteArrivals,r.time,()=>spawn(r,false,true));
+ spawnDueElite(r.eliteArrivals,r.time,r.enemies,()=>spawn(r,false,true));
  if(r.spawn<=0&&r.enemies.length<75){spawn(r,false,false,takeWildlife(r.wildlifeArrivals,r.time,'border',r.wave));r.spawn=Math.max(.32,.85-r.wave*.035)}
  for(const p of r.players){
    if(p.hp<=0)continue;

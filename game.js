@@ -228,7 +228,6 @@ class Battle extends Phaser.Scene{
  $('debug-final-wave').disabled=this.wave>=finalWave;
  if(this.wave===finalWave)this.spawn(true);
  this.eliteArrivals=eliteArrivalTimes(this.wave,this.timeLeft);
- this.spawnWaveElites();
  this.hud()
  }
  createActor(unit,index){
@@ -273,7 +272,7 @@ class Battle extends Phaser.Scene{
  }
  clearField(){clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawnWaveElites(){
-   spawnDueElites(this.eliteArrivals,this.timeLeft,()=>this.spawn(false,true));
+   spawnDueElite(this.eliteArrivals,this.timeLeft,this.enemies,()=>this.spawn(false,true));
  }
  spawn(boss=false,elite=false,forcedSkin=null){
    const camera=this.cameras.main;
@@ -651,7 +650,7 @@ class Battle extends Phaser.Scene{
  const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);impact(this,a.s,e,damage,false,critical);
  if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);let {x,y}=e.s;const fallen=e.s;this.tweens.add({targets:fallen,alpha:0,duration:90,onComplete:()=>fallen.destroy()});this.enemies.splice(this.enemies.indexOf(e),1);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
- if(e.elite){if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
+ if(e.elite){delayNextElite(this.eliteArrivals,this.timeLeft);if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;
  const loot=chest?this.add.rectangle(x,y,12,9,0xf8c76a):this.add.image(x,y,'silver-coin').setScale(.62);
  this.drops.push({s:loot,chest,crateTier:e.elite?(this.wave>=8?3:2):undefined});

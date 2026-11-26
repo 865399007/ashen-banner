@@ -36,7 +36,10 @@ function addItemSaleButtons(scene,grid,bag,wave,onSell){
    });
    slot.append(itemIcon(id),name+' ×'+count);slot.title=items[id][2];slot.setAttribute('aria-pressed','false');
  }
- if(!grid.childElementCount)grid.textContent='暂无道具';
+ if(grid.childElementCount){
+   grid.classList.add('item-slots');
+   grid.setAttribute('role','group');grid.setAttribute('aria-label','已装备道具');
+ }else grid.textContent='暂无道具';
  return actions;
 }
 function appendCommanderStats(panel,name,rows){

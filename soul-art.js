@@ -1,4 +1,4 @@
-// The codex and the battlefield share this drawing. The feet sit at (42, 68).
+// The codex and the battlefield share a bust, drawn around its belt at (40, 48).
 function drawGeneralSoul(c,general,pose=0){
   const colors={
     liubei:['#478a70','#294f53'],zhaoyun:['#abc8d2','#54768e'],
@@ -19,40 +19,18 @@ function drawGeneralSoul(c,general,pose=0){
   const glow='#92dbdc';
   const rider=general==='guanyu',scholar=general==='zhugeliang';
   c.save();c.lineJoin='round';c.lineCap='round';
-  // Two curling wisps form the lower silhouette of the apparition.
-  shape('M15 67 Q24 70 38 62 Q51 59 62 64 Q54 64 46 69 Q32 77 23 73 Q31 73 34 69 Q24 72 15 67Z','#7cccca78',null);
-  line('M19 65 Q28 68 37 62 M40 72 Q51 65 58 67','#b3ece595',.85);
-  if(rider){
-    const stride=pose*3;
-    c.save();c.translate(0,-1);
-    shape('M24 49 Q15 46 13 52 Q11 58 6 60 Q15 62 22 53Z','#62434b');
-    line('M29 54 L24 61 L21 66 M48 54 L55 59 L59 58','#62434b',3.5);
-    line('M25 55 L'+(30-stride)+' 61 L'+(27-stride)+' 69 M51 54 L'+(56+stride)+' 53 L'+(61+stride)+' 61','#9a6050',3.8);
-    shape('M19 48 Q26 42 39 47 Q47 49 51 41 L55 33 L58 31 L58 27 L61 31 L64 29 L63 34 L69 40 L67 43 L61 42 L57 39 Q58 51 51 56 Q37 63 24 57 Q17 55 19 48Z','#af6e54');
-    shape('M46 48 Q50 39 56 31 L59 31 Q54 36 53 45 L49 51Z','#65454a');
-    shape('M27 46 L43 47 L40 57 L29 54Z','#41695e');
-    line('M28 52 L40 55 M59 35 L65 41',brass,1.2);
-    oval(c,62.2,35.8,.9,.85,ink);c.restore();
-  }
-
-  c.save();
-  if(rider){c.translate(2,0);c.translate(40,44);c.scale(.88,.88);c.translate(-40,-54)}
-  c.translate(pose*1.6,-Math.abs(pose)*.75);
-  // Cape, legs and coat beneath the breastplate.
-  shape('M32 36 Q27 39 26 48 Q23 57 17 60 L23 59 L20 63 Q31 62 36 51 L40 39Z',shadow);
-  line('M24 59 Q30 55 32 46',glow,.9);
-  shape('M34 53 L40 54 L37 65 L31 65 L33 61Z M43 52 L48 52 L49 62 L53 64 L52 66 L44 66Z',ink);
-  shape('M33 35 Q40 32 46 35 L50 42 L47 49 L52 59 L44 61 L40 57 L37 62 L29 59 L33 48 L28 46Z',cloth);
-  shape('M33 37 L38 42 L35 50 L31 57 L34 47 L30 45Z',shadow,null);
+  // The cloak and tunic taper into wisps just below the belt.
+  shape('M33 36 Q28 39 27 44 Q25 49 21 51 Q27 51 31 47 Q29 51 27 53 Q35 51 39 44 L40 37Z',shadow);
+  line('M25 50 Q30 48 32 43',glow,.9);
+  shape('M33 35 Q40 32 46 35 L50 42 L47 46 Q46 49 42 51 Q43 49 42 48 Q38 52 33 53 Q35 50 34 48 L29 46Z',cloth);
+  shape('M33 37 L38 42 Q36 48 33 50 L34 46 L30 45Z',shadow,null);
   if(scholar){
-    line('M34 36 L41 42 L46 36 M41 42 L37 51',edge,1.8);
+    line('M34 36 L41 42 L46 36 M41 42 L38 48',edge,1.8);
   }else{
     shape('M34 36 Q40 40 46 35 L47 45 L42 49 L35 46Z',shadow);
     line('M35 39 Q41 42 46 38 M35.5 42 Q41 45 46.6 41 M36 45 Q41 47.5 46.8 44',general==='zhaoyun'?edge:brass,1.1);
     shape('M28 39 L32 35 L37 36 L38 40 L29 43Z',cloth);
     line('M29 41 L36 39',brass,1.2);
-    shape('M34 50 L40 51 L37 59 L31 57Z M42 51 L46 49 L49 57 L43 59Z',shadow);
-    line('M33.6 54 L38 55 M43 54 L46.5 53',steel,.9);
   }
   line('M33 48 Q40 50 47 47','#66504a',2);
   shape('M39 48 L42 47.5 L42.6 50 L39.7 50.5Z',brass,null);
@@ -176,15 +154,16 @@ function drawGeneralSoul(c,general,pose=0){
   }else{
     shape('M-3 -4 L1 -5 L4 -2 L2 2 L-2 2Z',cloth);
   }
-  c.restore();c.restore();c.restore();
+  c.restore();c.restore();
 }
 
 function generalSoulFrame(scene,type,frame){
   const key='soul-'+type.general+'-'+frame;
   if(!scene.textures.exists(key)){
     const poses=type.general==='huangzhong'?[0,.4,.85,1,-.35,-.1,0]:[0,-.22,-.42,.35,1,.55,0];
-    paintTexture(scene,key,200,160,c=>{
-      c.scale(2,2);drawGeneralSoul(c,type.general,poses[frame]);
+    paintTexture(scene,key,224,140,c=>{
+      // Center the belt horizontally so a flipped weapon pose uses the same attachment.
+      c.scale(2,2);c.translate(16,0);drawGeneralSoul(c,type.general,poses[frame]);
     });
   }
   return key;

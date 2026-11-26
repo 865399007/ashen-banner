@@ -133,9 +133,10 @@ class GreyCamp {
           for(const [i,type] of soulTypes.entries()){
             const entry=row(troops[i][0]+' · '+type.name,type.weapon+'　'+type.label+' +'+type.values.join(' / ')+'%');
             const portrait=document.createElement('canvas');
-            portrait.width=200;portrait.height=160;portrait.className='general-portrait';
+            const source=game.textures.get(generalSoulFrame(game,type,0)).getSourceImage();
+            portrait.width=source.width;portrait.height=source.height;portrait.className='general-portrait';
             portrait.setAttribute('aria-hidden','true');
-            portrait.getContext('2d').drawImage(game.textures.get(generalSoulFrame(game,type,0)).getSourceImage(),0,0);
+            portrait.getContext('2d').drawImage(source,0,0);
             entry.append(portrait);
           }
         }],

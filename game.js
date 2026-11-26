@@ -211,8 +211,9 @@ class Battle extends Phaser.Scene{
    this.soulStrike=0;
    const {type,count}=this.soul;
    this.soulFrames=Array.from({length:7},(_,frame)=>generalSoulFrame(this,type,frame));
-   this.soulImage=this.add.image(this.hero.x,this.hero.y-12,this.soulFrames[0]).setOrigin(.42,.85)
-     .setScale(.48+.035*(count-4)).setAlpha(.86).setDepth(this.hero.y-1);
+   this.soulImage=this.add.image(this.hero.x,this.hero.y,this.soulFrames[0]).setOrigin(.5,96/140)
+     .setScale(.36+.02*(count-4)).setAlpha(.86);
+   this.positionSoul();
  }
  this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
@@ -449,14 +450,16 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:fx,rotation:facing+.45,alpha:0,duration:180,onComplete:()=>fx.destroy()});
    }
  }
+ positionSoul(){
+   const h=this.hero;
+   const back=h.displayWidth*.14*(h.flipX?1:-1);
+   this.soulImage.setPosition(h.x+back,h.y-h.displayHeight*.32).setFlipX(h.flipX).setDepth(h.depth-.5);
+ }
  soulBonus(stat){return this.soul?.type.stat===stat?this.soul.bonus:0}
  attack(a,e){
  if(a.hero){
    a.s.setFlipX(e.s.x<a.s.x);
-   if(this.soulImage){
-     this.soulStrike=.22;
-     this.soulFacesLeft=e.s.x<a.s.x;
-   }
+   if(this.soulImage)this.soulStrike=.22;
  }
  if(a.hero&&a.skin===6){
    a.swingTime=.21;
@@ -640,10 +643,8 @@ class Battle extends Phaser.Scene{
  }
  if(this.soulImage){
    const frame=this.soulStrike>0?Math.min(6,Math.floor((1-this.soulStrike/.22)*7)):0;
-   const left=this.soulStrike>0?this.soulFacesLeft:h.flipX;
-   this.soulImage.setTexture(this.soulFrames[frame])
-     .setPosition(h.x+(left?8:-8),h.y-12+Math.sin(this.elapsed*3)*1.3)
-     .setFlipX(left).setDepth(h.y-.5);
+   this.soulImage.setTexture(this.soulFrames[frame]);
+   this.positionSoul();
    this.soulStrike=Math.max(0,this.soulStrike-dt);
  }
  for(let drop of [...this.drops]){

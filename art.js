@@ -187,6 +187,13 @@ function commandPauldron(c,rank){
     fill('M3 14 L13 8 L24 8 L14 11 Z M5 18 L16 12 L22 11 L14 15 Z',edge);
   }
 }
+// Roll the shoulders over the planted foot and soften the rib cage at each footfall.
+function commanderChestMotion(c,step,waistX,waistY){
+  c.translate(waistX,waistY);
+  c.rotate(step*.038);
+  c.scale(1+.014*step*step,1-.025*step*step);
+  c.translate(-waistX,-waistY);
+}
 function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   const form=commanderForms[rank];
   // Draw in portrait coordinates; the feet remain the animation pivot.
@@ -231,11 +238,14 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
     shape('M103 154 L115 157 L108 181 L102 180 Z M132 156 L142 152 L146 176 L138 177 Z','#834945');
   }
   shape('M94 150 Q121 155 149 147 L150 156 Q122 164 93 159 Z',rank?'#b27b3c':'#5e4440',rank?'#a16c35':'#765549');
+  commanderChestMotion(c,step,120,153);
+  // The far arm counter-swings. The wrist steadies the pole as the elbow moves.
+  c.save();c.translate(149,121);c.rotate(step*.11);c.translate(-149,-121);
   shape('M147 118 Q158 120 166 132 L182 129 L185 145 Q171 153 153 148 Z',sleeveLight,sleeveShade);
   shape('M155 127 Q161 135 167 135 L163 137 Q158 135 155 127 Z M159 146 Q164 139 172 137 Q166 141 164 146 Z',fold);
   shape('M174 131 L181 129 L184 146 L177 148 Z',cuff);
   shape('M175 132 L177 132 L178 137 L176 138 Z M177 141 L179 140 L180 145 L178 146 Z',thread);
-  c.save();c.translate(183,141);c.rotate(step*.047);c.translate(-183,-141);
+  c.save();c.translate(183,141);c.rotate(-step*.10);c.translate(-183,-141);
   shape('M188 7 Q192 0 198 6 L187 218 Q183 225 177 219 Z','#513727','#7b5436');
   const flagWave=Math.sin(clothPhase-.54);
   const flagTip=Math.sin(clothPhase-1.1);
@@ -255,6 +265,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   shape('M180 134 Q180 129 185 128 L188 129 Q195 126 198 132 L197 143 Q196 150 189 150 L182 148 Q179 146 179 141 Z',handSkin);
   shape('M181 135 Q182 129 186 130 L190 133 L189 136 L185 134 L181 138 Z',knuckleLight);
   shape('M192 138 L197 137 L197 139 L192 140 Z M192 143 L197 142 L196 144 L192 145 Z',fingerShade);
+  c.restore();
   c.restore();
   const capeWave=Math.sin(clothPhase+.8);
   const capeTip=Math.sin(clothPhase+.13);
@@ -319,7 +330,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0){
   // The near arm and saber pass in front of the armor during the swing.
   c.save();
   c.translate(91,119);
-  c.rotate(swing===null?.72:swing);
+  c.rotate(swing===null?.72-step*.17:swing);
   shape('M-7 0 Q0 -9 9 -4 L29 10 L36 9 L38 19 L29 24 L1 15 Z',sleeveLight,sleeveShade);
   shape('M0 0 Q6 2 12 9 L9 8 Q4 6 0 0 Z M13 17 Q18 11 24 11 Q20 13 17 18 Z',fold);
   shape('M26 9 L33 10 L37 21 L30 24 Z',cuff);
@@ -452,7 +463,7 @@ function mountedLancer(c,phase,ally=false,q=0,ink,pose=0){
   fill('M42 6 L49 2 L46 7 L42 9 Z','#cac4ad');
   c.restore();oval(c,25,17,2,1.8,'#dbb18a');oval(c,40,15,1,.85,'#392820');
 }
-function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=0){
+function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=null){
   const boss=variant==='boss',mercenary=variant==='mercenary';
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose);return}
   const recruit=id>=17&&id<=22;
@@ -477,6 +488,8 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=0){
     paint('M-2.7 25 Q0 24 2.4 26 L2.9 33.6 Q.8 35 -2.7 34.3 Z',wash(-3,3,'#382b26','#624c3b'));c.restore();
   }
   c.translate(step*.65,-Math.abs(step)*1.1);
+  const commander=formRank!==null;
+  if(commander)commanderChestMotion(c,step,15,24);
   if(boss){
     stroke('M12 23 L8 2','#514132',1.2);
     paint('M8 2 L2 4 L1 14 L4 12 L6 15 L10 12 Z',enemyCloth.light);
@@ -588,9 +601,13 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=0){
       paint('M8 10 L5 4 L10 6 L9 2 L15 5 L16 7 Z',form.light);
     }
   }
-  c.save();c.translate(20,21);if(id===1)c.translate(5*pose,0);
+  c.save();
+  if(commander){
+    c.translate(16,17);c.rotate(-step*.095);c.translate(-16,-17);
+  }
+  c.translate(20,21);if(id===1)c.translate(5*pose,0);
   const swing=recruit?(recruitSkin===18?.18:1.05):id===1?1.02:id===7?1.8:id===0?.96:0;
-  c.rotate(step*.10+pose*swing);c.translate(-20,-21);
+  c.rotate((commander?0:step*.10)+pose*swing);c.translate(-20,-21);
   const lightEdge=q===3&&!recruit?({
     0:'M23 19 L33 6',
     1:'M28 7 L31.5 1.5',
@@ -708,6 +725,7 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',formRank=0){
   if(lightEdge)stroke(lightEdge,'#fff1ac',1.25);
   c.restore();
   if(weapon!==2){
+    if(commander){c.translate(10,17);c.rotate(step*.16);c.translate(-10,-17)}
     paint('M9 17 Q11.3 16.7 12.5 19 L10.3 23.1 L6.4 22 Z','#ceae89');
     paint('M6.4 21.6 L10.5 22.5 L9.6 25.7 L5.8 25 Z','#614836');
   }

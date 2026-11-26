@@ -57,9 +57,9 @@ function drawGeneralSoul(c,general,pose=0){
     shape('M32 27 Q28 27 28 33 L24 37 Q30 37 33 33 L35.5 28Z','#34343e');
     shape('M32 29 Q30 24 33 21 Q38 17 44 20 Q47 21 47 24 L43 24 L38 25 L35 30 L34 32Z','#35343c');
     shape('M35 19 Q33 16 35 14.8 Q38 12.8 40 15 L41 19Z','#3d3537');
-    shape('M32 23 L33 17 L36.8 19 L39.3 14.8 L41.4 18.8 L45 16.6 L45.3 20.5 L47 22.2 L42 22.2 L38 23.6 L34 26Z','#d6a254');
-    line('M33.6 23.2 Q38 20.8 44.9 20.7','#f8d995',1.1);
-    shape('M37.3 21.2 L39.4 18.3 L41 20.5 L39.3 22.8Z','#923c35',null);
+    // A narrow bronze clasp gathers the feathers at the base of the topknot.
+    shape('M34.5 17.6 Q37.4 18.3 40.2 16.9 L40.8 18.8 Q38.3 20.8 34.6 19.7Z','#a97849','#533c31',.55);
+    line('M34 19.2 L41.4 17.7','#dbba80',.65);
   }else{
     shape('M31 26 Q31 20 36 18 L39 16 L42 18 Q47 19 47 23 L50 25 L39 26 L36 32 L31 33Z',cloth);
     line('M32 25 Q39 22 47 23 M33 29 L36 28',general==='zhaoyun'?edge:brass,1.4);
@@ -196,8 +196,8 @@ function lvbuPlumeFrame(scene,frame){
       const shaft=t=>{
         const u=1-t,flex=t*t,wave=phase-3.2*t+lag;
         return {
-          x:u*u*u*rootX+3*u*u*t*controlX+3*u*t*t*bendX+t*t*t*tipX+flex*1.5*Math.cos(wave),
-          y:u*u*u*rootY+3*u*u*t*controlY+3*u*t*t*bendY+t*t*t*tipY+flex*2.7*Math.sin(wave)
+          x:u*u*u*rootX+3*u*u*t*controlX+3*u*t*t*bendX+t*t*t*tipX+flex*.69*Math.cos(wave),
+          y:u*u*u*rootY+3*u*u*t*controlY+3*u*t*t*bendY+t*t*t*tipY+flex*1.24*Math.sin(wave)
         };
       };
       const points=[];
@@ -228,8 +228,8 @@ function lvbuPlumeFrame(scene,frame){
       for(const p of points.slice(1,-2))c.lineTo(p.x,p.y);
       c.strokeStyle='#ecc48a';c.lineWidth=.5;c.stroke();
     }
-    feather(35.5,20,25,6,10,12,1,32,2.1,.8,'#93514a','#d79973');
-    feather(40,18.7,29,1,9,2,-9,20,2.45,0,'#ba5041','#f0a067');
+    feather(35.5,19,30.67,12.56,23.77,15.32,19.63,24.52,1.3,.8,'#93514a','#d79973');
+    feather(39.5,18,34.44,9.86,25.24,10.32,16.96,18.6,1.5,0,'#ba5041','#f0a067');
   });
   return key;
 }

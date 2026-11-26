@@ -318,7 +318,8 @@ class Battle extends Phaser.Scene{
  enemy.reload=.25+Math.random()*.55;
  if(skin===8)enemy.charge={phase:"ready",remaining:.45};
  this.enemies.push(enemy);if(boss||elite){
-   enemy.footBar=this.add.graphics().setDepth(1000);
+   // Foot bars sit above ground details (-9) and below every combatant.
+   enemy.footBar=this.add.graphics().setDepth(-8);
    if(boss)enemy.nameOffset=attachBossName(this,enemy.s,this.campaign.boss);
    this.showEnemyHealth(enemy);
  }

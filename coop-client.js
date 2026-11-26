@@ -162,8 +162,8 @@ function installCoop(scene){
    const victim={s:ghost,boss};
    const attacker=hit?{x:hit.fromX,y:hit.fromY}:(scene.hero||s);
    if(dead&&boss)victim.nameOffset=attachBossName(scene,ghost,campaigns.border.boss);
-   const damageLabel=impact(scene,attacker,victim,lost);
-   if(dead){fadeDefeatedEnemy(scene,victim,damageLabel);return}
+   const hitBurst=impact(scene,attacker,victim,lost);
+   if(dead){fadeDefeatedEnemy(scene,victim,hitBurst);return}
    const dir=Math.atan2(ghost.y-attacker.y,ghost.x-attacker.x);
    const push=boss?2:5;
    scene.tweens.addCounter({from:0,to:1,duration:180,onUpdate:tween=>{

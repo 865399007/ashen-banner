@@ -649,11 +649,11 @@ class Battle extends Phaser.Scene{
  const critical=Math.random()<.05+this.critBonus+(a.hero?this.soulBonus('crit'):0);
  if(e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
  const damage=(critical?1.5:1)*(a.hero?this.commander.baseDamage*(1+this.soulBonus('power'))*this.commander.passives.reduce((factor,p)=>factor*(p.damageMultiplier?.(this)??1),1):troops[a.id][1]*[1,1.32,1.72,2.22][a.q])*this.damage*(a.hero?1:1+.02*this.camp.level('arms'))*power*(a.hero?1:1-.03*this.bag[12])*(this.elapsed<e.markUntil?1.12:1);e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
- const damageLabel=impact(this,a.s,e,damage,false,critical);
+ const hitBurst=impact(this,a.s,e,damage,false,critical);
  if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
  const {x,y}=e.s;
  this.enemies.splice(this.enemies.indexOf(e),1);
- fadeDefeatedEnemy(this,e,damageLabel);
+ fadeDefeatedEnemy(this,e,hitBurst);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
  if(e.elite){delayNextElite(this.eliteArrivals,this.timeLeft);if(!this.bountyTaken){this.gold+=12*this.bag[14];this.bountyTaken=true}this.earnedIron+=2;if(!this.eliteWins.includes(this.wave))this.eliteWins.push(this.wave)}else if(e.skin===4&&this.kills%4===0)this.earnedIron++;
  const chest=e.elite||Math.random()<.006;

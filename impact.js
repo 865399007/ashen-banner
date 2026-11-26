@@ -208,10 +208,10 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
   victim.hit={amplitude,age:0,dx:Math.cos(angle),dy:Math.sin(angle),last:0,force:hero?3:victim.boss?4:10};
   sprite.setTexture(hitTexture(scene,victim.normalTexture,hero));
   sprite.setScale(victim.hitBase*(1+amplitude),victim.hitBase*(1-amplitude));
-  return label;
+  return burst;
 }
 
-function fadeDefeatedEnemy(scene,victim,damageLabel){
+function fadeDefeatedEnemy(scene,victim,hitBurst){
   const sprite=victim.s;
   scene.fallenEnemies.add(sprite);
   scene.tweens.addCounter({from:0,to:.2,duration:200,onUpdate:tween=>{
@@ -220,10 +220,10 @@ function fadeDefeatedEnemy(scene,victim,damageLabel){
     sprite.setDepth(sprite.y);
     sprite.bossName?.setPosition(sprite.x,sprite.y-victim.nameOffset);
   }});
-  damageLabel.once('destroy',()=>{
+  hitBurst.once('destroy',()=>{
     if(!sprite.active)return;
     const targets=sprite.bossName?[sprite,sprite.bossName]:[sprite];
-    scene.tweens.add({targets,alpha:0,duration:600,ease:'Sine.InOut',onComplete:()=>sprite.destroy()});
+    scene.tweens.add({targets,alpha:0,duration:320,ease:'Sine.InOut',onComplete:()=>sprite.destroy()});
   });
 }
 

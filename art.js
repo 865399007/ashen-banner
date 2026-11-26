@@ -390,6 +390,13 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   }
   // At battlefield scale each eye needs its own clear patch of skin.
   const eyeCenters=rank?[125,145]:[126,144];
+  // The far brow is shorter to follow the three-quarter view.
+  const [near,far]=eyeCenters;
+  c.save();c.translate(near,75);
+  fill('M-5.9 0 Q-3.6 -2.2 -1.2 -1.7 L4.4 -.4 Q4.8 .6 3.8 1 L-1.7 .2 Q-3.6 -.2 -5.9 0Z','#604234');
+  c.translate(far-near,0);
+  fill('M-3.7 0 Q-.4 -1.8 1.3 -1.9 Q3.3 -1.9 4.1 -.5 Q2.4 -.8 1.2 -.1 L-2.8 1 Q-3.8 1 -3.7 0Z','#604234');
+  c.restore();
   for(const x of eyeCenters){
     fill(`M${x-3.4} 81.4 a3.4 3.4 0 0 1 6.8 0 v${rank?5.2:4.2} a3.4 3.4 0 0 1 -6.8 0Z`,'#352922');
   }

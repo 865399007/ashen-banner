@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {medicId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,finalWaveGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {medicId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,startFinalGuards,stepFinalGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -18,7 +18,7 @@ function start(r){
   for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;for(const a of p.army)a.pulses=0;p.revision++}
   if(r.wave===finalWave){
     spawn(r,true);
-    for(let i=0;i<finalWaveGuards;i++)spawn(r);
+    r.finalGuards=startFinalGuards(()=>spawn(r));
   }
   r.wildlifeArrivals=wildlifeArrivals(r.wave,r.time);
   r.eliteArrivals=eliteArrivalTimes(r.wave,r.time);
@@ -91,6 +91,7 @@ function tick(r,dt,now=Date.now()){
  }
  if(r.phase!=='fight')return;
  r.clock+=dt;r.time-=dt;r.spawn-=dt;r.effects=r.effects.filter(f=>f.until>r.clock);
+ if(r.wave===finalWave&&r.players.some(p=>p.hp>0))stepFinalGuards(r.finalGuards,dt,r.enemies,()=>spawn(r));
  spawnDueElite(r.eliteArrivals,r.time,r.enemies,()=>spawn(r,false,true));
  if(r.wave<finalWave&&r.spawn<=0&&r.enemies.length<75){spawn(r,false,false,takeWildlife(r.wildlifeArrivals,r.time,'border',r.wave));r.spawn=Math.max(.32,.85-r.wave*.035)}
  for(const p of r.players){

@@ -2,7 +2,22 @@ const gameFontFamily=typeof wx!=='undefined' && wx.loadFont
   ? (wx.loadFont('assets/fonts/banner-sans.ttf') || 'sans-serif')
   : '"Banner Sans", sans-serif';
 const finalWave=15;
-const finalWaveGuards=4;
+function startFinalGuards(spawn){
+  for(let i=0;i<8;i++)spawn();
+  return {remaining:96-8,wait:4};
+}
+function stepFinalGuards(guards,dt,enemies,spawn){
+  if(!guards.remaining)return;
+  guards.wait-=dt;
+  if(guards.wait>0)return;
+  guards.wait=4;
+  const active=enemies.filter(e=>!e.boss&&!e.elite&&e.hp>0).length;
+  const count=Math.min(4,16-active,guards.remaining);
+  for(let i=0;i<count;i++){
+    spawn();
+    guards.remaining--;
+  }
+}
 function waveDurationSeconds(wave){
   const duration=30+5*(wave-1);
   return wave===finalWave?duration:Math.min(duration,60);
@@ -341,4 +356,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={medicineGear,treatmentAmount,treatmentPulses,medicId,medicPulseCount,medicPulseAmount,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,finalWaveGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={medicineGear,treatmentAmount,treatmentPulses,medicId,medicPulseCount,medicPulseAmount,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,startFinalGuards,stepFinalGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};

@@ -278,7 +278,7 @@ class Battle extends Phaser.Scene{
  $('debug-final-wave').disabled=this.wave>=finalWave;
  if(this.wave===finalWave){
    this.spawn(true);
-   for(let i=0;i<finalWaveGuards;i++)this.spawn();
+   this.finalGuards=startFinalGuards(()=>this.spawn());
  }
  this.eliteArrivals=eliteArrivalTimes(this.wave,this.timeLeft);
  this.hud()
@@ -876,6 +876,7 @@ class Battle extends Phaser.Scene{
  if(!commander.swingTime&&!commander.hit)this.animateWalk(commander,h.x-oldX,h.y-oldY,40);
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.wave<finalWave&&this.spawnIn<=0&&this.enemies.length<90){this.spawn(false,false,takeWildlife(this.wildlifeArrivals,this.timeLeft,this.stageKey,this.wave));this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
+ if(this.wave===finalWave)stepFinalGuards(this.finalGuards,dt,this.enemies,()=>this.spawn());
  this.spawnWaveElites();
  stepPoisonCircles(this);
  for(const e of [...this.enemies]){

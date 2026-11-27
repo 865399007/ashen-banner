@@ -118,11 +118,20 @@ class Battle extends Phaser.Scene{
  };
  watchDensity();
  this.bindJoystick();installCoop(this);
+ $('debug-three').onchange=()=>{
+   if(this.mode!=='fight'||!this.camp.data.showDebugButtons)return;
+   if(this.debugSquadSize===6&&this.debugTroops.size===2){
+     const [first]=this.debugTroops;
+     this.debugTroops=new Set([first]);
+   }
+   if(this.debugTroops.size)this.deployMercenaries();
+   else this.updateDebugButtons();
+ };
  troops.forEach(([name],id)=>{
    this.button($('test-army'),name,()=>{
      if(this.mode!=='fight'||!this.camp.data.showDebugButtons)return;
      if(this.debugTroops.has(id))this.debugTroops.delete(id);
-     else if(this.debugTroops.size<2)this.debugTroops.add(id);
+     else if(this.debugTroops.size*this.debugSquadSize<armyCapacity)this.debugTroops.add(id);
      else return;
      this.deployMercenaries();this.hud();
    });
@@ -229,6 +238,7 @@ class Battle extends Phaser.Scene{
    window.addEventListener('resize',this.resetStick);
    document.addEventListener('visibilitychange',this.resetStick);
  }
+ get debugSquadSize(){return $('debug-three').checked?3:6}
  get startingLevel(){return this.camp.data.showDebugButtons===true?20:1}
  resetRun(){Object.assign(this,{wave:1,debugTroops:new Set(),souls:[],summonedGenerals:new Set(),flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:this.startingLevel,xp:0,pendingLevels:[],upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
@@ -283,7 +293,7 @@ class Battle extends Phaser.Scene{
  deployMercenaries(){
    for(const unit of this.actors.splice(1))unit.s.destroy();
    // Debug squads take field slots temporarily. Recruited mercenaries stay in the roster.
-   const testUnits=Array.from(this.debugTroops).flatMap(id=>Array.from({length:3},()=>({id,q:3})));
+   const testUnits=Array.from(this.debugTroops).flatMap(id=>Array.from({length:this.debugSquadSize},()=>({id,q:3})));
    const formation=[...testUnits,...this.army].slice(0,armyCapacity);
    this.bondCounts=troops.map((_,id)=>formation.filter(unit=>unit.id===id).length);
    this.swordHits=0;this.volleyIn=8*(1-.12*this.bag[11]);
@@ -332,12 +342,16 @@ class Battle extends Phaser.Scene{
    unit.followGoal=pos;
    unit.goalHistory=[];
  });
-   Array.from($('test-army').children).forEach((btn,id)=>{
+   this.updateDebugButtons();
+ }
+ updateDebugButtons(){
+   const count=this.debugSquadSize;
+   $('test-army').querySelectorAll('button').forEach((btn,id)=>{
      const active=this.debugTroops.has(id),name=troops[id][0];
-     btn.textContent=(active?'撤下':'召唤')+name+' ×3';
+     btn.textContent=(active?'撤下':'召唤')+name+' ×'+count;
      btn.setAttribute('aria-pressed',String(active));
-     btn.disabled=!active&&this.debugTroops.size===2;
-     btn.title=btn.disabled?'已选两种，先撤下一组':(active?'撤下':'召唤')+' 3 名四级'+name;
+     btn.disabled=!active&&this.debugTroops.size*count>=armyCapacity;
+     btn.title=btn.disabled?'已满编，先撤下一组':(active?'撤下':'召唤')+' '+count+' 名四级'+name;
    });
  }
  clearField(){this.finishBattleTransition=null;this.poisonNumbers.clear(true,true);this.fallenEnemies.clear(true,true);clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.poisonBubbles?.destroy();enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}

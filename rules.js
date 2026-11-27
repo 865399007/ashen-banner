@@ -39,7 +39,6 @@ const campaigns={
   },
   camp:{
     wildlife:'wolf',
-    event:'reinforce',reinforcements:[null,null,null],
     name:'官渡之战',army:'袁绍军',boss:'袁绍',colors:{shadow:'#6b3547',base:'#a55363',light:'#da8b83'},
     bossMove:'volley',bossSkin:23,pace:.95,march:1,bossHP:5600
   },
@@ -57,20 +56,17 @@ const campaigns={
   },
   pursuit:{
     predator:'tiger',wildlife:'boar',
-    event:'reinforce',reinforcements:[10,13],
     name:'夷陵之战',army:'东吴军',boss:'陆逊',colors:{shadow:'#783c2b',base:'#b65b3c',light:'#e39a62'},
     bossMove:'cleave',bossSkin:13,pace:.84,march:1.22,bossHP:4400
   },
   xiapi:{
     wildlife:'snake',
     name:'下邳之战',army:'并州军',boss:'吕布',colors:{shadow:'#5d3141',base:'#963e4d',light:'#e9bb7c'},
-    event:'reinforce',reinforcements:[8,9,8],
     bossMove:'cleave',bossSkin:9,pace:.96,march:1.03,bossHP:7600
   },
   tongguan:{
     wildlife:'boar',
     name:'潼关之战',army:'关西联军',boss:'马超',colors:{shadow:'#3c535b',base:'#738f94',light:'#e4e1cb'},
-    event:'reinforce',reinforcements:[8,8,16],
     bossMove:'cleave',bossSkin:11,pace:.92,march:1.15,bossHP:8000
   },
   dingjun:{
@@ -88,18 +84,17 @@ const campaigns={
   wuzhang:{
     wildlife:'wolf',
     name:'五丈原之战',army:'曹魏关中军',boss:'司马懿',colors:{shadow:'#403348',base:'#665474',light:'#b5a4bb'},
-    event:'reinforce',reinforcements:[10,23,23],
     bossMove:'rocks',bossSkin:14,pace:.90,march:1.08,bossHP:9600
   },
   bailang:{
     predator:'tiger',wildlife:'wolf',
     name:'白狼山之战',army:'乌桓骑军',boss:'蹋顿',colors:{shadow:'#61412e',base:'#94704e',light:'#dcc19b'},
-    event:'reinforce',reinforcements:[8,16,8],bossMove:'volley',bossSkin:5,pace:.91,march:1.15,bossHP:9900
+    bossMove:'volley',bossSkin:5,pace:.91,march:1.15,bossHP:9900
   },
   changban:{
     wildlife:'wolf',
     name:'长坂坡之战',army:'虎豹骑',boss:'曹纯',colors:{shadow:'#343c49',base:'#596574',light:'#c49562'},
-    event:'reinforce',reinforcements:[8,8,22],bossMove:'cleave',bossSkin:11,pace:.88,march:1.18,bossHP:10400
+    bossMove:'cleave',bossSkin:11,pace:.88,march:1.18,bossHP:10400
   },
   jieting:{
     predator:'bear',wildlife:'boar',
@@ -109,7 +104,7 @@ const campaigns={
   shiting:{
     wildlife:'snake',
     name:'石亭之战',army:'曹魏东征军',boss:'曹休',colors:{shadow:'#5e3940',base:'#935457',light:'#cdad83'},
-    event:'reinforce',reinforcements:[10,5,13],bossMove:'volley',bossSkin:5,pace:.88,march:1.12,bossHP:11400
+    bossMove:'volley',bossSkin:5,pace:.88,march:1.12,bossHP:11400
   },
   jiange:{
     predator:'bear',wildlife:'boar',
@@ -119,7 +114,7 @@ const campaigns={
   jieqiao:{
     wildlife:'wolf',
     name:'界桥之战',army:'幽州骑军',boss:'公孙瓒',colors:{shadow:'#424f59',base:'#829295',light:'#e2dcd1'},
-    roster:[8,8,4,11,5],event:'reinforce',reinforcements:[8,8,11],
+    roster:[8,8,4,11,5],
     bossMove:'cleave',bossSkin:11,pace:.88,march:1.14,bossHP:12500
   },
   chencang:{
@@ -143,7 +138,7 @@ const campaigns={
   nanzhong:{
     predator:'tiger',wildlife:'snake',
     name:'南中之战',army:'南中部众',boss:'孟获',colors:{shadow:'#62423c',base:'#a06250',light:'#d5b474'},
-    roster:[4,9,11,13,15],event:'reinforce',reinforcements:[11,13,15],
+    roster:[4,9,11,13,15],
     bossMove:'hammer',bossSkin:13,pace:.82,march:1.15,bossHP:15000
   }
 };

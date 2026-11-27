@@ -56,7 +56,7 @@ figcaption{font-size:14px}
 <header><h1>烽烟点将 · 敌人图鉴</h1><a href="assets/enemy-atlas.pdf?v=midwave-elites">全册 PDF</a></header>
 <nav aria-label="选择战役"><button id="prev" type="button">上一关</button><select id="chapters" aria-label="战役"></select><button id="next" type="button">下一关</button></nav>
 <main id="book"></main>
-<script src="rules.js?v=midwave-elites"></script>
+<script src="rules.js?v=no-reinforcements"></script>
 <script src="art.js?v=crescent-halberd"></script>
 <script>
 const names={3:'短刀兵',4:'长枪兵',5:'弓兵',8:'突击骑兵',9:'双刃兵',10:'大盾兵',11:'长戟兵',12:'短刃游兵',13:'重剑兵',14:'战镐兵',15:'连枷兵',16:'火把兵',22:'轻骑兵',23:'弩兵'};
@@ -68,7 +68,7 @@ const moves={
   hammer:['近身重击','以主将为中心发动圆形重击，退到圈外可避开。']
 };
 const hazards={fire:'第 4 波起，地面会在指挥官脚下出现火区预警。',rocks:'第 4 波起，落石会瞄准指挥官，在地面标出三处落点。',tower:'第 4 波起，进入箭塔射程会引来三箭齐射。'};
-const eventNames={fire:'地面火区',rocks:'落石',tower:'箭塔',reinforce:'增援'};
+const eventNames={fire:'地面火区',rocks:'落石',tower:'箭塔'};
 const book=document.querySelector('#book'),chapters=document.querySelector('#chapters');
 function element(tag,cls,text){
   const el=document.createElement(tag);if(cls)el.className=cls;if(text)el.textContent=text;return el;
@@ -121,13 +121,10 @@ function campaignPage(key,i){
   const elite=section(pair,'精英');
   units(elite,key,[3,4,5],'',true);
   elite.append(element('p','note','第 '+firstEliteWave+' 波起，后半段才会出现精英，每次一名。击败后至少间隔 '+eliteRecoverySeconds+' 秒。精英生命为同波同型普通兵的 5 倍。'));
-  const event=section(pair,c.event==='reinforce'?'增援兵力':'战场事件 · '+eventNames[c.event]);
-  if(c.event==='reinforce'){
-    if(c.reinforcements.every(id=>id==null)){
-      event.append(element('p','event-text','每批最多 3 名，沿用本关普通巡兵的出兵顺序。'));
-    }else units(event,key,c.reinforcements,'');
-    event.append(element('p','note','每波约第 5 秒起增援，随后每 14 秒一批。'));
-  }else event.append(element('p','event-text',hazards[c.event]));
+  if(c.event){
+    const event=section(pair,'战场事件 · '+eventNames[c.event]);
+    event.append(element('p','event-text',hazards[c.event]));
+  }
   const wild=section(page,'战场野怪');
   for(const kind of [c.wildlife,c.predator].filter(Boolean)){
     const row=element('div','beast-row'),beast=wildBeasts[kind];

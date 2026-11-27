@@ -26,9 +26,8 @@ function clearStage(scene){
  scene.stageCaster?.s.destroy();scene.stageCaster=null;scene.fire=null;
 }
 function stepStage(scene,dt){
- const {event,reinforcements}=scene.campaign,h=scene.hero;
- if(scene.wave===finalWave&&event==='reinforce')return;
- if(scene.wave<=3&&event!=='reinforce')return;
+ const {event}=scene.campaign,h=scene.hero;
+ if(!event||scene.wave<=3)return;
  if(scene.stageCaster){
    const caster=scene.stageCaster;
    stepEnemyMove(scene,caster,dt);
@@ -37,16 +36,7 @@ function stepStage(scene,dt){
  }
  scene.stageTick-=dt;
  if(scene.stageTick>0)return;
- scene.stageEvent++;scene.stageTick=event==='reinforce'?14:8;
- if(event==='reinforce'){
-   const label=scene.add.text(h.x,h.y-48,scene.campaign.army+' · 增援',{fontFamily:gameFontFamily,fontSize:'10px',color:'#fff0ca',stroke:'#704632',strokeThickness:2}).setOrigin(.5).setDepth(990);
-   scene.tweens.add({targets:label,y:label.y-8,alpha:0,duration:1100,onComplete:()=>label.destroy()});
-   for(const skin of reinforcements){
-     if(scene.enemies.length>=90)break;
-     scene.spawn(false,false,skin);
-   }
-   return;
- }
+ scene.stageEvent++;scene.stageTick=8;
  if(event==='fire'){
    const x=h.x,y=h.y,g=scene.add.graphics().setPosition(x,y).setDepth(y-2);
    scene.stageObjects.push(g);

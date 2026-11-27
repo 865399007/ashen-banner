@@ -220,7 +220,7 @@ const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞',
 const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',8,2.8,96]];
 const medicId=10;
 function medicPulseCount(rank){return rank+1}
-function medicPulseAmount(rank,hp,max){return rank===3&&hp<max*.4?5:3}
+function medicPulseAmount(rank,hp,max){return rank===3&&hp<max*.4?4.7:2.8}
 const jadeNeedle=36,medicineBook=37;
 const medicineGear=[jadeNeedle,medicineBook];
 function treatmentAmount(base,bag){return base+Number(!!bag[jadeNeedle])}

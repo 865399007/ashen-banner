@@ -233,7 +233,7 @@ function armySouls(army){
   return souls;
 }
 const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞','✧'];
-const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',11,2.8,96]];
+const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',13,2.8,96]];
 const medicId=10;
 function medicPulseCount(rank){return rank+1}
 function medicPulseAmount(rank,hp,max){return rank===3&&hp<max*.4?4.4:2.6}
@@ -241,9 +241,10 @@ const jadeNeedle=36,medicineBook=37;
 const medicineGear=[jadeNeedle,medicineBook];
 function treatmentAmount(base,bag){return base+Number(!!bag[jadeNeedle])}
 function treatmentPulses(count,bag){return count+Number(!!bag[medicineBook])}
+const poisonTickSeconds=.5;
 function applyPoison(enemy,now,potency){
   let status=enemy.poison;
-  if(!status||status.until<now)status=enemy.poison={doses:[],next:now+1};
+  if(!status||status.until<now)status=enemy.poison={doses:[],next:now+poisonTickSeconds};
   if(status.doses.length===5)status.doses.shift();
   status.doses.push(potency);
   status.until=now+4;
@@ -252,8 +253,8 @@ function poisonTick(enemy,now){
   const status=enemy.poison;
   if(!status)return 0;
   if(now>=status.next&&status.next<=status.until+.00001){
-    status.next+=1;
-    return status.doses.reduce((total,dose)=>total+dose,0);
+    status.next+=poisonTickSeconds;
+    return status.doses.reduce((total,dose)=>total+dose,0)*poisonTickSeconds;
   }
   if(now>status.until)delete enemy.poison;
   return 0;

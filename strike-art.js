@@ -183,12 +183,12 @@ function updatePoisonBubbles(scene,enemy){
     const side=i%2?1:-1;
     const x=side*(height*(.19+.08*t)+2*Math.sin(t*5+i));
     const y=-height*(.35+.42*t)-7*t;
-    const r=(2.1+i%3*.55)*(.70+.46*t);
+    const r=(1.68+i%3*.44)*(.70+.46*t);
     if(t>.86){
       const pop=(t-.86)/.14;
-      g.lineStyle(.9,0xc5ff81,1-pop).strokeCircle(x,y,r*(1+pop*.55));
+      g.lineStyle(.72,0xc5ff81,1-pop).strokeCircle(x,y,r*(1+pop*.55));
     }else{
-      g.fillStyle(0x315629).fillCircle(x,y,r+.7);
+      g.fillStyle(0x315629).fillCircle(x,y,r+.56);
       g.fillStyle(0x86dc40).fillCircle(x,y,r);
       g.fillStyle(0xf0ffc4).fillCircle(x-r*.31,y-r*.34,r*.34);
     }

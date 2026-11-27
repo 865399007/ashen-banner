@@ -272,6 +272,7 @@ class Battle extends Phaser.Scene{
  this.hero=this.actors[0].s;
  this.healCommander(15+6*this.bag[bandage]);
  setupStage(this);this.gold+=3*this.bag[coinPurse];this.flagUntil=0;this.eliteDefeated=false;
+ this.summonedGenerals.clear();
  this.deployMercenaries();
  this.updateWaveLabel();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);

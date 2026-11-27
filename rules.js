@@ -2,21 +2,18 @@ const gameFontFamily=typeof wx!=='undefined' && wx.loadFont
   ? (wx.loadFont('assets/fonts/banner-sans.ttf') || 'sans-serif')
   : '"Banner Sans", sans-serif';
 const finalWave=15;
-function startFinalGuards(spawn){
-  for(let i=0;i<8;i++)spawn();
-  return {remaining:96-8,wait:4};
+function startFinalGuards(){
+  return {remaining:96,wait:.3};
 }
 function stepFinalGuards(guards,dt,enemies,spawn){
   if(!guards.remaining)return;
   guards.wait-=dt;
   if(guards.wait>0)return;
-  guards.wait=4;
+  guards.wait=.75+Math.random()*.4;
   const active=enemies.filter(e=>!e.boss&&!e.elite&&e.hp>0).length;
-  const count=Math.min(4,16-active,guards.remaining);
-  for(let i=0;i<count;i++){
-    spawn();
-    guards.remaining--;
-  }
+  if(active>=16)return;
+  spawn();
+  guards.remaining--;
 }
 function waveDurationSeconds(wave){
   const duration=30+5*(wave-1);

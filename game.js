@@ -278,7 +278,7 @@ class Battle extends Phaser.Scene{
  $('debug-final-wave').disabled=this.wave>=finalWave;
  if(this.wave===finalWave){
    this.spawn(true);
-   this.finalGuards=startFinalGuards(()=>this.spawn());
+   this.finalGuards=startFinalGuards();
  }
  this.eliteArrivals=eliteArrivalTimes(this.wave,this.timeLeft);
  this.hud()

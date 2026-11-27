@@ -18,7 +18,7 @@ function start(r){
   for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;for(const a of p.army)a.pulses=0;p.revision++}
   if(r.wave===finalWave){
     spawn(r,true);
-    r.finalGuards=startFinalGuards(()=>spawn(r));
+    r.finalGuards=startFinalGuards();
   }
   r.wildlifeArrivals=wildlifeArrivals(r.wave,r.time);
   r.eliteArrivals=eliteArrivalTimes(r.wave,r.time);

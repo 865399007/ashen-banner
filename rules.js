@@ -236,7 +236,7 @@ function treatmentPulses(count,bag){return count+Number(!!bag[medicineBook])}
 const poisonTickSeconds=.5;
 function applyPoison(enemy,now,potency){
   let status=enemy.poison;
-  if(!status||status.until<now)status=enemy.poison={doses:[],next:now+poisonTickSeconds};
+  if(!status||status.until<now)status=enemy.poison={doses:[],next:now+poisonTickSeconds,rampSteps:0};
   if(status.doses.length===5)status.doses.shift();
   status.doses.push(potency);
   status.until=now+4;
@@ -246,7 +246,9 @@ function poisonTick(enemy,now){
   if(!status)return 0;
   if(now>=status.next&&status.next<=status.until+.00001){
     status.next+=poisonTickSeconds;
-    return status.doses.reduce((total,dose)=>total+dose,0)*poisonTickSeconds;
+    const multiplier=1+status.rampSteps*.1;
+    status.rampSteps=Math.min(10,status.rampSteps+1);
+    return status.doses.reduce((total,dose)=>total+dose,0)*poisonTickSeconds*multiplier;
   }
   if(now>status.until)delete enemy.poison;
   return 0;

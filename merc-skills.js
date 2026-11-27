@@ -242,7 +242,6 @@ function fieldMedicineRound(scene,unit,target){
     const pulse=()=>medicinePulse(scene,unit.s,medicPulseAmount(unit.q,scene.hp,scene.maxHP),unit);
     pulse();
     for(let i=1;i<treatmentPulses(medicPulseCount(unit.q),scene.bag);i++)followUp(scene,unit,i*.28,pulse);
-    return;
   }
   if(!target)return;
   medicEffect(scene,unit.s,unit.baseTexture,target.s,false);

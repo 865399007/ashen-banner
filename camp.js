@@ -136,7 +136,7 @@ class GreyCamp {
             '每次连击两段。',
             '扇形横扫。',
             '短冲后攻击落点附近的敌人。',
-            '指挥官受伤时倾葫施药，每次恢复 2.6 点。满血时从腰间针卷发出飞针。'
+            '指挥官受伤时倾葫施药，每次恢复 2.6 点。射程内有敌人时，同一轮也会发射飞针。'
           ];
           for(const [i,[name,damage,interval,range]] of troops.entries()){
             const stats='伤害 '+damage+'　间隔 '+interval+' 秒　射程 '+range;

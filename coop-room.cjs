@@ -102,10 +102,11 @@ function tick(r,dt,now=Date.now()){
      const stats=i?troops[a.id]:null;
      if(i){const angle=2*Math.PI*(i-1)/p.army.length;move(a,{x:p.x+31*Math.cos(angle),y:p.y+31*Math.sin(angle)},210*dt)}
      a.cd-=dt;const e=nearest(a,r.enemies);
+     let treated=false;
      if(i&&a.id===medicId){
        if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a,p);a.pulses--;a.pulseAt=r.clock+.28}
        if(a.cd<=0&&teamPulse(r,a,p)){
-         a.pulses=treatmentPulses(medicPulseCount(a.q),p.bag)-1;a.pulseAt=r.clock+.28;a.cd=stats[2]*.75;continue;
+         a.pulses=treatmentPulses(medicPulseCount(a.q),p.bag)-1;a.pulseAt=r.clock+.28;treated=true;
        }
      }
      const c=commanders.banner;
@@ -113,7 +114,7 @@ function tick(r,dt,now=Date.now()){
        const damage=(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power;
        hit(r,p,a,e,damage);
        a.cd=(stats?stats[2]:troops[c.weapon][2])*.75;if(r.phase!=='fight')return;
-     }
+     }else if(treated)a.cd=stats[2]*.75;
    }
  }
  for(const e of r.enemies){

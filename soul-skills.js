@@ -1,7 +1,7 @@
 // Each spirit owns its round counter and follow-up queue. Damage and criticals
 // are rolled once per commander attack, including all parts of that attack.
 const soulSkillGuide={
-  huatuo:['金针击敌，为指挥官连续回血两次，每次 3 点','追加第三次治疗','生命低于四成时，每次治疗翻倍','每第三轮追加一轮三针急救'],
+  huatuo:['倾葫放出药气击敌，为指挥官连续回血两次，每次 3 点','追加第三次治疗','生命低于四成时，每次治疗翻倍','每第三轮追加三次急救治疗'],
   bianque:['向目标投壶，施加两层毒，最多五层','毒雾也给落点附近的敌人施加一层毒','染毒者阵亡时向附近两名敌人传毒','每第三轮命中五层毒的目标时引发毒爆，保留毒层'],
   liubei:['双剑交叉，两剑可击中同一敌人','副剑延迟追斩，伤害提高','原目标阵亡，余剑转向近敌','每第三轮追加身后双斩'],
   zhaoyun:['长枪贯穿一列敌人','沿原路收枪回刺','从枪尖最远命中处透出枪芒','每第三轮再追加两刺'],
@@ -83,11 +83,13 @@ function startSoulRound(scene,spirit,actor,target){
 
 const soulTechniques={
   huatuo({scene,spirit,level,round,target,single,later}){
-    single(target,.85,'spear');
-    const pulse=()=>medicinePulse(scene,spirit.image,level>=3&&scene.hp<scene.maxHP*.4?6:3);
+    single(target,.85,'ring');
+    const pulse=()=>medicinePulse(scene,huatuoSpout(spirit.image),level>=3&&scene.hp<scene.maxHP*.4?6:3);
     const count=level===4&&round%3===0?6:level>=2?3:2;
+    const pulses=treatmentPulses(count,scene.bag);
+    spirit.gourdUntil=Math.max(spirit.gourdUntil,scene.elapsed+.19*(pulses-1)+.12);
     pulse();
-    for(let i=1;i<treatmentPulses(count,scene.bag);i++)later(.19*i,pulse);
+    for(let i=1;i<pulses;i++)later(.19*i,pulse);
   },
   bianque({scene,level,round,target,area,damage,hit,sweep,mark}){
     const power=damage*.18*(1+scene.soulBonus('poison')),spread=level>=3?2:0;

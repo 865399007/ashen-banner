@@ -589,7 +589,9 @@ class Battle extends Phaser.Scene{
  soulAttack(a,target){
    const spirit=this.souls[this.nextSoulIndex];
    this.nextSoulIndex=(this.nextSoulIndex+1)%this.souls.length;
-   spirit.strikeTime=.22;this.positionSouls();
+   spirit.strikeTime=this.elapsed < spirit.gourdUntil ? .14 : .22;
+   if(spirit.type.general==='huatuo')spirit.gourdUntil=Math.max(spirit.gourdUntil??0,this.elapsed+.25);
+   this.positionSouls();
    startSoulRound(this,spirit,a,target);
  }
  attack(a,e){
@@ -830,6 +832,7 @@ class Battle extends Phaser.Scene{
  }
  if(this.souls.length){
    for(const s of this.souls){
+     if(this.elapsed<s.gourdUntil&&s.strikeTime<.14)s.strikeTime=.14;
      const frame=s.strikeTime>0?Math.min(6,Math.floor((1-s.strikeTime/.22)*7)):0;
      s.image.setTexture(s.frames[frame]);
      s.strikeTime=Math.max(0,s.strikeTime-dt);

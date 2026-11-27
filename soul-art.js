@@ -1,5 +1,16 @@
 const soulRimColors=['#ffffff','#49aaff','#bb72ff','#ff514c'];
 
+// Bust coordinates are relative to the belt at (40,48). The cast and its
+// muzzle share this transform, including when the spirit faces left.
+function huatuoGourdPose(lift){
+  return {x:27+26*lift,y:38+3*lift+4*Math.sin(Math.PI*lift),angle:-.26+1.49*lift};
+}
+function huatuoSpout(sprite){
+  const {x,y,angle}=huatuoGourdPose(1);
+  const side=sprite.flipX?-1:1;
+  return {x:sprite.x+side*(x+11*Math.sin(angle)-40)*2*sprite.scaleX,
+    y:sprite.y+(y-11*Math.cos(angle)-48)*2*sprite.scaleY};
+}
 // The codex and the battlefield share a bust, drawn around its belt at (40, 48).
 function drawGeneralSoul(c,general,pose=0){
   const colors={
@@ -23,6 +34,18 @@ function drawGeneralSoul(c,general,pose=0){
   const physician=general==='huatuo',herbalist=general==='bianque';
   const rider=general==='guanyu',scholar=general==='zhugeliang';
   c.save();c.lineJoin='round';c.lineCap='round';
+  function medicineGourd(){
+    const {x,y,angle}=huatuoGourdPose(pose);
+    c.save();c.translate(x,y);c.rotate(angle);
+    // The narrow waist and red binding stay visible in all four rim colours.
+    shape('M-2 -11 L1.6 -11 L1.5 -8 Q6 -5.5 3.7 -2.4 Q1.5 -.4 2.4 .5 C10 4 8.7 12 .4 13 Q-8.3 13.5 -8 6 Q-7.8 3 -3.4 .4 Q-2.2 -.5 -3.5 -2 Q-6.4 -5.5 -2 -8Z','#c99b56','#66472e');
+    line('M-5 4 Q-7.2 7 -5.2 9.2','#f3d392',1.4);
+    oval(c,-.2,-11,2.3,.9,'#674634');
+    line('M-2.1 -8.1 Q.1 -7.2 2 -8.1','#a4493e',1.8);
+    shape('M1 -8 Q6 -9 5.4 -5.6 Q4 -4.8 2.3 -6.7 Q6 -4.4 5.8 -.8 L3.8 -2 L2.9 -.9 Q3.5 -4.3 1 -8Z','#a7493c',null);
+    c.restore();
+  }
+  if(physician&&pose===0)medicineGourd();
   // The cloak and tunic taper into wisps just below the belt.
   shape('M33 36 Q28 39 27 44 Q25 49 21 51 Q27 51 31 47 Q29 51 27 53 Q35 51 39 44 L40 37Z',shadow);
   line('M25 50 Q30 48 32 43',glow,.9);
@@ -111,12 +134,6 @@ function drawGeneralSoul(c,general,pose=0){
     c.rotate(readyAngle+pose*(rider||thrust?.71:.95));
   }
   switch(general){
-    case 'huatuo':
-      for(const tilt of [-.30,0,.30]){
-        c.save();c.rotate(tilt);
-        line('M0 0 L0 -12',brass,2);line('M0 -12 L0 -25',edge,1);c.restore();
-      }
-      break;
     case 'bianque':
       haft('M0 12 L0 -24');line('M0 -24 Q8 -29 13 -22 L13 -16',brass,1.8);
       shape('M10 -15 L15 -15 L15 -12 Q23 -7 18 -1 Q12 3 7 -2 Q3 -8 10 -12Z','#618c78');
@@ -172,11 +189,12 @@ function drawGeneralSoul(c,general,pose=0){
     case 'dianwei':
       shortJi();break;
   }
-  grip();c.restore();
+  if(!physician)grip();
+  c.restore();
   c.save();c.translate(32,45);
   if(physician){
-    shape('M-2 -9 L1 -9 Q4 -7 2 -4 Q8 1 4 6 Q0 10 -5 6 Q-9 1 -4 -4 Q-6 -7 -2 -9Z','#b78a4f');
-    line('M-4 -3 L3 -4',brass,1.4);
+    shape('M-3 -5 L0 -6 L6 -3 L4 0 L-1 0Z',cloth);
+    if(!pose)line('M0 -8 L10 2','#ad8150',1.6);
   }else if(general==='caoren'){
     c.rotate(pose*-.22);
     metal('M-8 -9 Q-2 -13 6 -10 L7 2 Q5 8 0 12 Q-6 9 -8 4Z');
@@ -189,7 +207,15 @@ function drawGeneralSoul(c,general,pose=0){
   }else{
     shape('M-3 -4 L1 -5 L4 -2 L2 2 L-2 2Z',cloth);
   }
-  c.restore();c.restore();
+  c.restore();
+  if(physician){
+    const {x,y}=huatuoGourdPose(pose);
+    if(pose)medicineGourd();
+    const handX=pose?x-1:46,handY=pose?y-3:43;
+    line('M43 38 Q43 43 '+handX+' '+handY,shadow,4);
+    oval(c,handX,handY,2.4,1.9,skin);
+  }
+  c.restore();
 }
 
 // Pad both layers equally for the halo at full reach. The belt stays at (120,104).
@@ -218,7 +244,7 @@ function paintSoulTexture(scene,key,tier,draw){
 function generalSoulFrame(scene,type,frame,tier=0){
   const key='soul-'+type.general+'-'+tier+'-'+frame;
   if(!scene.textures.exists(key)){
-    const poses=type.general==='huangzhong'?[0,.4,.85,1,-.35,-.1,0]:[0,-.22,-.42,.35,1,.55,0];
+    const poses=type.general==='huatuo'?[0,.42,1,1,1,.5,0]:type.general==='huangzhong'?[0,.4,.85,1,-.35,-.1,0]:[0,-.22,-.42,.35,1,.55,0];
     paintSoulTexture(scene,key,tier,c=>drawGeneralSoul(c,type.general,poses[frame]));
   }
   return key;

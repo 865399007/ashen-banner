@@ -203,7 +203,7 @@ const soulTypes=[
   {general:'dianwei',name:'典韦',weapon:'双铁戟',stat:'haste',label:'攻速',values:[6,12,20,30]},
   {general:'lvbu',name:'吕布',weapon:'方天画戟',stat:'reach',label:'射程',values:[8,15,25,35]},
   {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[8,15,25,40]},
-  {general:'huatuo',name:'华佗',weapon:'金针药葫',stat:'healing',label:'医术治疗量',values:[10,18,26,35]},
+  {general:'huatuo',name:'华佗',weapon:'药葫芦',stat:'healing',label:'医术治疗量',values:[10,18,26,35]},
   {general:'bianque',name:'扁鹊',weapon:'青瓷毒壶',stat:'poison',label:'毒伤',values:[10,18,26,35]}
 ];
 function armySouls(army){
@@ -291,7 +291,7 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['鱼鳞甲',2,'指挥官护甲 +2'],['行医针囊',2,'击杀精英时恢复 8 生命'],
  ['虎符兵书',3,'佣兵攻速 +10%'],['护心宝镜',3,'指挥官受击后的无敌时间延长 0.15 秒'],
  ['羽林将印',3,'全队暴击率 +4 个百分点'],
- ['玉柄金针',2,'医师、华佗每针基础治疗量 +1'],['青囊医书',3,'医师、华佗每轮施治追加 1 针'],
+ ['玉柄金针',2,'医师、华佗每次基础治疗量 +1'],['青囊医书',3,'医师、华佗每轮施治追加 1 次治疗'],
  ['封蜡药瓮',2,'毒师、扁鹊施加和传出的毒持续 6 秒'],['流烟葫芦',3,'毒师、扁鹊直接施毒后，目标阵亡可向至少 1 人传毒，传毒半径 +50%']];
 const satchel=7,bandage=8,salvagePermit=9,lastStand=10;
 const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1,[herbPowder]:3,[coinPurse]:2,[scaleVest]:2,[fieldNeedles]:2,[tigerManual]:2,[heartMirror]:2,[guardSeal]:2,[jadeNeedle]:1,[medicineBook]:1,[sealedJar]:1,[mistGourd]:1}[id]??itemStackLimit);

@@ -228,7 +228,9 @@ function medicEffect(scene,sprite,base,target,heal){
   }
   sprite.pourLeft=sprite.flipX;sprite.pourUntil=scene.time.now+240;
   sprite.setTexture(base+'pour');
-  const mouth=at(30.3,17.8);
+  showHealingMist(scene,at(30.3,17.8),target);
+}
+function showHealingMist(scene,mouth,target){
   const mist=scene.add.graphics().setPosition(mouth.x,mouth.y).setDepth(1001);
   mist.lineStyle(1.1,0xa1d4b9,.85);
   mist.strokePoints([{x:-4,y:1},{x:-2,y:-.5},{x:0,y:-.8},{x:2,y:.2},{x:4,y:-1}]);
@@ -242,7 +244,7 @@ function medicEffect(scene,sprite,base,target,heal){
 function medicinePulse(scene,source,base,medic){
   if(scene.mode!=='fight'||scene.hp<=0||scene.hp>=scene.maxHP)return;
   if(medic)medicEffect(scene,source,medic.baseTexture,scene.hero,true);
-  else medicineTrail(scene,source,scene.hero,false);
+  else showHealingMist(scene,source,scene.hero);
   scene.healCommander(Math.round(treatmentAmount(base,scene.bag)*(1+scene.soulBonus('healing'))*10)/10);
   scene.hud();
 }

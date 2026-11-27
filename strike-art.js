@@ -86,15 +86,17 @@ const soulStrikes={
   dianwei:   {form:'twinJi',color:0xc38ae1},
   lvbu:      {form:'halberd',color:0xf27152},
   guanyu:    {form:'crescent',color:0x58c798},
-  huatuo:     {form:'needle',color:0xddc982},
+  huatuo:     {form:'herbalMist',color:0xa8d7ad},
   bianque:    {form:'flask',color:0x8aba75}
 };
 
 function drawSoulWeapon(g,form,color){
   const light=0xfff2ce;
   switch(form){
-    case 'needle':
-      strikeShard(g,-18,0,25,0,1.1,light);g.lineStyle(2,color).lineBetween(-19,0,-11,0);break;
+    case 'herbalMist':
+      g.lineStyle(2,color,.9).strokePoints([{x:-12,y:2},{x:-8,y:-2},{x:-4,y:-2.6},{x:1,y:.5},{x:5,y:-1}]);
+      g.fillStyle(color,.55).fillEllipse(-4,0,12,6);
+      g.fillStyle(light,.8).fillCircle(2,-2,1.2).fillCircle(-9,3,.9);break;
     case 'flask':
       g.fillStyle(color).fillCircle(0,0,5).fillRect(-6,-3,4,3);
       g.lineStyle(1.3,light).strokeCircle(0,0,5);break;
@@ -157,8 +159,8 @@ function soulStrikeArea(general,source,target){
   if(form==='shield'||form==='hammer'||form==='flask'){
     return {shape:'circle',x:target.x,y:target.y,angle:0,radius:form==='hammer'?34:25};
   }
-  if(['spear','halberd','arrow','bolts','needle'].includes(form)){
-    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12,needle:5}[form];
+  if(['spear','halberd','arrow','bolts','herbalMist'].includes(form)){
+    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12,herbalMist:5}[form];
     return {shape:'line',x:source.x,y:source.y,angle,length:reach+28,halfWidth};
   }
   const halfAngle={swords:.8,axe:.95,twinJi:.72,crescent:1.05}[form];
@@ -284,9 +286,10 @@ function showSoulStrike(scene,spirit,target,area,onImpact){
   const rim=Phaser.Display.Color.HexStringToColor(soulRimColors[level-1]).color;
   // The painted grip is eight drawing units forward and five above the belt anchor.
   const scale=soul.scaleX*2,side=soul.flipX?-1:1;
-  const x=soul.x+side*8*scale,y=soul.y-5*scale;
-  const aimX=area.shape==='line'?area.x+Math.cos(area.angle)*area.length:target.x;
-  const aimY=area.shape==='line'?area.y+Math.sin(area.angle)*area.length:target.y;
+  const pouring=form==='herbalMist';
+  const {x,y}=pouring?huatuoSpout(soul):{x:soul.x+side*8*scale,y:soul.y-5*scale};
+  const aimX=area.shape==='line'&&!pouring?area.x+Math.cos(area.angle)*area.length:target.x;
+  const aimY=area.shape==='line'&&!pouring?area.y+Math.sin(area.angle)*area.length:target.y;
   const dx=aimX-x,dy=aimY-target.displayHeight*.4-y;
   const angle=Math.atan2(dy,dx),reach=Math.hypot(dx,dy);
   const g=scene.add.graphics().setPosition(x,y).setRotation(angle).setDepth(998);
@@ -297,7 +300,7 @@ function showSoulStrike(scene,spirit,target,area,onImpact){
   const sweep=['swords','twinJi','crescent','axe'].includes(form);
   function paint(t){
     g.clear();
-    const travel=Phaser.Math.Clamp((t-.12)/.5,0,1);
+    const travel=Phaser.Math.Clamp(pouring?(t-.22)/.31:(t-.12)/.5,0,1);
     const front=reach*(1-(1-travel)**2);
     g.setAlpha(t<=.5?1:1-((t-.5)*2)**2);
     if(level===4&&t<.2){
@@ -308,7 +311,7 @@ function showSoulStrike(scene,spirit,target,area,onImpact){
         g.restore();
       }
     }
-    if(t<.73){
+    if(t<.73&&(!pouring||t>=.22)){
       drawSoulWake(g,level,form,rim,front,travel,t);
       const size=(.55+.45*travel)*Phaser.Math.Clamp((.73-t)/.11,0,1);
       g.save().translateCanvas(front,0).scaleCanvas(size,size);

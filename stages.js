@@ -27,6 +27,7 @@ function clearStage(scene){
 }
 function stepStage(scene,dt){
  const {event,reinforcements}=scene.campaign,h=scene.hero;
+ if(scene.wave===finalWave&&event==='reinforce')return;
  if(scene.wave<=3&&event!=='reinforce')return;
  if(scene.stageCaster){
    const caster=scene.stageCaster;

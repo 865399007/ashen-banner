@@ -878,6 +878,7 @@ class Battle extends Phaser.Scene{
  for(const e of [...this.enemies]){
    const damage=poisonTick(e,this.elapsed);
    if(damage){
+     spreadNeedlePoison(this,e);
      this.applyHitDamage(this.hero,e,damage,false,true);
      if(this.mode!=='fight')return;
    }

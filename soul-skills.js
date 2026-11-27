@@ -1,7 +1,7 @@
 // Each spirit owns its round counter and follow-up queue. Damage and criticals
 // are rolled once per commander attack, including all parts of that attack.
 const soulSkillGuide={
-  huatuo:['倾葫为指挥官治疗两次，每次基础回复 2.8 点。葫口射出毒针，每第三针在落点留下 2 秒毒圈。毒针命中或进入毒圈会中毒 4 秒，最多 5 层，每层每秒造成战魂伤害的 25%','追加第三次治疗','生命低于四成时，每次治疗翻倍','每第三轮追加三次急救治疗'],
+  huatuo:['倾葫为指挥官治疗两次，每次基础回复 2.8 点。葫口射出毒针，每第三针在落点留下 2 秒毒圈。毒针命中或进入毒圈会中毒 4 秒，最多 5 层，每层每秒造成战魂伤害的 25%','追加第三次治疗','生命低于四成时，每次治疗翻倍。毒针首次结算毒伤时可传给附近 1 名未中毒敌人，传染毒伤减半，仅传一跳','每第三轮追加三次急救治疗，传染目标上限提高到 2 名'],
   liubei:['双剑交叉，两剑可击中同一敌人','副剑延迟追斩，伤害提高','原目标阵亡，余剑转向近敌','每第三轮追加身后双斩'],
   zhaoyun:['长枪贯穿一列敌人','沿原路收枪回刺','从枪尖最远命中处透出枪芒','每第三轮再追加两刺'],
   huangzhong:['重箭瞄准射程内最远敌人','重箭多穿一人','连续两箭命中同一目标，下一箭射弱点','弱点箭在目标身后分裂为三箭'],
@@ -94,10 +94,26 @@ function stepPoisonCircles(scene){
   }
 }
 
+function spreadNeedlePoison(scene,source){
+  const spread=source.poison?.spread;
+  if(!spread)return;
+  // Consume the single opportunity even when nobody is within reach.
+  source.poison.spread=null;
+  const nearby=scene.enemies.filter(e=>e!==source&&e.hp>0&&
+    !(e.poison?.until>=scene.elapsed)&&distance(source.s,e.s)<=44);
+  nearby.sort((a,b)=>distance(source.s,a.s)-distance(source.s,b.s));
+  for(const enemy of nearby.slice(0,spread.limit))applyPoison(enemy,scene.elapsed,spread.potency);
+}
+
 const soulTechniques={
   huatuo({scene,spirit,level,round,target,center,damage,inReach,later}){
     const potency=damage*.25,landed=inReach(target);
-    if(landed)applyPoison(target,scene.elapsed,potency);
+    if(landed){
+      applyPoison(target,scene.elapsed,potency);
+      if(level>=3&&target.poison.spread===undefined){
+        target.poison.spread={limit:level-2,potency:potency*.5};
+      }
+    }
     if(round%3===0){
       const radius=24+5*(level-1);
       scene.poisonCircles.push({center,radius,potency,until:scene.elapsed+2,

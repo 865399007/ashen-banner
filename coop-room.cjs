@@ -65,7 +65,7 @@ function changeItem(p,id,delta){
  return true;
 }
 function hit(r,p,a,e,damage){
- r.effects.push({id:++r.serial,x:e.x,y:e.y,fromX:a.x,fromY:a.y,weapon:a===p?commanders.banner.weapon:a.id,q:a.q||0,until:r.clock+.24});
+ r.effects.push({id:++r.serial,x:e.x,y:e.y,fromX:a.x,fromY:a.y,weapon:a===p?commanders.banner.weapon:a.id,q:a.q||0,caster:a.id===medicId?'a'+p.index+'-'+p.army.indexOf(a):undefined,until:r.clock+.24});
  e.hp-=damage;
  if(e.hp>0)return;
  r.enemies.splice(r.enemies.indexOf(e),1);
@@ -74,12 +74,12 @@ function hit(r,p,a,e,damage){
  if(e.elite)delayNextElite(r.eliteArrivals,r.time);
  r.loot.push({id:++r.serial,x:e.x,y:e.y,box:Math.random()<.015});
 }
-function teamPulse(r,unit,bag){
+function teamPulse(r,unit,owner){
  const ally=r.players.filter(p=>p.hp>0&&p.hp<p.max&&distance(unit,p)<=troops[medicId][3])
    .sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
  if(!ally)return false;
- ally.hp=Math.min(ally.max,ally.hp+treatmentAmount(medicPulseAmount(unit.q,ally.hp,ally.max),bag));
- r.effects.push({id:++r.serial,x:ally.x,y:ally.y,fromX:unit.x,fromY:unit.y,weapon:medicId,until:r.clock+.24});
+ ally.hp=Math.min(ally.max,ally.hp+treatmentAmount(medicPulseAmount(unit.q,ally.hp,ally.max),owner.bag));
+ r.effects.push({id:++r.serial,x:ally.x,y:ally.y,fromX:unit.x,fromY:unit.y,weapon:medicId,heal:true,caster:'a'+owner.index+'-'+owner.army.indexOf(unit),until:r.clock+.24});
  return true;
 }
 function tick(r,dt,now=Date.now()){
@@ -100,8 +100,8 @@ function tick(r,dt,now=Date.now()){
      if(i){const angle=2*Math.PI*(i-1)/p.army.length;move(a,{x:p.x+31*Math.cos(angle),y:p.y+31*Math.sin(angle)},210*dt)}
      a.cd-=dt;const e=nearest(a,r.enemies);
      if(i&&a.id===medicId){
-       if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a,p.bag);a.pulses--;a.pulseAt=r.clock+.28}
-       if(a.cd<=0&&teamPulse(r,a,p.bag)){
+       if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a,p);a.pulses--;a.pulseAt=r.clock+.28}
+       if(a.cd<=0&&teamPulse(r,a,p)){
          a.pulses=treatmentPulses(medicPulseCount(a.q),p.bag)-1;a.pulseAt=r.clock+.28;a.cd=stats[2]*.75;continue;
        }
      }

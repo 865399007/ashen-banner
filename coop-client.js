@@ -131,8 +131,9 @@ function installCoop(scene){
    if(moving&&(tex.startsWith('man')||tex.startsWith('wild-')))tex+='walk'+Math.floor(now/90)%WALK_FRAMES;
    else if(s.bannerCommander&&s.angle===0)tex=commanderIdleTexture(now,tex);
    if(now<s.redFlashUntil)tex=hitTexture(scene,tex,true);
-   if(s.texture.key!==tex)s.setTexture(tex);
    if(moving){s.setPosition(x,y);if(Math.abs(dx)>.025)s.setFlipX(dx<0)}
+   if(s.pourUntil)tex=medicPose(s,s.baseTexture,tex,scene.time.now);
+   if(s.texture.key!==tex)s.setTexture(tex);
    if(s.depth!==y)s.setDepth(y);
    s.bossName?.setPosition(s.x,s.y-s.nameOffset);
  }
@@ -223,6 +224,10 @@ function installCoop(scene){
    }
    for(const f of state.effects){
      if(f.id<=lastEffect)continue;lastEffect=f.id;
+     const caster=f.caster&&sprites.get(f.caster);
+     if(f.weapon===medicId&&caster){
+       medicEffect(scene,caster,caster.baseTexture,f,!!f.heal);continue;
+     }
      if(f.weapon===medicId||f.weapon===poisonerId){
        medicineTrail(scene,{x:f.fromX,y:f.fromY},f,f.weapon===poisonerId);continue;
      }

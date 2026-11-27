@@ -194,9 +194,9 @@ function stepCavalryRush(scene,a,dt){
   }
   a.rush=null;
 }
-function medicineTrail(scene,source,target,poison){
+function medicineTrail(scene,source,target,poison,sourceLift=9){
   const ink=poison?0xa2cb68:0xaae7c1,dx=target.x-source.x,dy=target.y-source.y;
-  const effect=scene.add.graphics().setPosition(source.x,source.y-9).setDepth(1001);
+  const effect=scene.add.graphics().setPosition(source.x,source.y-sourceLift).setDepth(1001);
   if(dx||dy){
     effect.setRotation(Math.atan2(dy,dx));
     if(poison){
@@ -212,22 +212,51 @@ function medicineTrail(scene,source,target,poison){
   }
   scene.tweens.add({targets:effect,x:target.x,y:target.y-(dx||dy?9:15),alpha:.15,duration:180,onComplete:()=>effect.destroy()});
 }
-function medicinePulse(scene,source,base){
+function medicPose(sprite,base,ordinary,now){
+  if(now>=sprite.pourUntil){sprite.pourUntil=0;return ordinary}
+  sprite.setFlipX(sprite.pourLeft);
+  return base+(sprite.pourUntil-now>85?'pour':'lower');
+}
+function medicEffect(scene,sprite,base,target,heal){
+  sprite.setFlipX(target.x<sprite.x);
+  // The mercenary canvas is drawn at twice the miniature's coordinates.
+  const at=(x,y)=>({x:sprite.x+(sprite.flipX?-1:1)*(2*x-sprite.displayOriginX)*sprite.scaleX,
+    y:sprite.y+(2*y-sprite.displayOriginY)*sprite.scaleY});
+  if(!heal){
+    sprite.pourUntil=0;
+    medicineTrail(scene,at(12,25.8),target,false,0);return;
+  }
+  sprite.pourLeft=sprite.flipX;sprite.pourUntil=scene.time.now+240;
+  sprite.setTexture(base+'pour');
+  const mouth=at(30.3,17.8);
+  const mist=scene.add.graphics().setPosition(mouth.x,mouth.y).setDepth(1001);
+  mist.lineStyle(1.1,0xa1d4b9,.85);
+  mist.strokePoints([{x:-4,y:1},{x:-2,y:-.5},{x:0,y:-.8},{x:2,y:.2},{x:4,y:-1}]);
+  mist.fillStyle(0xd2f0d6,.8).fillCircle(-2,1.8,1.2).fillCircle(3,-2,.8);
+  scene.tweens.addCounter({from:0,to:1,duration:280,onUpdate:tween=>{
+    const t=tween.getValue();
+    mist.setPosition(mouth.x+(target.x-mouth.x)*t,mouth.y+(target.y-9-mouth.y)*t-6*Math.sin(Math.PI*t));
+    mist.setScale(.6+.7*t).setAlpha(1-t*t);
+  },onComplete:()=>mist.destroy()});
+}
+function medicinePulse(scene,source,base,medic){
   if(scene.mode!=='fight'||scene.hp<=0||scene.hp>=scene.maxHP)return;
-  medicineTrail(scene,source,scene.hero,false);
+  if(medic)medicEffect(scene,source,medic.baseTexture,scene.hero,true);
+  else medicineTrail(scene,source,scene.hero,false);
   scene.healCommander(Math.round(treatmentAmount(base,scene.bag)*(1+scene.soulBonus('healing'))*10)/10);
   scene.hud();
 }
 function fieldMedicineRound(scene,unit,target){
   if(unit.id===medicId&&scene.hp<scene.maxHP){
-    const pulse=()=>medicinePulse(scene,unit.s,medicPulseAmount(unit.q,scene.hp,scene.maxHP));
+    const pulse=()=>medicinePulse(scene,unit.s,medicPulseAmount(unit.q,scene.hp,scene.maxHP),unit);
     pulse();
     for(let i=1;i<treatmentPulses(medicPulseCount(unit.q),scene.bag);i++)followUp(scene,unit,i*.28,pulse);
     return;
   }
   if(!target)return;
   const poison=unit.id===poisonerId;
-  medicineTrail(scene,unit.s,target.s,poison);
+  if(!poison)medicEffect(scene,unit.s,unit.baseTexture,target.s,false);
+  else medicineTrail(scene,unit.s,target.s,true);
   if(poison){
     const power=troops[poisonerId][1]*[1,1.32,1.72,2.22][unit.q]*scene.damage*.24*(1+scene.soulBonus('poison'));
     const layers=unit.q>=1?2:1,spread=unit.q===3?1:0;

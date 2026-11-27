@@ -426,6 +426,7 @@ class Battle extends Phaser.Scene{
    }else if(unit.hero&&unit.skin===6){
      key=commanderIdleTexture(this.elapsed*1000,unit.baseTexture);
    }
+   if(s.pourUntil)key=medicPose(s,unit.baseTexture,key,this.time.now);
    if(s.texture.key!==key)s.setTexture(key);
  }
  footfall(unit,forwardX,forwardY,side){

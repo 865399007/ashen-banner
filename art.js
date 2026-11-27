@@ -672,26 +672,27 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
     }
   }
   if(physician||herbalist){
-    // A shoulder satchel and needle case read differently from the hanging ceramic flask.
     stroke('M9 15 L19 26','#ab8860',1.5);
     if(physician){
-      // One tapered needle, held between thumb and finger. The silk tie falls behind the grip.
-      c.save();c.translate(20,22);c.rotate(-.77);
-      paint('M-3 -.3 Q-6 1 -6 4 Q-6 6 -9 7 Q-5 7 -4.6 4 Q-4 1 -2 .8Z','#ac5144');
-      paint('M2 -1 L6 -.85 L15.6 0 L5.2 .76 L2 .85Z','#876846');
-      paint('M4 -.55 L15.6 0 L5.5 .38Z','#fff1bc');
-      stroke('M-3 0 L3.6 0','#544537',2.55);
-      stroke('M-2.8 0 L3.2 0','#d6b769',1.75);
-      stroke('M.5 -.68 L.05 .65 M2.3 -.68 L1.85 .65','#6c806c',.68);
-      oval(c,-3.5,0,1.45,1.25,'#997546');
-      oval(c,-3.6,-.14,.76,.72,'#b9ceac');c.restore();
+      // Pivot the bottle at the hand so its mouth tips towards the patient.
+      stroke('M18 20 Q20 23 23.7 20.5',trim,3.3);
+      c.save();c.translate(24,20);c.rotate(.18+pose*1.05);
+      const bottle='M-1.5 -6.7 L1.5 -6.7 L1.4 -4.9 Q5 -3.5 3.4 -.8 Q2.9 .3 1.9 1 Q2.1 1.9 4.1 2.9 C8 5.5 7 11.2 2.7 12.1 Q-.7 13.2 -3.8 11.6 C-8.2 9.2 -6.5 4.3 -3.5 2.6 Q-1.8 1.5 -1.9 .9 Q-5 -1 -3.5 -3.4 Q-2.8 -4.5 -1.4 -5Z';
+      stroke(bottle,'#63462c',1.1);
+      paint(bottle,wash(-5.7,5.8,'#ffe2a0','#b8833d'));
+      stroke('M-3.6 5.2 Q-5.2 7 -4 8.8','#f9dfa3',.9);
+      oval(c,0,-6.7,2.1,.85,'#795239');
+      oval(c,0,-6.8,1.1,.40,'#45392d');
+      stroke('M-2.1 -4.9 Q0 -4.2 2.1 -4.9','#a03d32',1.25);
+      paint('M1.7 -4.8 Q6 -6 6.1 -2.3 Q4 -1.2 2.2 -3.8 Q6.7 -2.6 7 1.6 L5.2 .8 L4.8 2.6 Q4.1 -.9 1.7 -4.8Z','#aa4435');
+      c.restore();
     }else{
       stroke('M19 22 Q24 15 29 17','#ac9b73',1.4);
       paint('M26 15 L30 15 L29 19 Q35 22 32 27 Q28 31 23 27 Q20 23 25 19 Z','#415d58');
       stroke('M25 22 Q28 24 31 21','#c0c780',1.4);
       paint('M25 14 L30 13 L31 16 L25 17Z','#b38a65');
     }
-    oval(c,20,22,physician?1.5:2,physician?1.35:1.8,'#ddb58d');
+    oval(c,physician?23:20,physician?20:22,physician?1.5:2,physician?1.35:1.8,'#ddb58d');
   }else if(recruitSkin===18||recruitSkin===23){
     stroke('M16 25 L32 15','#68492f',3);
     stroke('M20 12 Q32 14 35 25','#847465',2);
@@ -801,13 +802,13 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
     paint('M9 17 Q11.3 16.7 12.5 19 L10.3 23.1 L6.4 22 Z','#ceae89');
     paint('M6.4 21.6 L10.5 22.5 L9.6 25.7 L5.8 25 Z','#614836');
     if(physician){
-      c.save();c.translate(7.5,24);c.rotate(.24);
+      c.save();c.translate(12,25.8);c.rotate(.14);
       paint('M-4.7 -2 Q-4.4 -3.5 -2.8 -3.3 L4.4 -3 Q5.7 -2.8 5.7 -1 L5.3 3.7 L-2.9 4 Q-4.8 3.8 -4.8 2Z','#51493b');
       paint('M-3 -2.5 L4.6 -2.2 L4 2.8 L-3.4 3Z','#719185');
       paint('M-.5 -2.7 L1 -2.6 L.6 3.1 L-1.1 3.2Z','#d9ae68');
       oval(c,-3.7,.2,1.45,2.8,'#dbc59a');
       stroke('M-4 .9 Q-4.5 -1.8 -3.4 -1.3 Q-2.7 -.7 -3.4 .3','#927956',.55);
-      oval(c,2.9,-2.25,1.5,1.05,'#dfb792');c.restore();
+      c.restore();
     }
   }
 }
@@ -1134,9 +1135,17 @@ function makeArt(scene){
   });
   for(const [type,id] of mercSkins.entries()){
     for(let q=0;q<4;q++){
-      unitFrames(scene,id,'man'+troopSkin(type,q),(c,p,phase)=>{
+      const key='man'+troopSkin(type,q);
+      unitFrames(scene,id,key,(c,p,phase)=>{
         miniature(c,p,id,phase,q,rankColors[q],0,'mercenary');
       });
+      if(type===medicId){
+        for(const [frame,pose] of [['pour',1],['lower',.48]]){
+          paintTexture(scene,key+frame,72,80,(c,p)=>{
+            c.scale(2,2);miniature(c,p,id,0,q,rankColors[q],pose,'mercenary');
+          });
+        }
+      }
     }
   }
   commanderTexture(scene,1);

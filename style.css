@@ -275,7 +275,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:no
 #test-army{position:absolute;left:var(--edge-l);top:50%;transform:translateY(-50%);display:grid;gap:3px;z-index:2}
 #test-army .debug-size{grid-column:1/-1;position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:center;gap:4px;min-height:36px;background:#46382e;color:#f8e6bf;border-radius:5px;font-size:13px;cursor:pointer}
 #debug-three{accent-color:#996a3b}
-#test-army button{min-height:44px;padding:3px 8px;font-size:13px}
+#test-army button{min-height:44px;padding:3px 4px;font-size:13px}
 #test-army button[aria-pressed=true]{background:#865332;outline:1px solid #eed59d}
 #field:has(#cover:not([hidden]),#modal:not([hidden]),#preferences:not([hidden])) .battle-debug{display:none}
 @media(max-height:420px){#test-army{grid-template-columns:repeat(2,auto)}}

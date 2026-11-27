@@ -347,10 +347,10 @@ class Battle extends Phaser.Scene{
    const count=this.debugSquadSize;
    $('test-army').querySelectorAll('button').forEach((btn,id)=>{
      const active=this.debugTroops.has(id),name=troops[id][0];
-     btn.textContent=(active?'撤下':'召唤')+name+' ×'+count;
+     btn.textContent=name+' ×'+count;
      btn.setAttribute('aria-pressed',String(active));
      btn.disabled=!active&&this.debugTroops.size*count>=armyCapacity;
-     btn.title=btn.disabled?'已满编，先撤下一组':(active?'撤下':'召唤')+' '+count+' 名四级'+name;
+     btn.title=btn.disabled?'已满编，先撤下一组':(active?'撤下':'加入')+' '+count+' 名四级'+name;
    });
  }
  clearField(){this.finishBattleTransition=null;this.poisonNumbers.clear(true,true);this.fallenEnemies.clear(true,true);clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.poisonBubbles?.destroy();enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}

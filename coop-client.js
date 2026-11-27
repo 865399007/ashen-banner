@@ -223,6 +223,9 @@ function installCoop(scene){
    }
    for(const f of state.effects){
      if(f.id<=lastEffect)continue;lastEffect=f.id;
+     if(f.weapon===medicId||f.weapon===poisonerId){
+       medicineTrail(scene,{x:f.fromX,y:f.fromY},f,f.weapon===poisonerId);continue;
+     }
      scene.weaponEffect({id:f.weapon,q:f.q,s:{x:f.fromX,y:f.fromY,height:64,scaleY:.38}},
        {s:{x:f.x,y:f.y,height:64,scaleY:.33}});
    }

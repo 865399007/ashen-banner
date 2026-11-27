@@ -7,7 +7,8 @@ function drawGeneralSoul(c,general,pose=0){
     huangzhong:['#b08a52','#65503e'],xuhuang:['#698aa1','#3b5269'],
     caoren:['#60768a','#344357'],zhugeliang:['#c1ccbb','#708982'],
     wuanguo:['#977767','#594d52'],dianwei:['#826963','#4d4753'],
-    lvbu:['#a64640','#61363e'],guanyu:['#49866a','#2b5549']
+    lvbu:['#a64640','#61363e'],guanyu:['#49866a','#2b5549'],
+    huatuo:['#d1d9b9','#58877a'],bianque:['#84966c','#544560']
   };
   const [cloth,shadow]=colors[general];
   const ink='#253b47',steel='#a7c8d2',edge='#e2f6ec',brass='#d5af72',skin='#dfbb93';
@@ -19,6 +20,7 @@ function drawGeneralSoul(c,general,pose=0){
     c.strokeStyle=color;c.lineWidth=width;c.stroke(new Path2D(d));
   };
   const glow='#92dbdc';
+  const physician=general==='huatuo',herbalist=general==='bianque';
   const rider=general==='guanyu',scholar=general==='zhugeliang';
   c.save();c.lineJoin='round';c.lineCap='round';
   // The cloak and tunic taper into wisps just below the belt.
@@ -26,7 +28,7 @@ function drawGeneralSoul(c,general,pose=0){
   line('M25 50 Q30 48 32 43',glow,.9);
   shape('M33 35 Q40 32 46 35 L50 42 L47 46 Q46 49 42 51 Q43 49 42 48 Q38 52 33 53 Q35 50 34 48 L29 46Z',cloth);
   shape('M33 37 L38 42 Q36 48 33 50 L34 46 L30 45Z',shadow,null);
-  if(scholar){
+  if(scholar||physician||herbalist){
     line('M34 36 L41 42 L46 36 M41 42 L38 48',edge,1.8);
   }else if(general==='lvbu'){
     shape('M33 36 L38 38 L41 40 L46 36 L48 39 L46 46 L41 48 L34 45Z','#444959');
@@ -44,7 +46,11 @@ function drawGeneralSoul(c,general,pose=0){
   shape('M39 48 L42 47.5 L42.6 50 L39.7 50.5Z',brass,null);
 
   shape('M34 24 Q39 20 46 23 L47 29 L49 31 L46.5 32 L46 34.5 C45.4 36.1 43.4 37.2 41 37.2 C36.7 37.2 33.2 35.9 31.8 32 Q31.4 28.5 34 24Z',rider?'#bf8269':skin);
-  if(rider||scholar||general==='liubei'||general==='dianwei'){
+  if(physician||herbalist){
+    shape('M31 30 Q29 23 34 20 Q40 16 46 21 L48 25 L40 24 L35 27 L33 32Z',physician?'#d9d4b9':shadow);
+    shape('M34 21 Q30 14 35 13 Q40 12 40 19Z',physician?'#e4dec9':cloth);
+    line('M30 22 L43 18',brass,1.6);
+  }else if(rider||scholar||general==='liubei'||general==='dianwei'){
     shape('M32 29 Q30 22 35 19 Q41 17 46 22 L48 25 L41 25 L36 27 L34 32Z',rider?'#39735f':shadow);
     if(scholar){
       shape('M33 23 L32 16 L34 15 L34 11 L39 13 L42 11 L45 15 L45 22Z','#4b6163');
@@ -77,8 +83,8 @@ function drawGeneralSoul(c,general,pose=0){
   if(rider){
     shape('M35 31 L39 32.8 L43 32 L46 33 L48 32 Q48 39 44 46 L43 42 L39 48 Q40 42 36 38Z','#304342');
     line('M39 36 Q43 39 41 43','#607267',.85);
-  }else if(scholar||general==='huangzhong'||general==='liubei'||general==='xuhuang'){
-    shape('M37 32.4 Q41 35 44 32.5 L47 33.4 L46 37 L42 42 L41 38 L38 37Z',general==='huangzhong'?'#e7e3d1':'#435051');
+  }else if(physician||herbalist||scholar||general==='huangzhong'||general==='liubei'||general==='xuhuang'){
+    shape('M37 32.4 Q41 35 44 32.5 L47 33.4 L46 37 L42 42 L41 38 L38 37Z',physician||general==='huangzhong'?'#e7e3d1':'#435051');
   }
 
   // All weapon coordinates are relative to the front hand. Rotation keeps the grip attached.
@@ -105,6 +111,16 @@ function drawGeneralSoul(c,general,pose=0){
     c.rotate(readyAngle+pose*(rider||thrust?.71:.95));
   }
   switch(general){
+    case 'huatuo':
+      for(const tilt of [-.30,0,.30]){
+        c.save();c.rotate(tilt);
+        line('M0 0 L0 -12',brass,2);line('M0 -12 L0 -25',edge,1);c.restore();
+      }
+      break;
+    case 'bianque':
+      haft('M0 12 L0 -24');line('M0 -24 Q8 -29 13 -22 L13 -16',brass,1.8);
+      shape('M10 -15 L15 -15 L15 -12 Q23 -7 18 -1 Q12 3 7 -2 Q3 -8 10 -12Z','#618c78');
+      line('M8 -6 Q13 -2 18 -7','#d6d39a',1.6);break;
     case 'zhaoyun':
       haft('M0 20 L0 -26');
       shape('M-1.7 -25 Q-6 -22 -5 -15 L-3 -17 L-4 -11 Q1 -17 1 -25Z','#be6258');
@@ -158,7 +174,10 @@ function drawGeneralSoul(c,general,pose=0){
   }
   grip();c.restore();
   c.save();c.translate(32,45);
-  if(general==='caoren'){
+  if(physician){
+    shape('M-2 -9 L1 -9 Q4 -7 2 -4 Q8 1 4 6 Q0 10 -5 6 Q-9 1 -4 -4 Q-6 -7 -2 -9Z','#b78a4f');
+    line('M-4 -3 L3 -4',brass,1.4);
+  }else if(general==='caoren'){
     c.rotate(pose*-.22);
     metal('M-8 -9 Q-2 -13 6 -10 L7 2 Q5 8 0 12 Q-6 9 -8 4Z');
     shape('M-6 -8 Q0 -10 4 -8 L5 2 Q3 7 0 9 Q-4 6 -6 2Z',shadow);

@@ -194,3 +194,50 @@ function stepCavalryRush(scene,a,dt){
   }
   a.rush=null;
 }
+function medicineTrail(scene,source,target,poison){
+  const ink=poison?0xa2cb68:0xaae7c1,dx=target.x-source.x,dy=target.y-source.y;
+  const effect=scene.add.graphics().setPosition(source.x,source.y-9).setDepth(1001);
+  if(dx||dy){
+    effect.setRotation(Math.atan2(dy,dx));
+    if(poison){
+      effect.fillStyle(0x527160,.95).fillCircle(0,0,3).lineStyle(1,ink).strokeCircle(0,0,3);
+      effect.fillStyle(ink,.75).fillCircle(-5,-2,1.4).fillCircle(-8,1,.9);
+    }else{
+      effect.lineStyle(1.3,0xffe1a2).lineBetween(-10,0,3,0);
+      effect.lineStyle(.8,0xe4fff0).lineBetween(3,0,9,0);
+    }
+  }else{
+    effect.lineStyle(1.3,ink,.9).strokeEllipse(0,2,12,6);
+    for(const [x,y] of [[-4,-2],[1,-6],[5,-1]])effect.fillStyle(ink,.8).fillCircle(x,y,1.4);
+  }
+  scene.tweens.add({targets:effect,x:target.x,y:target.y-(dx||dy?9:15),alpha:.15,duration:180,onComplete:()=>effect.destroy()});
+}
+function medicinePulse(scene,source,base){
+  if(scene.mode!=='fight'||scene.hp<=0||scene.hp>=scene.maxHP)return;
+  medicineTrail(scene,source,scene.hero,false);
+  scene.healCommander(Math.round(base*(1+scene.soulBonus('healing'))*10)/10);
+  scene.hud();
+}
+function fieldMedicineRound(scene,unit,target){
+  if(unit.id===medicId&&scene.hp<scene.maxHP){
+    const pulse=()=>medicinePulse(scene,unit.s,medicPulseAmount(unit.q,scene.hp,scene.maxHP));
+    pulse();
+    for(let i=1;i<medicPulseCount(unit.q);i++)followUp(scene,unit,i*.28,pulse);
+    return;
+  }
+  if(!target)return;
+  const poison=unit.id===poisonerId;
+  medicineTrail(scene,unit.s,target.s,poison);
+  if(poison){
+    const power=troops[poisonerId][1]*[1,1.32,1.72,2.22][unit.q]*scene.damage*.24*(1+scene.soulBonus('poison'));
+    const layers=unit.q>=1?2:1,spread=unit.q===3?1:0;
+    applyPoison(target,scene.elapsed,power,layers,spread);
+    if(unit.q>=2){
+      const nearby=areaTargets(scene,target.s,0,26,0,'ring').find(e=>e!==target);
+      if(nearby){
+        medicineTrail(scene,target.s,nearby.s,true);applyPoison(nearby,scene.elapsed,power,1,spread);
+      }
+    }
+  }
+  scene.mercHit(unit,target,target,1);
+}

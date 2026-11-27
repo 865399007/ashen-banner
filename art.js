@@ -404,7 +404,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   }
   c.restore();
 }
-const mercSkins=[0,1,2,7,17,18,19,20,21,22];
+const mercSkins=[0,1,2,7,17,18,19,20,21,22,24,25];
 function troopSkin(id,q=0){const skin=mercSkins[id];return "merc"+skin+(q?"tier"+q:"")}
 // Shared by standing soldiers and riders so that each rank has the same silhouette.
 function mercenaryUniform(c,rank,coat,trim,step){
@@ -523,6 +523,7 @@ function mountedLancer(c,phase,ally,q,ink,pose,enemyCloth){
 }
 function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=campaigns.border.colors){
   const mercenary=variant==='mercenary';
+  const physician=mercenary&&id===24,herbalist=mercenary&&id===25;
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose,enemyCloth);return}
   const recruit=id>=17&&id<=22;
   const recruitSkin=id;
@@ -531,8 +532,8 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
   const allied=recruit||!enemy;
-  const coat=recruit?'#506975':allied?({0:'#615175',1:'#923e32',2:'#787044',7:'#875039'})[id]:enemyCloth.base;
-  const trim=recruit?'#384957':allied?({0:'#40354f',1:'#662d28',2:'#514f34',7:'#603727'})[id]:enemyCloth.shadow;
+  const coat=physician?'#c6cbb1':herbalist?'#647454':recruit?'#506975':allied?({0:'#615175',1:'#923e32',2:'#787044',7:'#875039'})[id]:enemyCloth.base;
+  const trim=physician?'#518178':herbalist?'#59475f':recruit?'#384957':allied?({0:'#40354f',1:'#662d28',2:'#514f34',7:'#603727'})[id]:enemyCloth.shadow;
   const paint=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   const stroke=(path,color,width)=>{
     c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
@@ -670,7 +671,22 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
       stroke('M27 10 L31 11 Q30 15 35 15 Q33 22 27 20 L25 15 Z',weaponInk,2.6);
     }
   }
-  if(recruitSkin===18||recruitSkin===23){
+  if(physician||herbalist){
+    // A shoulder satchel and needle case read differently from the hanging ceramic flask.
+    stroke('M9 15 L19 26','#ab8860',1.5);
+    if(physician){
+      paint('M4 20 Q6 18 10 20 L12 25 L10 28 L4 27 Z','#ab784e');
+      stroke('M5 22 L10 21','#ead8a9',1.2);
+      stroke('M19 23 L31 15 M20 24 L32 19','#f1db9d',1.3);
+      stroke('M29 16 L33 13 M30 20 L34 18','#f5f1d9',.7);
+    }else{
+      stroke('M19 22 Q24 15 29 17','#ac9b73',1.4);
+      paint('M26 15 L30 15 L29 19 Q35 22 32 27 Q28 31 23 27 Q20 23 25 19 Z','#415d58');
+      stroke('M25 22 Q28 24 31 21','#c0c780',1.4);
+      paint('M25 14 L30 13 L31 16 L25 17Z','#b38a65');
+    }
+    oval(c,20,22,2,1.8,'#ddb58d');
+  }else if(recruitSkin===18||recruitSkin===23){
     stroke('M16 25 L32 15','#68492f',3);
     stroke('M20 12 Q32 14 35 25','#847465',2);
     stroke('M20 12 L20 22 L35 25','#c7b69a',.7);

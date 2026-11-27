@@ -202,7 +202,9 @@ const soulTypes=[
   {general:'wuanguo',name:'武安国',weapon:'长柄铁锤',stat:'power',label:'伤害',values:[8,15,25,40]},
   {general:'dianwei',name:'典韦',weapon:'双铁戟',stat:'haste',label:'攻速',values:[6,12,20,30]},
   {general:'lvbu',name:'吕布',weapon:'方天画戟',stat:'reach',label:'射程',values:[8,15,25,35]},
-  {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[8,15,25,40]}
+  {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[8,15,25,40]},
+  {general:'huatuo',name:'华佗',weapon:'金针药葫',stat:'healing',label:'医术治疗量',values:[10,18,26,35]},
+  {general:'bianque',name:'扁鹊',weapon:'青瓷毒壶',stat:'poison',label:'毒伤',values:[10,18,26,35]}
 ];
 function armySouls(army){
   const counts=troops.map(()=>0);
@@ -215,8 +217,37 @@ function armySouls(army){
   });
   return souls;
 }
-const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞'];
-const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57]];
+const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞','✧','◈'];
+const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',8,2.8,96],['毒师',10,1.9,94]];
+const medicId=10,poisonerId=11;
+function medicPulseCount(rank){return rank+1}
+function medicPulseAmount(rank,hp,max){return rank===3&&hp<max*.4?5:3}
+function applyPoison(enemy,now,potency,layers=1,spread=0){
+  let status=enemy.poison;
+  if(!status||status.until<now)status=enemy.poison={layers:0,potency:0,spread:0,next:now+1};
+  status.layers=Math.min(5,status.layers+layers);
+  status.potency=Math.max(status.potency,potency);
+  status.spread=Math.max(status.spread,spread);
+  status.until=now+4;
+}
+function poisonTick(enemy,now){
+  const status=enemy.poison;
+  if(!status)return 0;
+  if(now>=status.next&&status.next<=status.until+.00001){
+    status.next+=1;
+    return status.layers*status.potency;
+  }
+  if(now>status.until)delete enemy.poison;
+  return 0;
+}
+// Spread only from the original carrier. A fresh direct dose can prime another transfer.
+function spreadPoison(enemy,others,now,position){
+  const status=enemy.poison;
+  if(!status?.spread||now>status.until+.05)return;
+  const near=others.filter(e=>e!==enemy&&e.hp>0&&distance(position(e),position(enemy))<=46)
+    .sort((a,b)=>distance(position(a),position(enemy))-distance(position(b),position(enemy)));
+  for(const e of near.slice(0,status.spread))applyPoison(e,now,status.potency,Math.min(2,status.layers));
+}
 // Item IDs are also stored in saved blueprint lists. Append new equipment after the original set.
 const bladeWrap=21,poleFerrule=22,heavyGrip=23,riderSpurs=24,
   finishingBlade=25,formationSpike=26,siegeHead=27,chargeStandard=28;
@@ -255,7 +286,7 @@ const equipmentCapacity=12;
 function equippedCount(bag){return Object.values(bag).reduce((total,count)=>total+count,0)}
 function canEquipItem(bag,id){return equippedCount(bag)<equipmentCapacity&&(bag[id]||0)<itemCap(id)}
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-const troopBasePrices=[10,12,13,15,11,15,16,12,14,18],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40];
+const troopBasePrices=[10,12,13,15,11,15,16,12,14,18,14,15],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40];
 function refitPrice(merc,id,q,wave){
  const base=merc?troopBasePrices[id]+9*q:itemBasePrices[id];
  return Math.floor(base+wave+base*wave/10);
@@ -308,9 +339,9 @@ function recruitMercenary(army,offer,position){
   return true;
 }
 function recruitOffer(pool,army){
-   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse'];
+   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse','medicine','medicine'];
    const weights=pool.map(id=>army.some(a=>a.id===id)?4:army.some(a=>classes[a.id]===classes[id])?1.35:1);
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={medicId,poisonerId,medicPulseCount,medicPulseAmount,applyPoison,poisonTick,spreadPoison,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};

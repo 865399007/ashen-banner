@@ -456,7 +456,7 @@ class Battle extends Phaser.Scene{
    return {x:centerX+Math.cos(angle)*radius,y:centerY+Math.sin(angle)*radius};
  }
  follow(unit,slot,target,marching,dt){
-   const engage=!marching && target && ![2,5].includes(unit.id) && distance(target.s,this.hero)<105;
+   const engage=!marching && target && ![2,5,medicId,poisonerId].includes(unit.id) && distance(target.s,this.hero)<105;
    const wanted=engage?target.s:this.followPosition(slot);
    const history=unit.goalHistory;
    // Snapshot moving targets so that each soldier reacts on its own beat.
@@ -610,6 +610,7 @@ class Battle extends Phaser.Scene{
  }
  const count=this.bondCounts[a.id];
  a.shots++;
+ if(a.id===medicId||a.id===poisonerId){fieldMedicineRound(this,a,e);return}
  if(a.id===9){startCavalryRush(this,a,e);return}
  if(a.id===2||a.id===5){rangedRound(this,a,e);return}
  meleeRound(this,a,e);
@@ -723,15 +724,17 @@ class Battle extends Phaser.Scene{
    const hit=this.rollAttackDamage(a);
    this.applyHitDamage(a.s,e,hit.damage*power,hit.critical);
  }
- applyHitDamage(attacker,e,damage,critical){
+ applyHitDamage(attacker,e,damage,critical,periodic=false){
  if(this.elapsed<e.soulArmorBreakUntil)damage*=1.15;
- if(e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
+ if(!periodic&&e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
  if(this.elapsed<e.markUntil)damage*=1.12;
  e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
+ if(periodic&&e.hp>0)return;
  const hitBurst=impact(this,attacker,e,damage,false,critical);
  if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
  const {x,y}=e.s;
  this.enemies.splice(this.enemies.indexOf(e),1);
+ spreadPoison(e,this.enemies,this.elapsed,v=>v.s);
  fadeDefeatedEnemy(this,e,hitBurst);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
  const firstElite=e.elite&&!this.eliteDefeated;
@@ -776,6 +779,14 @@ class Battle extends Phaser.Scene{
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn(false,false,takeWildlife(this.wildlifeArrivals,this.timeLeft,this.stageKey,this.wave));this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  this.spawnWaveElites();
+ for(const e of [...this.enemies]){
+   const damage=poisonTick(e,this.elapsed);
+   if(damage){
+     medicineTrail(this,e.s,e.s,true);
+     this.applyHitDamage(this.hero,e,damage,false,true);
+     if(this.mode!=='fight')return;
+   }
+ }
  for(const e of this.enemies){
    advanceImpact(e,dt);
    const stunned=this.elapsed<e.soulStunUntil;
@@ -803,13 +814,15 @@ class Battle extends Phaser.Scene{
      if(this.mode!=='fight')return;
      continue;
    }
-   const candidates=i&&![2,5].includes(a.id)&&nearby.length?nearby:this.enemies;
+   const candidates=i&&![2,5,medicId,poisonerId].includes(a.id)&&nearby.length?nearby:this.enemies;
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  const range=a.hero?this.commanderAttackRange():this.mercRange(a);
  if(i)this.follow(a,i-1,target,x||y,dt);
  if(i&&a.id===4&&target){a.facing=Math.atan2(target.s.y-a.s.y,target.s.x-a.s.x);a.s.setFlipX(Math.cos(a.facing)<0)}
- a.s.setDepth(a.s.y+1);a.cd-=dt;if(target&&d<range&&a.cd<=0){this.attack(a,target);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}
+ a.s.setDepth(a.s.y+1);a.cd-=dt;
+ const needsTreatment=a.id===medicId&&this.hp<this.maxHP;
+ if(a.cd<=0&&(needsTreatment||(target&&d<range))){this.attack(a,d<range?target:null);if(this.mode!=='fight')return;a.cd=this.attackInterval(a)}}
  if(this.bondCounts[2]===6&&(this.volleyIn-=dt)<=0){
    this.volleyIn+=8*(1-.12*this.bag[11]);this.groupStrike(2);
    if(this.mode!=='fight')return;

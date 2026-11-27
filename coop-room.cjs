@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {medicId,poisonerId,medicPulseCount,medicPulseAmount,applyPoison,poisonTick,spreadPoison,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -15,7 +15,7 @@ function player(hero,index){
 function room(code){return {code,phase:'lobby',wave:1,level:1,xp:0,time:0,spawn:0,serial:0,players:[],enemies:[],loot:[],effects:[],clock:0}}
 function start(r){
   r.phase='fight';r.time=waveDurationSeconds(r.wave);r.spawn=0;r.enemies=[];r.loot=[];r.effects=[];
-  for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;p.revision++}
+  for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;for(const a of p.army)a.pulses=0;p.revision++}
   if(r.wave===finalWave)spawn(r,true);
   r.wildlifeArrivals=wildlifeArrivals(r.wave,r.time);
   r.eliteArrivals=eliteArrivalTimes(r.wave,r.time);
@@ -64,9 +64,18 @@ function hit(r,p,a,e,damage){
  e.hp-=damage;
  if(e.hp>0)return;
  r.enemies.splice(r.enemies.indexOf(e),1);
+ spreadPoison(e,r.enemies,r.clock,v=>v);
  if(e.boss){r.phase='won';return}
  if(e.elite)delayNextElite(r.eliteArrivals,r.time);
  r.loot.push({id:++r.serial,x:e.x,y:e.y,box:Math.random()<.015});
+}
+function teamPulse(r,unit){
+ const ally=r.players.filter(p=>p.hp>0&&p.hp<p.max&&distance(unit,p)<=troops[medicId][3])
+   .sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
+ if(!ally)return false;
+ ally.hp=Math.min(ally.max,ally.hp+medicPulseAmount(unit.q,ally.hp,ally.max));
+ r.effects.push({id:++r.serial,x:ally.x,y:ally.y,fromX:unit.x,fromY:unit.y,weapon:medicId,until:r.clock+.24});
+ return true;
 }
 function tick(r,dt,now=Date.now()){
  if(r.players.some(p=>now-p.seen>2500))return;
@@ -85,14 +94,35 @@ function tick(r,dt,now=Date.now()){
      const stats=i?troops[a.id]:null;
      if(i){const angle=2*Math.PI*(i-1)/p.army.length;move(a,{x:p.x+31*Math.cos(angle),y:p.y+31*Math.sin(angle)},210*dt)}
      a.cd-=dt;const e=nearest(a,r.enemies);
+     if(i&&a.id===medicId){
+       if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a);a.pulses--;a.pulseAt=r.clock+.28}
+       if(a.cd<=0&&teamPulse(r,a)){
+         a.pulses=medicPulseCount(a.q)-1;a.pulseAt=r.clock+.28;a.cd=stats[2]*.75;continue;
+       }
+     }
      const c=commanders.banner;
      if(e&&a.cd<=0&&distance(a,e)<(stats?stats[3]:c.range)){
-       hit(r,p,a,e,(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power);
+       const damage=(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power;
+       if(i&&a.id===poisonerId){
+         const spread=a.q===3?1:0;
+         applyPoison(e,r.clock,damage*.24,a.q>=1?2:1,spread);
+         if(a.q>=2){
+           const other=nearest(e,r.enemies.filter(v=>v!==e&&distance(e,v)<=26));
+           if(other)applyPoison(other,r.clock,damage*.24,1,spread);
+         }
+       }
+       hit(r,p,a,e,damage);
        a.cd=(stats?stats[2]:troops[c.weapon][2])*.75;if(r.phase!=='fight')return;
      }
    }
  }
- for(const e of r.enemies){
+ for(const e of [...r.enemies]){
+   const damage=poisonTick(e,r.clock);
+   if(damage){
+     hit(r,null,{id:poisonerId,x:e.x,y:e.y},e,damage);
+     if(r.phase!=='fight')return;
+     if(e.hp<=0)continue;
+   }
    const p=nearest(e,r.players.filter(p=>p.hp>0));if(!p)break;
    const beast=wildBeasts[e.skin];
    move(e,p,(beast?beast.speed+r.wave:(27+r.wave)*1.4)*dt);

@@ -85,12 +85,19 @@ const soulStrikes={
   wuanguo:   {form:'hammer',color:0xe79a67},
   dianwei:   {form:'twinJi',color:0xc38ae1},
   lvbu:      {form:'halberd',color:0xf27152},
-  guanyu:    {form:'crescent',color:0x58c798}
+  guanyu:    {form:'crescent',color:0x58c798},
+  huatuo:     {form:'needle',color:0xddc982},
+  bianque:    {form:'flask',color:0x8aba75}
 };
 
 function drawSoulWeapon(g,form,color){
   const light=0xfff2ce;
   switch(form){
+    case 'needle':
+      strikeShard(g,-18,0,25,0,1.1,light);g.lineStyle(2,color).lineBetween(-19,0,-11,0);break;
+    case 'flask':
+      g.fillStyle(color).fillCircle(0,0,5).fillRect(-6,-3,4,3);
+      g.lineStyle(1.3,light).strokeCircle(0,0,5);break;
     case 'arrow':
     case 'bolts':{
       const lanes=form==='arrow'?[0]:[-6,0,6];
@@ -147,11 +154,11 @@ function soulStrikeArea(general,source,target){
   const {form}=soulStrikes[general];
   const dx=target.x-source.x,dy=target.y-source.y,angle=Math.atan2(dy,dx);
   const reach=Math.hypot(dx,dy);
-  if(form==='shield'||form==='hammer'){
+  if(form==='shield'||form==='hammer'||form==='flask'){
     return {shape:'circle',x:target.x,y:target.y,angle:0,radius:form==='hammer'?34:25};
   }
-  if(['spear','halberd','arrow','bolts'].includes(form)){
-    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12}[form];
+  if(['spear','halberd','arrow','bolts','needle'].includes(form)){
+    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12,needle:5}[form];
     return {shape:'line',x:source.x,y:source.y,angle,length:reach+28,halfWidth};
   }
   const halfAngle={swords:.8,axe:.95,twinJi:.72,crescent:1.05}[form];

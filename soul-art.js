@@ -296,3 +296,23 @@ function lvbuPlumeFrame(scene,frame,tier=0){
   });
   return key;
 }
+
+function drawSummonSeal(g,t){
+  g.clear();
+  const light=Math.min(1,t/.16,(1-t)/.1);
+  const radius=12+17*Math.sin(Math.min(1,t/.68)*Math.PI/2);
+  const gold=0xffcf72,ivory=0xfff1bc;
+  g.fillStyle(0xe7a745,.16*light).fillEllipse(0,0,2*radius,radius*.76);
+  g.lineStyle(1.2,gold,.95*light).strokeEllipse(0,0,2*radius,radius*.76);
+  g.lineStyle(.7,ivory,.76*light).strokeEllipse(0,0,2*radius-5,(2*radius-5)*.38);
+  for(let i=0;i<8;i++){
+    const angle=i*Math.PI/4+t*.65;
+    const x=Math.cos(angle)*radius,y=Math.sin(angle)*radius*.38;
+    g.lineStyle(1.5,gold,light).lineBetween(x*.90,y*.90,x*1.08,y*1.08);
+    const lift=Math.max(0,(t-.15)/.85);
+    const height=lift*(21+4*(i%3));
+    const drift=1-.65*lift,px=x*drift,py=y*drift-height;
+    g.lineStyle(.8,gold,light*.65).lineBetween(px,py+2+4*lift,px,py);
+    g.fillStyle(ivory,light).fillCircle(px,py,1);
+  }
+}

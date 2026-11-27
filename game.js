@@ -228,7 +228,7 @@ class Battle extends Phaser.Scene{
    document.addEventListener('visibilitychange',this.resetStick);
  }
  get startingLevel(){return this.camp.data.showDebugButtons===true?20:1}
- resetRun(){Object.assign(this,{wave:1,souls:[],flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:this.startingLevel,xp:0,pendingLevels:[],upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
+ resetRun(){Object.assign(this,{wave:1,souls:[],summonedGenerals:new Set(),flagKills:0,earnedIron:0,eliteWins:[],hp:100+5*this.camp.level('vigor'),maxHP:100+5*this.camp.level('vigor'),gold:2*this.camp.level('supply'),kills:0,level:this.startingLevel,xp:0,pendingLevels:[],upgradeRefreshes:0,mercHaste:0,critBonus:0,armor:0,boxes:[],damage:1,speed:startingSpeed+this.commander.passives.reduce((v,p)=>v+(p.speedBonus??0),0),luck:0,army:[],bag:items.map(()=>0),offers:[],enemies:[],drops:[],actors:[],cleared:0});}
  hud(){
    if(this.mode==='title')$('camp-wallet').textContent='银币 '+this.camp.data.silver+'　·　铁料 '+this.camp.data.iron+'　·　军功章 '+this.camp.data.medals;
    $('field').classList.toggle('low-health',this.mode==='fight'&&this.hp>0&&this.hp<=this.maxHP*.25);
@@ -262,11 +262,15 @@ class Battle extends Phaser.Scene{
  this.healCommander(15+6*this.bag[bandage]);
  setupStage(this);this.gold+=3*this.bag[coinPurse];this.flagUntil=0;this.eliteDefeated=false;
  this.deployMercenaries();
+ this.updateWaveLabel();
  this.cameras.main.centerOn(this.hero.x,this.hero.y);
  $('debug-final-wave').disabled=this.wave>=finalWave;
  if(this.wave===finalWave)this.spawn(true);
  this.eliteArrivals=eliteArrivalTimes(this.wave,this.timeLeft);
  this.hud()
+ }
+ updateWaveLabel(){
+ $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败'+this.campaign.boss:this.campaign.army+' · '+Math.ceil(this.timeLeft)+' 秒');
  }
  createActor(unit,index){
    const skin=unit.hero?this.commander.skin:troopSkin(unit.id,unit.q);
@@ -296,10 +300,20 @@ class Battle extends Phaser.Scene{
        image.once('destroy',()=>image.plumes.destroy());
      }
    }
+   this.hero.setDepth(this.hero.y+1);
    this.positionSouls();
+   const arriving=this.souls.filter(spirit=>!this.summonedGenerals.has(spirit.type.general));
+   if(arriving.length){
+     for(const {image} of arriving){
+       image.setVisible(false);
+       image.plumes?.setVisible(false);
+     }
+     this.summonIntro={age:0,arriving,seal:this.add.graphics().setPosition(this.hero.x,this.hero.y).setDepth(this.hero.depth-.8)};
+     this.stepSummonIntro(0);
+   }
  this.actors.slice(1).forEach((unit,slot)=>{
    const pos=this.followPosition(slot);
-   unit.s.setPosition(pos.x,pos.y);
+   unit.s.setPosition(pos.x,pos.y).setDepth(pos.y+1);
    const variation=(slot*.618+Math.random()*.08)%1;
    unit.stride=(variation+.25)%1;
    unit.stepLength=32+variation*7;
@@ -560,7 +574,32 @@ class Battle extends Phaser.Scene{
      this.tweens.add({targets:fx,rotation:facing+.45,alpha:0,duration:180,onComplete:()=>fx.destroy()});
    }
  }
+ stepSummonIntro(dt){
+   const intro=this.summonIntro;
+   intro.age+=dt;
+   const progress=Math.min(1,intro.age/.8);
+   const lift=Phaser.Math.Clamp(Math.min(progress/.40,(1-progress)/.16),0,1);
+   const pose=Math.round(8*lift*lift*(3-2*lift));
+   const commander=this.actors[0];
+   commander.s.setTexture(commander.baseTexture+'summon'+pose);
+   drawSummonSeal(intro.seal,progress);
+   if(progress<1)return;
+   for(const {type,image} of intro.arriving){
+     image.setVisible(true);
+     image.plumes?.setVisible(true);
+     this.summonedGenerals.add(type.general);
+   }
+   this.clearSummonIntro();
+ }
+ clearSummonIntro(){
+   if(!this.summonIntro)return;
+   this.summonIntro.seal.destroy();
+   this.summonIntro=null;
+   const commander=this.actors[0];
+   if(commander?.s.active)commander.s.setTexture(commander.baseTexture);
+ }
  clearSouls(){
+   this.clearSummonIntro();
    for(const zone of this.poisonCircles??[])zone.image.destroy();
    this.poisonCircles=[];
    for(const spirit of this.souls)spirit.image?.destroy();
@@ -766,7 +805,9 @@ class Battle extends Phaser.Scene{
  update(_,ms){
  this.sfx?.updateMusic(this.mode);
  if(this.mode==='finishing'){if(!this.fallenEnemies.getLength())this.finishBattleTransition();return}
- if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
+ if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;
+ if(this.summonIntro){this.stepSummonIntro(Math.min(ms/1000,.05));return}
+ if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
  let x=Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),y=Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);
  if(!x&&!y){x=this.stickX;y=this.stickY}
  if(x||y)this.dir=[x/Math.hypot(x,y),y/Math.hypot(x,y)];
@@ -846,7 +887,7 @@ class Battle extends Phaser.Scene{
    const pullRadius=(drop.chest?94:70*(1+.05*this.camp.level('sense')))*(1+.20*this.bag[satchel]);
    if(distance(drop.s,h)<pullRadius)this.move(drop.s,h.x,h.y,dt*300);
    if(distance(drop.s,h)<17){this.collect(drop);this.drops.splice(this.drops.indexOf(drop),1);drop.s.destroy();this.hud()}}
- $('wave').textContent='第 '+this.wave+' / '+finalWave+' 波　 ·　'+(this.wave===finalWave?'击败'+this.campaign.boss:this.campaign.army+' · '+Math.ceil(this.timeLeft)+' 秒');
+ this.updateWaveLabel();
  if(this.timeLeft<=0&&this.wave<finalWave){
    this.cleared=this.wave;
    this.afterEnemyDefeats(()=>{

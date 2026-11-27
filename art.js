@@ -174,7 +174,7 @@ const bannerUniforms=[
   {cape:'#773836',lining:'#4c292f',metal:'#414b54',shade:'#242e37',light:'#77828a',trim:'#dfae5e'},
   {cape:'#a03d35',lining:'#692f30',metal:'#d9a246',shade:'#8d612f',light:'#ffe494',trim:'#f6d383'}
 ];
-function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=false){
+function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=false,raise=0){
   const u=bannerUniforms[rank],step=Math.sin(phase),wind=Math.sin(clothPhase-.55);
   const torsoX=step*1.3,torsoY=-3.4*step*step;
   const clothAmplitude=walking?.7:.17;
@@ -290,14 +290,14 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   }
 
   // Resting blade drops toward the forward boot. Hand, guard and blade share the wrist.
-  c.save();c.translate(94,111);c.rotate(swing===null?step*.09:swing-1.22);
+  c.save();c.translate(94,111);c.rotate(raise*1.45+(swing===null?step*.09:swing-1.22));
   fill('M-8 -3 Q2 -8 9 0 L6 13 L-1 25 L-16 22Z',rank?u.shade:'#a34c37');
   fill('M-13 15 Q-8 13 2 20 L-3 36 L-17 38 L-20 33Z',glaze('#fae5bf','#cfb48b',14,40));
   if(rank){
     fill('M-17 22 Q-11 18 -1 23 L-4 37 L-19 36Z',glaze(rank===4?'#fff3d9':u.light,rank===4?'#e2cba5':u.metal,20,39));
   }
   fill('M-20 33 Q-13 31 -3 36 L-4 42 L-20 39Z',rank===4?gold:rank?u.shade:'#91402c');
-  c.save();c.translate(-13,41);c.rotate(.77);
+  c.save();c.translate(-13,41);c.rotate(.77-3.69*raise);
   line('M-4 0 L14 0','#825830',4.8);
   fill('M10 -3 L84 -4 L102 0 L87 5 L10 4Z','#7f9099');
   fill('M10 -3 L84 -4 L102 0 L14 .6Z',glaze('#f8fcf9','#cfdae0',-4,2));
@@ -1148,10 +1148,10 @@ function makeArt(scene){
 function commanderTexture(scene,level){
   const rank=commanderForm(level),base='man'+commanders.banner.skin+(rank?'form'+rank:'');
   if(scene.textures.exists(base))return base;
-  function frame(key,phase,swing=null,cloth=phase,walking=false){
+  function frame(key,phase,swing=null,cloth=phase,walking=false,raise=0){
     paintTexture(scene,key,112,112,c=>{
       c.scale(2,2);
-      bannerCommander(c,phase,swing,cloth,rank,walking);
+      bannerCommander(c,phase,swing,cloth,rank,walking,raise);
     });
   }
   frame(base,0);
@@ -1160,6 +1160,7 @@ function commanderTexture(scene,level){
     frame(base+'walk'+i,phase,null,phase,true);
   }
   for(let i=0;i<COMMANDER_CLOTH_FRAMES;i++)frame(base+'cloth'+i,0,null,TAU*i/COMMANDER_CLOTH_FRAMES);
+  for(let i=0;i<=8;i++)frame(base+'summon'+i,0,null,i*.25,false,i/8);
   commanderSwingAngles.forEach((angle,i)=>frame(base+'swing'+i,0,angle,i*.55));
   return base;
 }

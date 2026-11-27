@@ -180,7 +180,7 @@ const commanders={
   banner:{name:"灰旗指挥官",weapon:0,skin:6,range:63,baseDamage:17,
     passives:[
       {name:'旗手号令',description:'每招募一名在队佣兵，主角伤害提高 5%。',
-       damageMultiplier:scene=>1+.05*scene.army.length},
+       damageMultiplier:scene=>1+.05*(scene.actors?.length?scene.actors.length-1:scene.army.length)},
       {name:'战地振奋',description:'小队每累计击败 5 名敌人，主角恢复 3 点生命。',
        onKill(scene){
          if(scene.kills%5===0)scene.healCommander(3);

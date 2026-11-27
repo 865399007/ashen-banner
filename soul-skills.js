@@ -87,14 +87,14 @@ const soulTechniques={
     const pulse=()=>medicinePulse(scene,spirit.image,level>=3&&scene.hp<scene.maxHP*.4?6:3);
     const count=level===4&&round%3===0?6:level>=2?3:2;
     pulse();
-    for(let i=1;i<count;i++)later(.19*i,pulse);
+    for(let i=1;i<treatmentPulses(count,scene.bag);i++)later(.19*i,pulse);
   },
   bianque({scene,level,round,target,area,damage,hit,sweep,mark}){
     const power=damage*.18*(1+scene.soulBonus('poison')),spread=level>=3?2:0;
     const victims=level>=2?scene.enemies.filter(e=>soulStrikeContains(area,e.s)):[target];
     for(const e of victims){
       if(e.hp<=0||!soulStrikeContains(area,e.s))continue;
-      applyPoison(e,scene.elapsed,power,e===target?2:1,spread);
+      dosePoison(e,scene.elapsed,power,e===target?2:1,spread,scene.bag);
     }
     const burst=level===4&&round%3===0&&target.hp>0&&soulStrikeContains(area,target.s)&&target.poison?.layers===5;
     if(burst){mark(area,0,36,'ring');sweep(soulCircle(area,36),1.15)}

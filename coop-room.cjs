@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {medicId,poisonerId,medicPulseCount,medicPulseAmount,applyPoison,poisonTick,spreadPoison,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {medicId,poisonerId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,dosePoison,poisonTick,spreadPoison,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -27,12 +27,17 @@ function spawn(r,boss=false,elite=false,wildlife=null){
   r.enemies.push({id:++r.serial,skin:wildlife??(boss?campaigns.border.bossSkin:elite?pick([3,4,5]):villageEnemy(r.wave)),x:clamp(h.x+140*Math.cos(angle),10,950),y:clamp(h.y+140*Math.sin(angle),20,585),hp,max:hp,boss,elite});
 }
 function hand(p){p.choices=['体魄','力量','步法','幸运','恢复'];for(let i=4;i>0;i--){let j=Math.floor(Math.random()*(i+1));[p.choices[i],p.choices[j]]=[p.choices[j],p.choices[i]]}p.choices.length=4}
-const goods=[0,1,2,17];
+const goods=[0,1,2,17,...medicineGear];
+function roomGear(r,p){
+ const quality=tier(r.wave,p.luck);
+ return goods.filter(id=>(!medicineGear.includes(id)||items[id][1]<=quality)&&canEquipItem(p.bag,id));
+}
 function roll(r,p){
- const available=goods.filter(id=>canEquipItem(p.bag,id));
+
  const offers=p.offers||[];let m=offers.filter(o=>o?.lock&&o.merc).length;
  let n=offers.filter(o=>o?.lock&&!o.merc).length;
  for(let i=0;i<4;i++){if(offers[i]?.lock)continue;
+   const available=roomGear(r,p);
    const merc=!available.length||(r.wave<=2?Math.random()<(2-m)/(4-m-n):Math.random()<.35);
    const id=merc?recruitOffer(troops.map((_,id)=>id),p.army):pick(available);
    const q=merc?tier(r.wave,p.luck):items[id][1];
@@ -69,11 +74,11 @@ function hit(r,p,a,e,damage){
  if(e.elite)delayNextElite(r.eliteArrivals,r.time);
  r.loot.push({id:++r.serial,x:e.x,y:e.y,box:Math.random()<.015});
 }
-function teamPulse(r,unit){
+function teamPulse(r,unit,bag){
  const ally=r.players.filter(p=>p.hp>0&&p.hp<p.max&&distance(unit,p)<=troops[medicId][3])
    .sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
  if(!ally)return false;
- ally.hp=Math.min(ally.max,ally.hp+medicPulseAmount(unit.q,ally.hp,ally.max));
+ ally.hp=Math.min(ally.max,ally.hp+treatmentAmount(medicPulseAmount(unit.q,ally.hp,ally.max),bag));
  r.effects.push({id:++r.serial,x:ally.x,y:ally.y,fromX:unit.x,fromY:unit.y,weapon:medicId,until:r.clock+.24});
  return true;
 }
@@ -95,9 +100,9 @@ function tick(r,dt,now=Date.now()){
      if(i){const angle=2*Math.PI*(i-1)/p.army.length;move(a,{x:p.x+31*Math.cos(angle),y:p.y+31*Math.sin(angle)},210*dt)}
      a.cd-=dt;const e=nearest(a,r.enemies);
      if(i&&a.id===medicId){
-       if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a);a.pulses--;a.pulseAt=r.clock+.28}
-       if(a.cd<=0&&teamPulse(r,a)){
-         a.pulses=medicPulseCount(a.q)-1;a.pulseAt=r.clock+.28;a.cd=stats[2]*.75;continue;
+       if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a,p.bag);a.pulses--;a.pulseAt=r.clock+.28}
+       if(a.cd<=0&&teamPulse(r,a,p.bag)){
+         a.pulses=treatmentPulses(medicPulseCount(a.q),p.bag)-1;a.pulseAt=r.clock+.28;a.cd=stats[2]*.75;continue;
        }
      }
      const c=commanders.banner;
@@ -105,10 +110,10 @@ function tick(r,dt,now=Date.now()){
        const damage=(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power;
        if(i&&a.id===poisonerId){
          const spread=a.q===3?1:0;
-         applyPoison(e,r.clock,damage*.24,a.q>=1?2:1,spread);
+         dosePoison(e,r.clock,damage*.24,a.q>=1?2:1,spread,p.bag);
          if(a.q>=2){
            const other=nearest(e,r.enemies.filter(v=>v!==e&&distance(e,v)<=26));
-           if(other)applyPoison(other,r.clock,damage*.24,1,spread);
+           if(other)dosePoison(other,r.clock,damage*.24,1,spread,p.bag);
          }
        }
        hit(r,p,a,e,damage);
@@ -139,7 +144,7 @@ function tick(r,dt,now=Date.now()){
    const l=r.loot[i],p=nearest(l,r.players.filter(p=>p.hp>0));if(!p)continue;
    if(distance(l,p)<70)move(l,p,220*dt);
    if(distance(l,p)>13)continue;
-   r.loot.splice(i,1);p.gold+=2;if(l.box)p.boxes.push(pick(goods));r.xp++;
+   r.loot.splice(i,1);p.gold+=2;if(l.box)p.boxes.push(pick(roomGear(r,p))??0);r.xp++;
    if(r.xp>=8+r.level*3){r.xp-=8+r.level*3;r.level++;for(const teammate of r.players)teammate.pending++}
  }
  if(r.time<=0&&r.wave<finalWave)refit(r);

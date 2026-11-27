@@ -215,14 +215,14 @@ function medicineTrail(scene,source,target,poison){
 function medicinePulse(scene,source,base){
   if(scene.mode!=='fight'||scene.hp<=0||scene.hp>=scene.maxHP)return;
   medicineTrail(scene,source,scene.hero,false);
-  scene.healCommander(Math.round(base*(1+scene.soulBonus('healing'))*10)/10);
+  scene.healCommander(Math.round(treatmentAmount(base,scene.bag)*(1+scene.soulBonus('healing'))*10)/10);
   scene.hud();
 }
 function fieldMedicineRound(scene,unit,target){
   if(unit.id===medicId&&scene.hp<scene.maxHP){
     const pulse=()=>medicinePulse(scene,unit.s,medicPulseAmount(unit.q,scene.hp,scene.maxHP));
     pulse();
-    for(let i=1;i<medicPulseCount(unit.q);i++)followUp(scene,unit,i*.28,pulse);
+    for(let i=1;i<treatmentPulses(medicPulseCount(unit.q),scene.bag);i++)followUp(scene,unit,i*.28,pulse);
     return;
   }
   if(!target)return;
@@ -231,11 +231,11 @@ function fieldMedicineRound(scene,unit,target){
   if(poison){
     const power=troops[poisonerId][1]*[1,1.32,1.72,2.22][unit.q]*scene.damage*.24*(1+scene.soulBonus('poison'));
     const layers=unit.q>=1?2:1,spread=unit.q===3?1:0;
-    applyPoison(target,scene.elapsed,power,layers,spread);
+    dosePoison(target,scene.elapsed,power,layers,spread,scene.bag);
     if(unit.q>=2){
       const nearby=areaTargets(scene,target.s,0,26,0,'ring').find(e=>e!==target);
       if(nearby){
-        medicineTrail(scene,target.s,nearby.s,true);applyPoison(nearby,scene.elapsed,power,1,spread);
+        medicineTrail(scene,target.s,nearby.s,true);dosePoison(nearby,scene.elapsed,power,1,spread,scene.bag);
       }
     }
   }

@@ -561,6 +561,8 @@ class Battle extends Phaser.Scene{
    }
  }
  clearSouls(){
+   for(const zone of this.poisonCircles??[])zone.image.destroy();
+   this.poisonCircles=[];
    for(const spirit of this.souls)spirit.image?.destroy();
    this.souls=[];
  }
@@ -781,6 +783,7 @@ class Battle extends Phaser.Scene{
  this.cameras.main.centerOn(h.x,h.y);
  advanceImpact(this.actors[0],dt);h.alpha=this.invul>0 && this.showInvulFade ? .72 : 1;this.spawnIn-=dt;if(this.spawnIn<=0&&this.enemies.length<90){this.spawn(false,false,takeWildlife(this.wildlifeArrivals,this.timeLeft,this.stageKey,this.wave));this.spawnIn=Math.max(.24,.95-this.wave*.064)*this.campaign.pace}
  this.spawnWaveElites();
+ stepPoisonCircles(this);
  for(const e of [...this.enemies]){
    const damage=poisonTick(e,this.elapsed);
    if(damage){

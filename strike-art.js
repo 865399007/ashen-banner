@@ -86,20 +86,16 @@ const soulStrikes={
   dianwei:   {form:'twinJi',color:0xc38ae1},
   lvbu:      {form:'halberd',color:0xf27152},
   guanyu:    {form:'crescent',color:0x58c798},
-  huatuo:     {form:'herbalMist',color:0xa8d7ad},
-  bianque:    {form:'flask',color:0x8aba75}
+  huatuo:     {form:'poisonMist',color:0xa1be65}
 };
 
 function drawSoulWeapon(g,form,color){
   const light=0xfff2ce;
   switch(form){
-    case 'herbalMist':
+    case 'poisonMist':
       g.lineStyle(2,color,.9).strokePoints([{x:-12,y:2},{x:-8,y:-2},{x:-4,y:-2.6},{x:1,y:.5},{x:5,y:-1}]);
       g.fillStyle(color,.55).fillEllipse(-4,0,12,6);
       g.fillStyle(light,.8).fillCircle(2,-2,1.2).fillCircle(-9,3,.9);break;
-    case 'flask':
-      g.fillStyle(color).fillCircle(0,0,5).fillRect(-6,-3,4,3);
-      g.lineStyle(1.3,light).strokeCircle(0,0,5);break;
     case 'arrow':
     case 'bolts':{
       const lanes=form==='arrow'?[0]:[-6,0,6];
@@ -152,15 +148,22 @@ function drawSoulWeapon(g,form,color){
   }
 }
 
+function showPoisonTick(scene,sprite){
+  const puff=scene.add.graphics().setPosition(sprite.x,sprite.y-9).setDepth(1001);
+  puff.lineStyle(1.3,0xa1be65,.9).strokeEllipse(0,2,12,6);
+  for(const [x,y] of [[-4,-2],[1,-6],[5,-1]])puff.fillStyle(0xb6a3c7,.8).fillCircle(x,y,1.4);
+  scene.tweens.add({targets:puff,y:sprite.y-15,alpha:0,duration:220,onComplete:()=>puff.destroy()});
+}
+
 function soulStrikeArea(general,source,target){
   const {form}=soulStrikes[general];
   const dx=target.x-source.x,dy=target.y-source.y,angle=Math.atan2(dy,dx);
   const reach=Math.hypot(dx,dy);
-  if(form==='shield'||form==='hammer'||form==='flask'){
+  if(form==='shield'||form==='hammer'){
     return {shape:'circle',x:target.x,y:target.y,angle:0,radius:form==='hammer'?34:25};
   }
-  if(['spear','halberd','arrow','bolts','herbalMist'].includes(form)){
-    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12,herbalMist:5}[form];
+  if(['spear','halberd','arrow','bolts','poisonMist'].includes(form)){
+    const halfWidth={spear:9,halberd:13,arrow:6,bolts:12,poisonMist:5}[form];
     return {shape:'line',x:source.x,y:source.y,angle,length:reach+28,halfWidth};
   }
   const halfAngle={swords:.8,axe:.95,twinJi:.72,crescent:1.05}[form];
@@ -286,7 +289,7 @@ function showSoulStrike(scene,spirit,target,area,onImpact){
   const rim=Phaser.Display.Color.HexStringToColor(soulRimColors[level-1]).color;
   // The painted grip is eight drawing units forward and five above the belt anchor.
   const scale=soul.scaleX*2,side=soul.flipX?-1:1;
-  const pouring=form==='herbalMist';
+  const pouring=form==='poisonMist';
   const {x,y}=pouring?huatuoSpout(soul):{x:soul.x+side*8*scale,y:soul.y-5*scale};
   const aimX=area.shape==='line'&&!pouring?area.x+Math.cos(area.angle)*area.length:target.x;
   const aimY=area.shape==='line'&&!pouring?area.y+Math.sin(area.angle)*area.length:target.y;

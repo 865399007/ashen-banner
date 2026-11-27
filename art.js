@@ -404,7 +404,7 @@ function bannerCommander(c,phase,swing=null,clothPhase=phase,rank=0,walking=fals
   }
   c.restore();
 }
-const mercSkins=[0,1,2,7,17,18,19,20,21,22,24,25];
+const mercSkins=[0,1,2,7,17,18,19,20,21,22,24];
 function troopSkin(id,q=0){const skin=mercSkins[id];return "merc"+skin+(q?"tier"+q:"")}
 // Shared by standing soldiers and riders so that each rank has the same silhouette.
 function mercenaryUniform(c,rank,coat,trim,step){
@@ -523,7 +523,7 @@ function mountedLancer(c,phase,ally,q,ink,pose,enemyCloth){
 }
 function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=campaigns.border.colors){
   const mercenary=variant==='mercenary';
-  const physician=mercenary&&id===24,herbalist=mercenary&&id===25;
+  const physician=mercenary&&id===24;
   if(id===8||id===22){mountedLancer(c,phase,id===22,q,weaponInk,pose,enemyCloth);return}
   const recruit=id>=17&&id<=22;
   const recruitSkin=id;
@@ -532,8 +532,8 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
   if(id===6){bannerCommander(c,phase);return}
   const weapon=id%3,enemy=(id>=3&&id<=5)||id>=9,step=Math.sin(phase);
   const allied=recruit||!enemy;
-  const coat=physician?'#c6cbb1':herbalist?'#647454':recruit?'#506975':allied?({0:'#615175',1:'#923e32',2:'#787044',7:'#875039'})[id]:enemyCloth.base;
-  const trim=physician?'#518178':herbalist?'#59475f':recruit?'#384957':allied?({0:'#40354f',1:'#662d28',2:'#514f34',7:'#603727'})[id]:enemyCloth.shadow;
+  const coat=physician?'#c6cbb1':recruit?'#506975':allied?({0:'#615175',1:'#923e32',2:'#787044',7:'#875039'})[id]:enemyCloth.base;
+  const trim=physician?'#518178':recruit?'#384957':allied?({0:'#40354f',1:'#662d28',2:'#514f34',7:'#603727'})[id]:enemyCloth.shadow;
   const paint=(path,color)=>{c.fillStyle=color;c.fill(new Path2D(path))};
   const stroke=(path,color,width)=>{
     c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(path));
@@ -671,28 +671,21 @@ function miniature(c,p,id,phase=0,q=0,weaponInk,pose=0,variant='',enemyCloth=cam
       stroke('M27 10 L31 11 Q30 15 35 15 Q33 22 27 20 L25 15 Z',weaponInk,2.6);
     }
   }
-  if(physician||herbalist){
+  if(physician){
     stroke('M9 15 L19 26','#ab8860',1.5);
-    if(physician){
-      // Pivot the bottle at the hand so its mouth tips towards the patient.
-      stroke('M18 20 Q20 23 23.7 20.5',trim,3.3);
-      c.save();c.translate(24,20);c.rotate(.18+pose*1.05);
-      const bottle='M-1.5 -6.7 L1.5 -6.7 L1.4 -4.9 Q5 -3.5 3.4 -.8 Q2.9 .3 1.9 1 Q2.1 1.9 4.1 2.9 C8 5.5 7 11.2 2.7 12.1 Q-.7 13.2 -3.8 11.6 C-8.2 9.2 -6.5 4.3 -3.5 2.6 Q-1.8 1.5 -1.9 .9 Q-5 -1 -3.5 -3.4 Q-2.8 -4.5 -1.4 -5Z';
-      stroke(bottle,'#63462c',1.1);
-      paint(bottle,wash(-5.7,5.8,'#ffe2a0','#b8833d'));
-      stroke('M-3.6 5.2 Q-5.2 7 -4 8.8','#f9dfa3',.9);
-      oval(c,0,-6.7,2.1,.85,'#795239');
-      oval(c,0,-6.8,1.1,.40,'#45392d');
-      stroke('M-2.1 -4.9 Q0 -4.2 2.1 -4.9','#a03d32',1.25);
-      paint('M1.7 -4.8 Q6 -6 6.1 -2.3 Q4 -1.2 2.2 -3.8 Q6.7 -2.6 7 1.6 L5.2 .8 L4.8 2.6 Q4.1 -.9 1.7 -4.8Z','#aa4435');
-      c.restore();
-    }else{
-      stroke('M19 22 Q24 15 29 17','#ac9b73',1.4);
-      paint('M26 15 L30 15 L29 19 Q35 22 32 27 Q28 31 23 27 Q20 23 25 19 Z','#415d58');
-      stroke('M25 22 Q28 24 31 21','#c0c780',1.4);
-      paint('M25 14 L30 13 L31 16 L25 17Z','#b38a65');
-    }
-    oval(c,physician?23:20,physician?20:22,physician?1.5:2,physician?1.35:1.8,'#ddb58d');
+    // Pivot the bottle at the hand so its mouth tips towards the patient.
+    stroke('M18 20 Q20 23 23.7 20.5',trim,3.3);
+    c.save();c.translate(24,20);c.rotate(.18+pose*1.05);
+    const bottle='M-1.5 -6.7 L1.5 -6.7 L1.4 -4.9 Q5 -3.5 3.4 -.8 Q2.9 .3 1.9 1 Q2.1 1.9 4.1 2.9 C8 5.5 7 11.2 2.7 12.1 Q-.7 13.2 -3.8 11.6 C-8.2 9.2 -6.5 4.3 -3.5 2.6 Q-1.8 1.5 -1.9 .9 Q-5 -1 -3.5 -3.4 Q-2.8 -4.5 -1.4 -5Z';
+    stroke(bottle,'#63462c',1.1);
+    paint(bottle,wash(-5.7,5.8,'#ffe2a0','#b8833d'));
+    stroke('M-3.6 5.2 Q-5.2 7 -4 8.8','#f9dfa3',.9);
+    oval(c,0,-6.7,2.1,.85,'#795239');
+    oval(c,0,-6.8,1.1,.40,'#45392d');
+    stroke('M-2.1 -4.9 Q0 -4.2 2.1 -4.9','#a03d32',1.25);
+    paint('M1.7 -4.8 Q6 -6 6.1 -2.3 Q4 -1.2 2.2 -3.8 Q6.7 -2.6 7 1.6 L5.2 .8 L4.8 2.6 Q4.1 -.9 1.7 -4.8Z','#aa4435');
+    c.restore();
+    oval(c,23,20,1.5,1.35,'#ddb58d');
   }else if(recruitSkin===18||recruitSkin===23){
     stroke('M16 25 L32 15','#68492f',3);
     stroke('M20 12 Q32 14 35 25','#847465',2);

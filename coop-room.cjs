@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {medicId,poisonerId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,dosePoison,poisonTick,spreadPoison,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {medicId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -69,7 +69,6 @@ function hit(r,p,a,e,damage){
  e.hp-=damage;
  if(e.hp>0)return;
  r.enemies.splice(r.enemies.indexOf(e),1);
- spreadPoison(e,r.enemies,r.clock,v=>v);
  if(e.boss){r.phase='won';return}
  if(e.elite)delayNextElite(r.eliteArrivals,r.time);
  r.loot.push({id:++r.serial,x:e.x,y:e.y,box:Math.random()<.015});
@@ -108,26 +107,12 @@ function tick(r,dt,now=Date.now()){
      const c=commanders.banner;
      if(e&&a.cd<=0&&distance(a,e)<(stats?stats[3]:c.range)){
        const damage=(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power;
-       if(i&&a.id===poisonerId){
-         const spread=a.q===3?1:0;
-         dosePoison(e,r.clock,damage*.24,a.q>=1?2:1,spread,p.bag);
-         if(a.q>=2){
-           const other=nearest(e,r.enemies.filter(v=>v!==e&&distance(e,v)<=26));
-           if(other)dosePoison(other,r.clock,damage*.24,1,spread,p.bag);
-         }
-       }
        hit(r,p,a,e,damage);
        a.cd=(stats?stats[2]:troops[c.weapon][2])*.75;if(r.phase!=='fight')return;
      }
    }
  }
- for(const e of [...r.enemies]){
-   const damage=poisonTick(e,r.clock);
-   if(damage){
-     hit(r,null,{id:poisonerId,x:e.x,y:e.y},e,damage);
-     if(r.phase!=='fight')return;
-     if(e.hp<=0)continue;
-   }
+ for(const e of r.enemies){
    const p=nearest(e,r.players.filter(p=>p.hp>0));if(!p)break;
    const beast=wildBeasts[e.skin];
    move(e,p,(beast?beast.speed+r.wave:(27+r.wave)*1.4)*dt);

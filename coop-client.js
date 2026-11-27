@@ -228,8 +228,8 @@ function installCoop(scene){
      if(f.weapon===medicId&&caster){
        medicEffect(scene,caster,caster.baseTexture,f,!!f.heal);continue;
      }
-     if(f.weapon===medicId||f.weapon===poisonerId){
-       medicineTrail(scene,{x:f.fromX,y:f.fromY},f,f.weapon===poisonerId);continue;
+     if(f.weapon===medicId){
+       needleTrail(scene,{x:f.fromX,y:f.fromY},f);continue;
      }
      scene.weaponEffect({id:f.weapon,q:f.q,s:{x:f.fromX,y:f.fromY,height:64,scaleY:.38}},
        {s:{x:f.x,y:f.y,height:64,scaleY:.33}});

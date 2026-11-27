@@ -457,7 +457,7 @@ class Battle extends Phaser.Scene{
    return {x:centerX+Math.cos(angle)*radius,y:centerY+Math.sin(angle)*radius};
  }
  follow(unit,slot,target,marching,dt){
-   const engage=!marching && target && ![2,5,medicId,poisonerId].includes(unit.id) && distance(target.s,this.hero)<105;
+   const engage=!marching && target && ![2,5,medicId].includes(unit.id) && distance(target.s,this.hero)<105;
    const wanted=engage?target.s:this.followPosition(slot);
    const history=unit.goalHistory;
    // Snapshot moving targets so that each soldier reacts on its own beat.
@@ -613,7 +613,7 @@ class Battle extends Phaser.Scene{
  }
  const count=this.bondCounts[a.id];
  a.shots++;
- if(a.id===medicId||a.id===poisonerId){fieldMedicineRound(this,a,e);return}
+ if(a.id===medicId){fieldMedicineRound(this,a,e);return}
  if(a.id===9){startCavalryRush(this,a,e);return}
  if(a.id===2||a.id===5){rangedRound(this,a,e);return}
  meleeRound(this,a,e);
@@ -737,7 +737,6 @@ class Battle extends Phaser.Scene{
  if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
  const {x,y}=e.s;
  this.enemies.splice(this.enemies.indexOf(e),1);
- spreadPoison(e,this.enemies,this.elapsed,v=>v.s);
  fadeDefeatedEnemy(this,e,hitBurst);
  if(e.boss){this.cleared=this.wave;this.end(true);return}
  const firstElite=e.elite&&!this.eliteDefeated;
@@ -785,7 +784,7 @@ class Battle extends Phaser.Scene{
  for(const e of [...this.enemies]){
    const damage=poisonTick(e,this.elapsed);
    if(damage){
-     medicineTrail(this,e.s,e.s,true);
+     showPoisonTick(this,e.s);
      this.applyHitDamage(this.hero,e,damage,false,true);
      if(this.mode!=='fight')return;
    }
@@ -817,7 +816,7 @@ class Battle extends Phaser.Scene{
      if(this.mode!=='fight')return;
      continue;
    }
-   const candidates=i&&![2,5,medicId,poisonerId].includes(a.id)&&nearby.length?nearby:this.enemies;
+   const candidates=i&&![2,5,medicId].includes(a.id)&&nearby.length?nearby:this.enemies;
    let target=null,d=Infinity;
    for(const e of candidates){const v=distance(a.s,e.s);if(v<d){target=e;d=v}}
  const range=a.hero?this.commanderAttackRange():this.mercRange(a);

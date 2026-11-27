@@ -203,8 +203,7 @@ const soulTypes=[
   {general:'dianwei',name:'典韦',weapon:'双铁戟',stat:'haste',label:'攻速',values:[6,12,20,30]},
   {general:'lvbu',name:'吕布',weapon:'方天画戟',stat:'reach',label:'射程',values:[8,15,25,35]},
   {general:'guanyu',name:'关羽',weapon:'青龙偃月刀',stat:'power',label:'伤害',values:[8,15,25,40]},
-  {general:'huatuo',name:'华佗',weapon:'药葫芦',stat:'healing',label:'医术治疗量',values:[10,18,26,35]},
-  {general:'bianque',name:'扁鹊',weapon:'青瓷毒壶',stat:'poison',label:'毒伤',values:[10,18,26,35]}
+  {general:'huatuo',name:'华佗',weapon:'药葫芦',stat:'healing',label:'医术治疗量',values:[10,18,26,35]}
 ];
 function armySouls(army){
   const counts=troops.map(()=>0);
@@ -217,46 +216,31 @@ function armySouls(army){
   });
   return souls;
 }
-const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞','✧','◈'];
-const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',8,2.8,96],['毒师',10,1.9,94]];
-const medicId=10,poisonerId=11;
+const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞','✧'];
+const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',8,2.8,96]];
+const medicId=10;
 function medicPulseCount(rank){return rank+1}
 function medicPulseAmount(rank,hp,max){return rank===3&&hp<max*.4?5:3}
-const jadeNeedle=36,medicineBook=37,sealedJar=38,mistGourd=39;
-const medicineGear=[jadeNeedle,medicineBook,sealedJar,mistGourd];
+const jadeNeedle=36,medicineBook=37;
+const medicineGear=[jadeNeedle,medicineBook];
 function treatmentAmount(base,bag){return base+Number(!!bag[jadeNeedle])}
 function treatmentPulses(count,bag){return count+Number(!!bag[medicineBook])}
-function dosePoison(enemy,now,potency,layers,spread,bag){
-  const wide=Boolean(bag[mistGourd]);
-  applyPoison(enemy,now,potency,layers,Math.max(spread,Number(wide)),bag[sealedJar]?6:4,wide?69:46);
-}
-function applyPoison(enemy,now,potency,layers=1,spread=0,duration=4,radius=46){
+function applyPoison(enemy,now,potency){
   let status=enemy.poison;
-  if(!status||status.until<now)status=enemy.poison={layers:0,potency:0,spread:0,next:now+1};
-  status.layers=Math.min(5,status.layers+layers);
-  status.potency=Math.max(status.potency,potency);
-  status.spread=Math.max(status.spread,spread);
-  status.until=Math.max(status.until??0,now+duration);
-  status.duration=Math.max(status.duration??0,duration);
-  status.radius=Math.max(status.radius??0,radius);
+  if(!status||status.until<now)status=enemy.poison={doses:[],next:now+1};
+  if(status.doses.length===5)status.doses.shift();
+  status.doses.push(potency);
+  status.until=now+4;
 }
 function poisonTick(enemy,now){
   const status=enemy.poison;
   if(!status)return 0;
   if(now>=status.next&&status.next<=status.until+.00001){
     status.next+=1;
-    return status.layers*status.potency;
+    return status.doses.reduce((total,dose)=>total+dose,0);
   }
   if(now>status.until)delete enemy.poison;
   return 0;
-}
-// Spread only from the original carrier. A fresh direct dose can prime another transfer.
-function spreadPoison(enemy,others,now,position){
-  const status=enemy.poison;
-  if(!status?.spread||now>status.until+.05)return;
-  const near=others.filter(e=>e!==enemy&&e.hp>0&&distance(position(e),position(enemy))<=status.radius)
-    .sort((a,b)=>distance(position(a),position(enemy))-distance(position(b),position(enemy)));
-  for(const e of near.slice(0,status.spread))applyPoison(e,now,status.potency,Math.min(2,status.layers),0,status.duration);
 }
 // Item IDs are also stored in saved blueprint lists. Append new equipment after the original set.
 const bladeWrap=21,poleFerrule=22,heavyGrip=23,riderSpurs=24,
@@ -267,11 +251,11 @@ const weaponTroops={
   3:[2,5],5:[2,5],13:polearms,19:[4],20:[5],
   [bladeWrap]:footBlades,[finishingBlade]:footBlades,[poleFerrule]:polearms,[formationSpike]:polearms,
   [heavyGrip]:heavyWeapons,[siegeHead]:heavyWeapons,[riderSpurs]:[9],[chargeStandard]:[9],
-  [jadeNeedle]:[medicId],[medicineBook]:[medicId],[sealedJar]:[poisonerId],[mistGourd]:[poisonerId]
+  [jadeNeedle]:[medicId],[medicineBook]:[medicId]
 };
 const needsBlueprint=id=>id>=11&&id<=20;
 function equippedFor(bag,item,troop){return bag[item]>0&&weaponTroops[item].includes(troop)}
-const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow','blade-wrap','pole-ferrule','heavy-grip','rider-spurs','finishing-blade','formation-spike','siege-head','charge-standard','herb-powder','coin-purse','scale-vest','field-needles','tiger-manual','heart-mirror','guard-seal','jade-needle','medicine-book','sealed-jar','mist-gourd'];
+const itemIcons=['whetstone','boots','badge','quiver','banner','reserve-arrows','chain-medal','satchel','bandage','permit','ward','horn','voucher','spear-socket','bounty','mark-flag','bracer','ration','pauldron','shield-order','crossbow','blade-wrap','pole-ferrule','heavy-grip','rider-spurs','finishing-blade','formation-spike','siege-head','charge-standard','herb-powder','coin-purse','scale-vest','field-needles','tiger-manual','heart-mirror','guard-seal','jade-needle','medicine-book'];
 function itemIcon(id){
   const image=document.createElement('img');
   image.className='item-icon';image.alt='';image.src='assets/items/'+itemIcons[id]+'.svg';
@@ -291,15 +275,14 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['鱼鳞甲',2,'指挥官护甲 +2'],['行医针囊',2,'击杀精英时恢复 8 生命'],
  ['虎符兵书',3,'佣兵攻速 +10%'],['护心宝镜',3,'指挥官受击后的无敌时间延长 0.15 秒'],
  ['羽林将印',3,'全队暴击率 +4 个百分点'],
- ['玉柄金针',2,'医师、华佗每次基础治疗量 +1'],['青囊医书',3,'医师、华佗每轮施治追加 1 次治疗'],
- ['封蜡药瓮',2,'毒师、扁鹊施加和传出的毒持续 6 秒'],['流烟葫芦',3,'毒师、扁鹊直接施毒后，目标阵亡可向至少 1 人传毒，传毒半径 +50%']];
+ ['玉柄金针',2,'医师、华佗每次基础治疗量 +1'],['青囊医书',3,'医师、华佗每轮施治追加 1 次治疗']];
 const satchel=7,bandage=8,salvagePermit=9,lastStand=10;
-const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1,[herbPowder]:3,[coinPurse]:2,[scaleVest]:2,[fieldNeedles]:2,[tigerManual]:2,[heartMirror]:2,[guardSeal]:2,[jadeNeedle]:1,[medicineBook]:1,[sealedJar]:1,[mistGourd]:1}[id]??itemStackLimit);
+const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1,[herbPowder]:3,[coinPurse]:2,[scaleVest]:2,[fieldNeedles]:2,[tigerManual]:2,[heartMirror]:2,[guardSeal]:2,[jadeNeedle]:1,[medicineBook]:1}[id]??itemStackLimit);
 const equipmentCapacity=12;
 function equippedCount(bag){return Object.values(bag).reduce((total,count)=>total+count,0)}
 function canEquipItem(bag,id){return equippedCount(bag)<equipmentCapacity&&(bag[id]||0)<itemCap(id)}
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-const troopBasePrices=[10,12,13,15,11,15,16,12,14,18,14,15],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40,24,40,24,40];
+const troopBasePrices=[10,12,13,15,11,15,16,12,14,18,14],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40,24,40];
 function refitPrice(merc,id,q,wave){
  const base=merc?troopBasePrices[id]+9*q:itemBasePrices[id];
  return Math.floor(base+wave+base*wave/10);
@@ -352,9 +335,9 @@ function recruitMercenary(army,offer,position){
   return true;
 }
 function recruitOffer(pool,army){
-   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse','medicine','medicine'];
+   const classes=['melee','pole','bow','melee','guard','bow','heavy','melee','pole','horse','medicine'];
    const weights=pool.map(id=>army.some(a=>a.id===id)?4:army.some(a=>classes[a.id]===classes[id])?1.35:1);
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={medicineGear,treatmentAmount,treatmentPulses,dosePoison,medicId,poisonerId,medicPulseCount,medicPulseAmount,applyPoison,poisonTick,spreadPoison,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={medicineGear,treatmentAmount,treatmentPulses,medicId,medicPulseCount,medicPulseAmount,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};

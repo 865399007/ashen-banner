@@ -142,7 +142,7 @@ class CombatSound {
   hit(hero){this.play(hero?132:195,47,hero?.16:.09,.58);this.play(2250,380,.06,.38,true)}
 }
 
-function impact(scene,attacker,victim,damage,hero=false,critical=false){
+function impact(scene,attacker,victim,damage,hero=false,critical=false,showNumber=true){
   const sprite=victim.s,dx=sprite.x-attacker.x,dy=sprite.y-attacker.y;
   const angle=Math.atan2(dy,dx),heavy=critical||hero||damage>=30;
   scene.sfx.hit(hero);
@@ -192,14 +192,16 @@ function impact(scene,attacker,victim,damage,hero=false,critical=false){
   drawBurst(0);
   scene.tweens.addCounter({from:0,to:1,duration:heavy?320:260,
     onUpdate:tween=>drawBurst(tween.getValue()),onComplete:()=>burst.destroy()});
-  const label=scene.add.text(sprite.x+Phaser.Math.Between(-6,6),sprite.y-bodyHeight*.78,String(Math.round(damage)),{
-    resolution:Phaser.Math.Clamp(Math.ceil(scene.cameras.main.zoom),1,4),
-    fontFamily:gameFontFamily,fontSize:heavy?'16px':'13px',fontStyle:'bold',color:critical?'#ff983f':hero?'#ffac92':'#fff1c5',stroke:'#443326',strokeThickness:2
-  }).setOrigin(.5,1).setDepth(1100).setScale(.68);
-  scene.tweens.chain({targets:label,tweens:[
-    {scale:1.18,duration:45,ease:'Quad.Out'},{scale:1,duration:55,ease:'Quad.InOut'},
-    {y:label.y-26,duration:390,ease:'Cubic.Out',onStart:()=>scene.tweens.add({targets:label,alpha:0,delay:175,duration:215})}
-  ],onComplete:()=>label.destroy()});
+  if(showNumber){
+    const label=scene.add.text(sprite.x+Phaser.Math.Between(-6,6),sprite.y-bodyHeight*.78,String(Math.round(damage)),{
+      resolution:Phaser.Math.Clamp(Math.ceil(scene.cameras.main.zoom),1,4),
+      fontFamily:gameFontFamily,fontSize:heavy?'16px':'13px',fontStyle:'bold',color:critical?'#ff983f':hero?'#ffac92':'#fff1c5',stroke:'#443326',strokeThickness:2
+    }).setOrigin(.5,1).setDepth(1100).setScale(.68);
+    scene.tweens.chain({targets:label,tweens:[
+      {scale:1.18,duration:45,ease:'Quad.Out'},{scale:1,duration:55,ease:'Quad.InOut'},
+      {y:label.y-26,duration:390,ease:'Cubic.Out',onStart:()=>scene.tweens.add({targets:label,alpha:0,delay:175,duration:215})}
+    ],onComplete:()=>label.destroy()});
+  }
   if(!victim.hit){
     victim.hitBase=sprite.scaleX;
     victim.normalTexture=sprite.texture.key;

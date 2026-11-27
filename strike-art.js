@@ -164,11 +164,49 @@ function drawPoisonCircle(scene,center,radius,level){
   return g;
 }
 
-function showPoisonTick(scene,sprite){
-  const puff=scene.add.graphics().setPosition(sprite.x,sprite.y-9).setDepth(1001);
-  puff.lineStyle(1.3,0xa1be65,.9).strokeEllipse(0,2,12,6);
-  for(const [x,y] of [[-4,-2],[1,-6],[5,-1]])puff.fillStyle(0xb6a3c7,.8).fillCircle(x,y,1.4);
-  scene.tweens.add({targets:puff,y:sprite.y-15,alpha:0,duration:220,onComplete:()=>puff.destroy()});
+function updatePoisonBubbles(scene,enemy){
+  if(!enemy.poison){
+    enemy.poisonBubbles?.destroy();
+    enemy.poisonBubbles=null;
+    return;
+  }
+  const sprite=enemy.s;
+  if(!enemy.poisonBubbles){
+    enemy.poisonBubbles=scene.add.graphics();
+    enemy.bubbleOffset=Math.random();
+  }
+  const g=enemy.poisonBubbles.clear().setPosition(sprite.x,sprite.y).setDepth(sprite.depth+.15);
+  const height=sprite.height*(enemy.hit?enemy.hitBase:sprite.scaleY);
+  const count=Math.min(5,2+enemy.poison.doses.length);
+  for(let i=0;i<count;i++){
+    const t=(scene.elapsed*1.18+enemy.bubbleOffset+i*.37)%1;
+    const side=i%2?1:-1;
+    const x=side*(height*(.19+.08*t)+2*Math.sin(t*5+i));
+    const y=-height*(.35+.42*t)-7*t;
+    const r=(2.1+i%3*.55)*(.70+.46*t);
+    if(t>.86){
+      const pop=(t-.86)/.14;
+      g.lineStyle(.9,0xc5ff81,1-pop).strokeCircle(x,y,r*(1+pop*.55));
+    }else{
+      g.fillStyle(0x315629).fillCircle(x,y,r+.7);
+      g.fillStyle(0x86dc40).fillCircle(x,y,r);
+      g.fillStyle(0xf0ffc4).fillCircle(x-r*.31,y-r*.34,r*.34);
+    }
+  }
+}
+
+function showPoisonDamage(scene,sprite,damage){
+  const amount=Number(damage.toFixed(1));
+  const text=amount?'−'+amount:'<0.1';
+  const top=sprite.y-sprite.displayHeight*sprite.originY-(sprite.bossName?11:0);
+  const label=scene.add.text(sprite.x+5,top,text,{
+    resolution:Phaser.Math.Clamp(Math.ceil(scene.cameras.main.zoom),1,4),
+    fontFamily:gameFontFamily,fontSize:'13px',fontStyle:'bold',
+    color:'#c0ff79',stroke:'#284829',strokeThickness:3
+  }).setOrigin(.5,1).setDepth(1100);
+  scene.poisonNumbers.add(label);
+  scene.tweens.add({targets:label,x:label.x+6,y:top-19,duration:640,ease:'Sine.Out',
+    alpha:{from:1,to:0,delay:290,duration:350},onComplete:()=>label.destroy()});
 }
 
 function soulStrikeArea(general,source,target){

@@ -75,7 +75,7 @@ class Battle extends Phaser.Scene{
  makeArt(this);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
- this.fallenEnemies=this.add.group();this.footDust=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
+ this.fallenEnemies=this.add.group();this.footDust=this.add.group();this.poisonNumbers=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
  // Browsers allow the camp theme to start after the first tap or keyboard action.
  const wakeAudio=()=>{if(this.sfx.ctx?.state!=='running')this.sfx.unlock()};
  const syncMusic=()=>this.sfx.updateMusic(this.mode);
@@ -324,7 +324,7 @@ class Battle extends Phaser.Scene{
  });
    Array.from($('test-army').children).forEach((btn,id)=>btn.setAttribute('aria-pressed',String(this.souls.some(s=>s.count===6&&s.id===id))));
  }
- clearField(){this.finishBattleTransition=null;this.fallenEnemies.clear(true,true);clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
+ clearField(){this.finishBattleTransition=null;this.poisonNumbers.clear(true,true);this.fallenEnemies.clear(true,true);clearStage(this);for(const shot of this.hostileShots??[]){shot.trail?.destroy();shot.g.destroy()}this.hostileShots=[];this.clearSouls();$('field').classList.remove('low-health');for(const enemy of this.enemies){enemy.poisonBubbles?.destroy();enemy.cast?.stones?.destroy();enemy.cast?.g.destroy();enemy.footBar?.destroy();}this.footDust.clear(true,true);for(let o of [...this.actors,...this.enemies,...this.drops])o.s.destroy();this.actors=[];this.enemies=[];this.drops=[]}
  spawnWaveElites(){
    spawnDueElite(this.eliteArrivals,this.timeLeft,this.enemies,()=>this.spawn(false,true));
  }
@@ -772,10 +772,11 @@ class Battle extends Phaser.Scene{
  if(this.elapsed<e.soulArmorBreakUntil)damage*=1.15;
  if(!periodic&&e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
  if(this.elapsed<e.markUntil)damage*=1.12;
+ if(periodic)showPoisonDamage(this,e.s,Math.min(e.hp,damage));
  e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
  if(periodic&&e.hp>0)return;
- const hitBurst=impact(this,attacker,e,damage,false,critical);
- if(e.hp<=0){e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
+ const hitBurst=impact(this,attacker,e,damage,false,critical,!periodic);
+ if(e.hp<=0){e.poisonBubbles?.destroy();e.cast?.stones?.destroy();e.cast?.g.destroy();e.footBar?.destroy();this.kills++;if(this.bag[4]&&++this.flagKills%12===0)this.flagUntil=this.elapsed+5;for(const passive of this.commander.passives)passive.onKill?.(this);
  const {x,y}=e.s;
  this.enemies.splice(this.enemies.indexOf(e),1);
  fadeDefeatedEnemy(this,e,hitBurst);
@@ -828,7 +829,6 @@ class Battle extends Phaser.Scene{
  for(const e of [...this.enemies]){
    const damage=poisonTick(e,this.elapsed);
    if(damage){
-     showPoisonTick(this,e.s);
      this.applyHitDamage(this.hero,e,damage,false,true);
      if(this.mode!=='fight')return;
    }
@@ -839,6 +839,7 @@ class Battle extends Phaser.Scene{
    if(!stunned&&!e.hit)this.walkEnemy(e,dt);
    if(this.mode!=='fight')return;
    e.s.setDepth(e.s.y);
+   if(e.poison||e.poisonBubbles)updatePoisonBubbles(this,e);
    if(e.footBar)this.positionFootBar(e);
    if(!stunned&&!e.move&&distance(e.s,h)<(e.beast?.reach??19))this.enemyHit(e.s,(e.beast?.damage??7)+this.wave);
    if(this.mode!=='fight')return;

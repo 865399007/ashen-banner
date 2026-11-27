@@ -51,7 +51,8 @@ function hitTexture(scene,key,hero=false){
 }
 
 class CombatSound {
-  constructor(){
+  constructor(voiceFiles){
+    this.voiceFiles=voiceFiles;this.voices=new Map();
     this.volume=.35;this.muted=false;
     this.tracks={camp:{offset:0},battle:{offset:0}};
   }
@@ -62,6 +63,10 @@ class CombatSound {
       if(!Context)return;
       if(!this.ctx){
         this.ctx=new Context();
+        for(const {general} of soulTypes){
+          const file=this.voiceFiles.get('call-'+general);
+          if(file)this.ctx.decodeAudioData(file.slice(0)).then(buffer=>this.voices.set(general,buffer)).catch(()=>{});
+        }
         this.output=this.ctx.createDynamicsCompressor();
         this.output.threshold.value=-10;
         this.output.knee.value=5;
@@ -77,6 +82,22 @@ class CombatSound {
       }
       this.ctx.resume().catch(()=>{});
     }catch{}
+  }
+  playCallout(general,offset){
+    if(this.callout?.general===general)return;
+    this.stopCallout();
+    const buffer=this.voices.get(general);
+    if(!buffer||offset>=buffer.duration||this.ctx.state!=='running'||document.hidden||this.muted)return;
+    const source=this.ctx.createBufferSource();
+    source.buffer=buffer;source.connect(this.output);
+    this.callout={general,source};
+    source.onended=()=>source.disconnect();
+    source.start(0,offset);
+  }
+  stopCallout(){
+    if(!this.callout)return;
+    this.callout.source.stop();
+    this.callout=null;
   }
   async loadTheme(name){
     const track=this.tracks[name];
@@ -95,6 +116,7 @@ class CombatSound {
     const c=this.ctx;
     if(!c)return;
     const quiet=document.hidden||this.muted||this.volume===0||mode==='paused'||mode==='settings'||mode==='over';
+    if(quiet)this.stopCallout();
     const name=mode==='fight'||mode==='coopFight'?'battle':'camp';
     const active=this.music,now=c.currentTime;
     if(active&&(quiet||active.name!==name)){

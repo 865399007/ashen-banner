@@ -54,6 +54,7 @@ function appendCommanderStats(panel,name,rows){
 const statNumber=value=>Number(value.toFixed(2));
 class Battle extends Phaser.Scene{
  preload(){
+   for(const {general} of soulTypes)this.load.binary('call-'+general,'assets/voices/'+general+'.mp3');
    this.load.image('ember-arena','assets/field/ember-arena.webp?v=ground-detail');
  }
  create(){
@@ -75,7 +76,7 @@ class Battle extends Phaser.Scene{
  makeArt(this);
  const silverIcon=$('silver-icon').getContext('2d');
  silverIcon.drawImage(this.textures.get('silver-coin').getSourceImage(),0,0);
- this.fallenEnemies=this.add.group();this.footDust=this.add.group();this.poisonNumbers=this.add.group();this.sfx=new CombatSound();placeField(this);this.mode='title';
+ this.fallenEnemies=this.add.group();this.footDust=this.add.group();this.poisonNumbers=this.add.group();this.sfx=new CombatSound(this.cache.binary);placeField(this);this.mode='title';
  // Browsers allow the camp theme to start after the first tap or keyboard action.
  const wakeAudio=()=>{if(this.sfx.ctx?.state!=='running')this.sfx.unlock()};
  const syncMusic=()=>this.sfx.updateMusic(this.mode);
@@ -312,6 +313,11 @@ class Battle extends Phaser.Scene{
        image.setVisible(false);
        image.plumes?.setVisible(false);
      }
+     const label=this.add.text(0,0,'',{
+       fontFamily:gameFontFamily,fontSize:'13px',fontStyle:'bold',
+       color:'#fff0bd',stroke:'#493021',strokeThickness:3,resolution:3
+     }).setOrigin(.5,1).setDepth(1101).setVisible(false);
+     this.summonCall={age:-.10,types:arriving.map(s=>s.type),label};
      this.summonIntro={age:0,arriving,seal:this.add.graphics().setPosition(this.hero.x,this.hero.y).setDepth(this.hero.depth-.8)};
      this.stepSummonIntro(0);
    }
@@ -608,7 +614,28 @@ class Battle extends Phaser.Scene{
    const commander=this.actors[0];
    if(commander?.s.active)commander.s.setTexture(commander.baseTexture);
  }
+ stepSummonCall(dt){
+   const call=this.summonCall;
+   call.age+=dt;
+   if(call.age<0)return;
+   const slot=.86,index=Math.floor(call.age/slot);
+   if(index>=call.types.length){this.clearSummonCall();return}
+   const type=call.types[index],age=call.age-index*slot,h=this.hero;
+   const cam=this.cameras.main.worldView;
+   call.label.setText(type.name+'！').setVisible(true)
+     .setAlpha(Math.min(1,(slot-age)/.15))
+     .setPosition(Phaser.Math.Clamp(h.x,cam.left+24,cam.right-24),
+       Math.max(cam.top+call.label.height+2,h.y-h.displayHeight*h.originY-3));
+   this.sfx.playCallout(type.general,age);
+ }
+ clearSummonCall(){
+   if(!this.summonCall)return;
+   this.summonCall.label.destroy();
+   this.summonCall=null;
+   this.sfx.stopCallout();
+ }
  clearSouls(){
+   this.clearSummonCall();
    this.clearSummonIntro();
    for(const zone of this.poisonCircles??[])zone.image.destroy();
    this.poisonCircles=[];
@@ -817,6 +844,7 @@ class Battle extends Phaser.Scene{
  this.sfx?.updateMusic(this.mode);
  if(this.mode==='finishing'){if(!this.fallenEnemies.getLength())this.finishBattleTransition();return}
  if(this.mode==='coopFight'){this.coopFrame?.(ms);return}if(this.mode!=='fight')return;
+ if(this.summonCall)this.stepSummonCall(Math.min(ms/1000,.05));
  if(this.summonIntro){this.stepSummonIntro(Math.min(ms/1000,.05));return}
  if(this.hitStop>0){this.hitStop-=ms;return}let dt=Math.min(ms/1000,.05),k=this.keys,h=this.hero;this.elapsed+=dt;this.timeLeft-=dt;this.invul-=dt;
  let x=Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),y=Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);

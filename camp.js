@@ -167,11 +167,16 @@ class GreyCamp {
         }],
         ['名将战魂',()=>{
           row('触发条件',`同兵种Ⅳ阶佣兵达到 3 名时，召唤对应名将。两种兵各有 3 名时，双战魂轮流代打，专属加成叠加。召唤期间指挥官基础射程额外增加 ${soulBaseRangePercent}%，只计一次。`);
-          row('战魂普攻',`指挥官只做挥武动作，由战魂代为攻击。战魂继承指挥官的最终普攻伤害，再按 1～4 级提升 ${soulAttackBonusPercent.join(' / ')}%。主目标受到全额伤害，范围内其他敌人各受到强化后伤害的 ${soulSecondaryDamage*100}%。整次攻击共用一次暴击判定。`);
+          row('战魂普攻',`指挥官只做挥武动作，由战魂代为攻击。战魂继承指挥官的最终普攻伤害，再按 1～4 级提升 ${soulAttackBonusPercent.join(' / ')}%。技能每段按各自倍率结算，范围攻击的次目标受到该段伤害的 ${soulSecondaryDamage*100}%。整次攻击共用一次暴击判定。`);
           row('战魂描边光色','人物与武器使用同色描边：3 人 · 1 级白光，4 人 · 2 级蓝光，5 人 · 3 级紫光，6 人 · 4 级红光。');
           row('出招变化','1 级银光一闪；2 级双蓝流交织，命中绽开双月弧；3 级紫色兵影连出，三枚星芒旋开；4 级赤金焰尾破空，八道火芒伴随双重冲击波扩散。');
           for(const [i,type] of soulTypes.entries()){
             const entry=row(troops[i][0]+' · '+type.name,type.weapon+'　'+type.label+' +'+type.values.join(' / ')+'%');
+            const progression=document.createElement('div');
+            soulSkillGuide[type.general].forEach((skill,rank)=>{
+              const line=document.createElement('small');line.textContent=roman[rank]+' · '+skill;progression.append(line);
+            });
+            entry.firstElementChild.append(progression);
             const portrait=document.createElement('canvas');
             const source=game.textures.get(generalSoulFrame(game,type,0)).getSourceImage();
             portrait.width=source.width;portrait.height=source.height;portrait.className='general-portrait';

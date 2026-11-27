@@ -21,11 +21,10 @@ function areaTargets(scene,origin,angle,length,width,shape){
     return d<=length&&along>=d*Math.cos(width);
   }).sort((a,b)=>distance(origin,a.s)-distance(origin,b.s));
 }
-function skillMark(scene,unit,origin,angle,size,kind){
-  const gold=unit.q===3?0xffcd6d:0xe3dbb0;
+function skillMark(scene,unit,origin,angle,size,kind,gold=unit.q===3?0xffcd6d:0xe3dbb0){
   const g=scene.add.graphics().setPosition(origin.x,origin.y-4).setRotation(angle).setDepth(998);
   g.lineStyle(1.5,gold,.88);
-  if(kind==='ring'){
+  if(kind==='ring'||kind==='inward'){
     g.strokeEllipse(0,0,size*2,size*1.5);
   }else if(kind==='sweep'||kind==='moon'){
     bladeRibbon(g,size,-1.22,1.22,kind==='moon'?5:3,gold);
@@ -37,9 +36,9 @@ function skillMark(scene,unit,origin,angle,size,kind){
   }else{
     strikeShard(g,0,0,size,0,kind==='spear'?3:1.6,gold);
   }
-  g.setScale(kind==='ring'?.45:.85);
+  g.setScale(kind==='inward'?1.7:kind==='ring'?.45:.85);
   scene.tweens.add({targets:g,x:g.x+(kind==='moon'?Math.cos(angle)*size*.5:0),
-    y:g.y+(kind==='moon'?Math.sin(angle)*size*.5:0),scaleX:1,scaleY:1,alpha:0,duration:210,onComplete:()=>g.destroy()});
+    y:g.y+(kind==='moon'?Math.sin(angle)*size*.5:0),scaleX:kind==='inward'?.65:1,scaleY:kind==='inward'?.65:1,alpha:0,duration:210,onComplete:()=>g.destroy()});
 }
 function skillArea(scene,a,primary,origin,angle,radius,width,shape,power,kind,limit=Infinity){
   const hits=areaTargets(scene,origin,angle,radius,width,shape).slice(0,limit);

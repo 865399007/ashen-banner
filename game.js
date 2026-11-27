@@ -289,6 +289,7 @@ class Battle extends Phaser.Scene{
        .setScale(.34+.02*(level-1)).setAlpha(.86);
      spirit.image=image;
      spirit.strikeTime=0;
+     spirit.round=0;spirit.followUps=[];
      if(type.general==='lvbu'){
        image.plumes=this.add.image(0,0,lvbuPlumeFrame(this,0,level-1)).setOrigin(.5,soulBeltOriginY)
          .setScale(image.scaleX).setAlpha(image.alpha);
@@ -588,17 +589,7 @@ class Battle extends Phaser.Scene{
    const spirit=this.souls[this.nextSoulIndex];
    this.nextSoulIndex=(this.nextSoulIndex+1)%this.souls.length;
    spirit.strikeTime=.22;this.positionSouls();
-   const area=soulStrikeArea(spirit.type.general,a.s,target.s);
-   const hit=this.rollAttackDamage(a);
-   const damage=hit.damage*soulAttackMultiplier(spirit.level);
-   showSoulStrike(this,spirit,target.s,area,()=>{
-     for(const enemy of [...this.enemies]){
-       if(this.mode!=='fight')break;
-       if(enemy.hp<=0||!soulStrikeContains(area,enemy.s)||this.arrowBlocked(a,enemy))continue;
-       const power=enemy===target?1:soulSecondaryDamage;
-       this.applyHitDamage(spirit.image,enemy,damage*power,hit.critical);
-     }
-   });
+   startSoulRound(this,spirit,a,target);
  }
  attack(a,e){
  if(a.hero){
@@ -733,6 +724,7 @@ class Battle extends Phaser.Scene{
    this.applyHitDamage(a.s,e,hit.damage*power,hit.critical);
  }
  applyHitDamage(attacker,e,damage,critical){
+ if(this.elapsed<e.soulArmorBreakUntil)damage*=1.15;
  if(e.boss&&this.bag[15]&&((e.markHits=(e.markHits||0)+1)%10===0))e.markUntil=this.elapsed+4;
  if(this.elapsed<e.markUntil)damage*=1.12;
  e.hp-=damage;if(e.elite||e.boss)this.showEnemyHealth(e);
@@ -786,16 +778,21 @@ class Battle extends Phaser.Scene{
  this.spawnWaveElites();
  for(const e of this.enemies){
    advanceImpact(e,dt);
-   if(!e.hit)this.walkEnemy(e,dt);
+   const stunned=this.elapsed<e.soulStunUntil;
+   if(!stunned&&!e.hit)this.walkEnemy(e,dt);
    if(this.mode!=='fight')return;
    e.s.setDepth(e.s.y);
    if(e.footBar)this.positionFootBar(e);
-   if(!e.move&&distance(e.s,h)<(e.beast?.reach??19))this.enemyHit(e.s,(e.beast?.damage??7)+this.wave);
+   if(!stunned&&!e.move&&distance(e.s,h)<(e.beast?.reach??19))this.enemyHit(e.s,(e.beast?.damage??7)+this.wave);
    if(this.mode!=='fight')return;
  }
  stepStage(this,dt);if(this.mode!=='fight')return;stepStageFire(this,dt);if(this.mode!=='fight')return;
  stepHostileShots(this,dt);
  if(this.mode!=='fight')return;
+ for(const spirit of this.souls){
+   runFollowUps(this,spirit);
+   if(this.mode!=='fight')return;
+ }
  const defending=!x&&!y;
  const nearby=defending?this.enemies.filter(e=>distance(e.s,h)<105):[];
  for(let [i,a] of this.actors.entries()){
@@ -840,7 +837,7 @@ class Battle extends Phaser.Scene{
  }
  }
  enemyHit(source,raw){
-   if(this.invul>0)return;
+   if(this.invul>0||blockWithCaoRen(this))return;
    const edict=this.bag[19]&&this.bondCounts[4]>=2;
    const guarded=this.actors.some(a=>!a.hero&&a.id===4&&distance(a.s,this.hero)<(edict?70:50));
    const damage=Math.max(1,Math.round(raw*15/(15+this.armor)*(1-this.soulBonus('guard'))*(1-.05*this.bag[18])*(guarded?(edict?.80:.88):1)));

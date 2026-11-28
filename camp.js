@@ -15,6 +15,7 @@ class GreyCamp {
         if(!saved.contracts)this.data.contracts=[5,9];
         // Earlier saves had a global record only. Keep previously playable stages accessible.
         if(!saved.stages)this.data.legacyStages=['border','pass','pursuit'];
+        if(saved.mount&&!mountRoster.some(m=>m.id===saved.mount)){this.data.mount=null;this.save()}
       }
     }catch{this.saveWarning=true}
   }
@@ -70,6 +71,29 @@ class GreyCamp {
     if(!section){
       game.mode='title';game.hud();$('modal').hidden=true;$('cover').hidden=false;
       return;
+    }
+    if(section==='异兽坐骑'){
+      const m=game.panel(section,'选择一只异兽，与指挥官一同出战。',true,()=>this.open(game));
+      const grid=document.createElement('div');grid.className='mount-grid';m.append(grid);
+      const buttons=[];
+      const refresh=()=>buttons.forEach(({mount,button,label})=>{
+        const equipped=d.mount===mount.id;
+        button.setAttribute('aria-pressed',String(equipped));
+        label.textContent=equipped?'已装备 · 卸下':'装备';
+      });
+      for(const mount of mountRoster){
+        const button=game.button(grid,'',()=>{
+          d.mount=d.mount===mount.id?null:mount.id;
+          this.save();refresh();
+        });
+        const icon=document.createElement('canvas');icon.width=152;icon.height=104;
+        const image=game.textures.get('mount-'+mount.id).getSourceImage();
+        const fit=Math.min(148/image.width,100/image.height);
+        icon.getContext('2d').drawImage(image,(152-image.width*fit)/2,(104-image.height*fit)/2,image.width*fit,image.height*fit);
+        const name=document.createElement('strong'),label=document.createElement('small');
+        name.textContent=mount.name;button.append(icon,name,label);buttons.push({mount,button,label});
+      }
+      refresh();return;
     }
     if(section==='选择战役'){this.chooseCampaign(game);return}
     const m=game.panel(section,'营地银币 '+d.silver+'　·　铁料 '+d.iron+'　·　军功章 '+d.medals,true,()=>this.open(game));
@@ -129,14 +153,14 @@ class GreyCamp {
       const pages=[
         ['兵种属性',()=>{
           const tactics=[
-            '', '', '', '',
-            '近身护卫使指挥官受伤降低 12%。',
-            '对重装与精英首领增伤 25%。',
+            '近身持续连斩，满编可发动全队协同斩击。', '刺穿前排时，对次要目标额外造成 20% 伤害。', '射程 96，能从后排向多个目标分射。', '近身扇形劈砍，升阶后可回扫四周。超过攻击距离 65% 的次目标承受 72% 伤害。',
+            '近身护卫使指挥官受伤降低 15%。',
+            '对重装与精英首领增伤 18%。',
             '震退杂兵。',
             '每次连击两段。',
             '扇形横扫。',
             '短冲后攻击落点附近的敌人。',
-            '指挥官受伤时倾葫施药，每次恢复 2.6 点。射程内有敌人时，同一轮也会发射飞针。'
+            '飞针基础间隔 1.4 秒。治疗独立计时，指挥官受伤时每 4.2 秒可开始一轮施药，每段基础恢复 2.6 点。'
           ];
           for(const [i,[name,damage,interval,range]] of troops.entries()){
             const stats='伤害 '+damage+'　间隔 '+interval+' 秒　射程 '+range;
@@ -151,8 +175,8 @@ class GreyCamp {
             ['双箭齐发，侧箭伤害 65%','每箭多穿 1 人，穿透伤害为该箭的 70%','三箭齐发，每第 4 轮金箭多穿 2 人'],
             ['追加 55% 回扫','回扫覆盖身周一圈','每第 3 轮追加 100% 地裂'],
             ['每第 2 轮追加 75% 盾撞并轻推杂兵','护卫时指挥官受击触发盾击，冷却 2 秒','反击扩大为指挥官身周 140% 震阵'],
-            ['间隔 0.14 秒连射两发，第二发 70%','末发多穿 2 人，首个目标是精英或主将时该发增伤 25%','三连射，末发伤害 85%，多穿 3 人'],
-            ['追加 50% 余震','主震范围 +25%，直接命中目标增伤 35%','每第 3 锤追加两道余震，分别为 65% 和 85%'],
+            ['间隔 0.14 秒连射两发，第二发 70%','末发多穿 2 人，首个目标是精英或主将时该发增伤 15%','三连射，末发伤害 85%，多穿 3 人'],
+            ['追加 50% 余震','主震范围 +25%，直接命中目标增伤 18%','每第 3 锤追加两道余震，分别为 65% 和 85%'],
             ['第二刀击杀可向另一目标补刺 80%','同一匕首兵对同一目标每命中 4 刀追加 90% 伤害','每第 3 轮四连刺，后两刺各 65%'],
             ['钩拢杂兵后补刺 50%','横扫扩大至 160°，补刺最多命中 3 人','每第 3 轮挥出 110% 月牙戟光'],
             ['沿途撞击 60%，每趟每敌一次','折返冲锋，回程伤害 65%','每第 3 次冲过目标，在落点造成 130% 范围伤害'],
@@ -161,11 +185,17 @@ class GreyCamp {
           skills.forEach((r,i)=>row(troops[i][0],r.map((v,j)=>roman[j+1]+' · '+v).join('　')));
         }],
         ['兵种羁绊',()=>{
-          row('剑士羁绊','2 人攻速 +8%，4 人提高至 +16%，6 人累计攻击 4 次后全队剑士追加斩击。');
+          row('剑士羁绊','2 人攻速 +8%，4 人提高至 +16%，6 人累计攻击 6 次后全队剑士追加一次 65% 伤害的斩击。');
           row('长枪羁绊','2 人刺击距离 +10%，4 人多贯穿一名敌军，6 人可击退正在冲锋的骑兵。');
           row('长弓羁绊','2 人攻速 +8%，4 人追加一箭，6 人每 8 秒齐射。');
           row('斧兵羁绊','2 人范围 +8%，4 人伤害 +15%，6 人劈砍产生更远的扇形冲击。');
-          row('新兵种羁绊','盾兵、弩兵、战锤兵、双匕首兵、长戟兵、轻骑兵和医师分别按同名人数计算，2 / 4 / 6 人分别增加 8% / 16% / 24% 攻速。');
+          row('盾兵 · 卫阵','盾兵在指挥官身边护卫时，2 / 4 / 6 人使护卫后的受击伤害再减少 5% / 10% / 15%。');
+          row('弩兵 · 破甲','对重装、精英或首领命中时，2 / 4 / 6 人使弩兵的伤害额外提高 10% / 16% / 22%。');
+          row('战锤兵 · 震退','2 / 4 / 6 人使普攻溅射半径扩大 20% / 32% / 44%，对普通敌人的击退距离从 5 提高到 7 / 9 / 11。');
+          row('双匕首兵 · 追命','攻击生命不高于一半的敌人时，2 / 4 / 6 人使双匕首兵的伤害提高 15% / 24% / 33%。');
+          row('长戟兵 · 戟林','2 / 4 / 6 人使长戟兵的攻击距离延长 12% / 24% / 36%，普攻横扫也能覆盖更远的敌人。');
+          row('轻骑兵 · 奔袭','2 / 4 / 6 人使冲锋速度提高 20% / 40% / 60%。4 人起全体轻骑可沿途撞敌，6 人起全体可折返冲锋。');
+          row('医师 · 合诊','2 / 4 / 6 人使每次治疗的恢复量提高 15% / 30% / 45%，连续治疗逐段生效；医师飞针伤害同时提高 10% / 20% / 30%。');
         }],
         ['名将战魂',()=>{
           row('触发条件',`同兵种Ⅳ阶佣兵达到 3 名时，召唤对应名将。两种兵各有 3 名时，双战魂轮流代打，专属加成叠加。召唤期间指挥官基础射程额外增加 ${soulBaseRangePercent}%，只计一次。`);

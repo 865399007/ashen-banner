@@ -63,7 +63,7 @@ function fireRankedArrow(scene,a,target,power,pierce,options={}){
   scene.weaponEffect(a,end,{heavy,golden,offset});
   for(const [i,e] of victims.entries()){
     if(scene.mode!=='fight'||scene.arrowBlocked(a,e))break;
-    const force=power*(scene.bag[3]?.9:1)*(a.id===2&&i>0?.7:1)*(heavy&&i===0&&(e.boss||e.elite)?1.25:1);
+    const force=power*(scene.bag[3]?.9:1)*(a.id===2&&i>0?.7:1)*(heavy&&i===0&&(e.boss||e.elite)?1.15:1);
     scene.mercHit(a,e,victims[0],force);
   }
 }
@@ -172,9 +172,9 @@ function startCavalryRush(scene,a,e){
 }
 function stepCavalryRush(scene,a,dt){
   const rush=a.rush,from=pointOf(a.s);
-  scene.move(a.s,rush.x,rush.y,360*dt);
+  scene.move(a.s,rush.x,rush.y,360*dt*(1+.2*bondTier(scene.bondCounts[9])));
   scene.animateWalk(a,a.s.x-from.x,a.s.y-from.y,12);a.s.setDepth(a.s.y+1);
-  if(a.q>=1){
+  if(a.q>=1||scene.bondCounts[9]>=4){
     const angle=heading(from,a.s),len=distance(from,a.s);
     for(const e of areaTargets(scene,from,angle,len+1,6,'line')){
       if(rush.trampled.has(e))continue;
@@ -188,7 +188,7 @@ function stepCavalryRush(scene,a,dt){
     if(rush.signature){
       skillArea(scene,a,rush.target,pointOf(a.s),rush.angle,scene.bag[chargeStandard]?28.5:19,0,'ring',1.3,'ring');
     }else if(target&&distance(a.s,target.s)<22)scene.weaponStrike(a,target);
-    if(a.q>=2&&scene.mode==='fight'){
+    if((a.q>=2||scene.bondCounts[9]>=6)&&scene.mode==='fight'){
       Object.assign(rush,rush.origin,{returning:true});rush.trampled.clear();return;
     }
   }
@@ -234,16 +234,18 @@ function medicinePulse(scene,source,base,medic){
   if(scene.mode!=='fight'||scene.hp<=0||scene.hp>=scene.maxHP)return;
   if(medic)medicEffect(scene,source,medic.baseTexture,scene.hero,true);
   else showHealingMist(scene,source,scene.hero);
-  scene.healCommander(Math.round(treatmentAmount(base,scene.bag)*(1+scene.soulBonus('healing'))*10)/10);
+  scene.healCommander(Math.round(treatmentAmount(base,scene.bag)*(1+scene.soulBonus('healing'))*(1+.15*bondTier(scene.bondCounts[medicId]))*10)/10);
   scene.hud();
 }
-function fieldMedicineRound(scene,unit,target){
-  if(scene.hp<scene.maxHP){
+function updateMedicTreatment(scene,unit){
+  if(scene.hp<scene.maxHP&&scene.elapsed>=(unit.nextTreatment||0)){
+    unit.nextTreatment=scene.elapsed+medicTreatmentInterval;
     const pulse=()=>medicinePulse(scene,unit.s,medicPulseAmount(unit.q,scene.hp,scene.maxHP),unit);
     pulse();
     for(let i=1;i<treatmentPulses(medicPulseCount(unit.q),scene.bag);i++)followUp(scene,unit,i*.28,pulse);
   }
-  if(!target)return;
+}
+function fireMedicNeedle(scene,unit,target){
   medicEffect(scene,unit.s,unit.baseTexture,target.s,false);
-  scene.mercHit(unit,target,target,1);
+  scene.mercHit(unit,target,target,medicNeedlePower(scene.bondCounts[medicId]));
 }

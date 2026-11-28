@@ -89,7 +89,7 @@ function installCoop(scene){
      if(op==='join'&&!/^\d{6}$/.test(input.value)){m.querySelector('p').textContent='请输入六位数字';return}
      running=true;
      try{
-       const r=await api({op,code:input.value,hero:'banner'});
+       const r=await api({op,code:input.value,hero:'banner',mount:new URLSearchParams(location.search).get('mount')||scene.camp.data.mount});
        session={code:r.code,token:r.token};sessionStorage.setItem(key,JSON.stringify(session));
        state=r.state;paint();poll();
      }catch(e){showLobby(e.message)}finally{running=false}
@@ -103,7 +103,7 @@ function installCoop(scene){
    if(location.hostname.endsWith('.github.io')){
      panel('局域网合作','两台设备连接同一路由器后，请打开房主电脑的局域网地址，端口为 8767。',true,stop);return;
    }
-   if(location.port!=='8767'){location.href=location.protocol+'//'+location.hostname+':8767/?coop=1';return}
+   if(location.port!=='8767'){location.href=location.protocol+'//'+location.hostname+':8767/?coop=1&mount='+encodeURIComponent(scene.camp.data.mount||'');return}
    showLobby();
  };
  let received=0,interval=65,roundTrip=0,lastInput={x:0,y:0},local=null;
@@ -128,7 +128,10 @@ function installCoop(scene){
  function stepVisual(s,x,y,now){
    const dx=x-s.x,dy=y-s.y,moving=Math.abs(dx)+Math.abs(dy)>.025;
    let tex=s.baseTexture;
-   if(moving&&(tex.startsWith('man')||tex.startsWith('wild-')))tex+='walk'+Math.floor(now/90)%WALK_FRAMES;
+   if(moving&&s.walkFrames===MOUNT_WALK_FRAMES){
+     s.mountStride=((s.mountStride||0)+Math.hypot(dx,dy)/MOUNT_STRIDE_DISTANCE)%1;
+     tex+='walk'+Math.floor(s.mountStride*MOUNT_WALK_FRAMES);
+   }else if(moving&&(tex.startsWith('man')||tex.startsWith('wild-')))tex+='walk'+Math.floor(now/90)%WALK_FRAMES;
    else if(s.bannerCommander&&s.angle===0)tex=commanderIdleTexture(now,tex);
    if(now<s.redFlashUntil)tex=hitTexture(scene,tex,true);
    if(moving){s.setPosition(x,y);if(Math.abs(dx)>.025)s.setFlipX(dx<0)}
@@ -190,8 +193,8 @@ function installCoop(scene){
    const keys=new Set();
    const draw=(k,...args)=>{keys.add(k);return sprite(k,...args)};
    for(const p of state.players){
-     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,state.level),COMMANDER_BATTLE_SCALE);
-     u.bannerCommander=true;
+     const u=draw('p'+p.index,p.x,p.y,commanderTexture(scene,state.level,p.mount),COMMANDER_BATTLE_SCALE);
+     u.bannerCommander=true;u.walkFrames=mountWalkSeats[p.mount]?MOUNT_WALK_FRAMES:WALK_FRAMES;
      if(u.previousHealth!==undefined&&p.hp>u.previousHealth)showHealing(scene,u,p.hp-u.previousHealth);
      if(!reset&&p.hp<u.previousHealth)u.redFlashUntil=now+hitFlashMs;
      u.previousHealth=p.hp;
@@ -265,7 +268,7 @@ function installCoop(scene){
    }
    if(state.phase==='refit'){
      const title=me.pending?'战后升级':me.boxes.length?'战利品宝箱':'战地整备';
-     const equipment='道具 '+equippedCount(me.bag)+' / '+equipmentCapacity;
+     const equipment='道具种类 '+equippedCount(me.bag)+' / '+equipmentCapacity;
      const m=panel(title,'第 '+state.wave+' 波完成 · '+p.gold+' 银币 · '+equipment);
      if(me.pending){
        const hand=document.createElement('div');hand.className='upgrade-hand';m.append(hand);

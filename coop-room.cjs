@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const {medicId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,startFinalGuards,stepFinalGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
+const {medicTreatmentRange,medicTreatmentInterval,medicNeedlePower,medicId,medicPulseCount,medicPulseAmount,medicineGear,treatmentAmount,treatmentPulses,equipmentSpeedFactor,itemSaleValue,canEquipItem,equippedCount,equipmentCapacity,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,startFinalGuards,stepFinalGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance}=require('./rules');
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function move(a,b,amount){
   const d=distance(a,b);if(!d)return;
@@ -15,7 +15,7 @@ function player(hero,index){
 function room(code){return {code,phase:'lobby',wave:1,level:1,xp:0,time:0,spawn:0,serial:0,players:[],enemies:[],loot:[],effects:[],clock:0}}
 function start(r){
   r.phase='fight';r.time=waveDurationSeconds(r.wave);r.spawn=0;r.enemies=[];r.loot=[];r.effects=[];
-  for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;for(const a of p.army)a.pulses=0;p.revision++}
+  for(const p of r.players){p.ready=false;p.hp=clamp(p.hp+15,1,p.max);p.invul=1;p.down=p.rescue=p.dx=p.dy=0;for(const a of p.army){a.pulses=0;a.nextTreatment=0}p.revision++}
   if(r.wave===finalWave){
     spawn(r,true);
     r.finalGuards=startFinalGuards();
@@ -50,8 +50,10 @@ function roll(r,p){
 }
 function recycleFullBagBoxes(p,wave){
  if(equippedCount(p.bag)<equipmentCapacity)return;
- for(const id of p.boxes)p.gold+=itemSaleValue(id,wave);
- p.boxes=[];
+ p.boxes=p.boxes.filter(id=>{
+   if(canEquipItem(p.bag,id))return true;
+   p.gold+=itemSaleValue(id,wave);return false;
+ });
 }
 function refit(r){
  r.phase='refit';r.refitTime=25;r.enemies=[];r.loot=[];
@@ -69,6 +71,7 @@ function changeItem(p,id,delta){
 }
 function hit(r,p,a,e,damage){
  r.effects.push({id:++r.serial,x:e.x,y:e.y,fromX:a.x,fromY:a.y,weapon:a===p?commanders.banner.weapon:a.id,q:a.q||0,caster:a.id===medicId?'a'+p.index+'-'+p.army.indexOf(a):undefined,until:r.clock+.24});
+ if(a!==p&&a.id===medicId)damage*=medicNeedlePower(p.army.filter(unit=>unit.id===medicId).length);
  e.hp-=damage;
  if(e.hp>0)return;
  r.enemies.splice(r.enemies.indexOf(e),1);
@@ -77,7 +80,7 @@ function hit(r,p,a,e,damage){
  r.loot.push({id:++r.serial,x:e.x,y:e.y,box:Math.random()<.015});
 }
 function teamPulse(r,unit,owner){
- const ally=r.players.filter(p=>p.hp>0&&p.hp<p.max&&distance(unit,p)<=troops[medicId][3])
+ const ally=r.players.filter(p=>p.hp>0&&p.hp<p.max&&distance(unit,p)<=medicTreatmentRange)
    .sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
  if(!ally)return false;
  ally.hp=Math.min(ally.max,ally.hp+treatmentAmount(medicPulseAmount(unit.q,ally.hp,ally.max),owner.bag));
@@ -102,11 +105,11 @@ function tick(r,dt,now=Date.now()){
      const stats=i?troops[a.id]:null;
      if(i){const angle=2*Math.PI*(i-1)/p.army.length;move(a,{x:p.x+31*Math.cos(angle),y:p.y+31*Math.sin(angle)},210*dt)}
      a.cd-=dt;const e=nearest(a,r.enemies);
-     let treated=false;
      if(i&&a.id===medicId){
        if(a.pulses&&r.clock>=a.pulseAt){teamPulse(r,a,p);a.pulses--;a.pulseAt=r.clock+.28}
-       if(a.cd<=0&&teamPulse(r,a,p)){
-         a.pulses=treatmentPulses(medicPulseCount(a.q),p.bag)-1;a.pulseAt=r.clock+.28;treated=true;
+       if(r.clock>=(a.nextTreatment||0)&&teamPulse(r,a,p)){
+         a.nextTreatment=r.clock+medicTreatmentInterval;
+         a.pulses=treatmentPulses(medicPulseCount(a.q),p.bag)-1;a.pulseAt=r.clock+.28;
        }
      }
      const c=commanders.banner;
@@ -114,7 +117,7 @@ function tick(r,dt,now=Date.now()){
        const damage=(stats?stats[1]*[1,1.32,1.72,2.22][a.q]:c.baseDamage)*p.power;
        hit(r,p,a,e,damage);
        a.cd=(stats?stats[2]:troops[c.weapon][2])*.75;if(r.phase!=='fight')return;
-     }else if(treated)a.cd=stats[2]*.75;
+     }
    }
  }
  for(const e of r.enemies){

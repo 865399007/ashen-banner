@@ -1,5 +1,6 @@
 'use strict';
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const {mountRoster}=require('./rules');
 const {room,player,tick,action,snapshot}=require('./coop-room.cjs');
 const rooms=new Map();
 // Advance by elapsed monotonic time even when the OS delivers a timer late.
@@ -32,7 +33,7 @@ http.createServer(async(req,res)=>{
    if(!r)return send(404,{error:'房间不存在或已过期'});
    if(b.op==='create'||b.op==='join'){
      if(r.phase!=='lobby'||r.players.length>=2)return send(409,{error:'房间已满或已开战'});
-     p=player(b.hero,r.players.length);r.players.push(p);
+     p=player(b.hero,r.players.length);p.mount=mountRoster.find(m=>m.id===b.mount)?.id||null;r.players.push(p);
      return send(200,{code:r.code,token:p.token,state:snapshot(r,p)});
    }
    p=r.players.find(p=>p.token===b.token);if(!p)return send(403,{error:'重连凭证无效'});

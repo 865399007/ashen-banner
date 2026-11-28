@@ -143,6 +143,16 @@ const campaigns={
   }
 };
 const stageOrder=Object.keys(campaigns);
+// Saddle coordinates are fractions of each mount's trimmed illustration.
+const mountRoster=[
+  ['taotie','饕餮','四凶',.45,.37],['qiongqi','穷奇','四凶',.46,.42],
+  ['taowu','梼杌','四凶',.43,.34],['hundun','混沌','四凶',.51,.16],
+  ['qinglong','青龙','四象',.40,.54],['baihu','白虎','四象',.49,.32],
+  ['zhuque','朱雀','四象',.54,.53],['xuanwu','玄武','四象',.40,.31],
+  ['bifang','毕方','山海异兽',.48,.42],
+  ['jiuwei','九尾狐','山海异兽',.66,.54],
+  ['zhulong','烛龙','山海异兽',.47,.54]
+].map(([id,name,group,x,y])=>({id,name,group,x,y}));
 const wildBeasts={
   tiger:{name:'山虎',speed:55,health:58,move:'pounce',habit:'伏低身躯后沿预警线扑出，向侧面移动可避开。'},
   bear:{name:'黑熊',speed:34,health:78,move:'swipe',habit:'抬起前爪后横扫身前，退出扇形即可躲避。'},
@@ -196,6 +206,7 @@ const commanders={
     ]
   }
 };
+function bondTier(count){return Math.min(3,Math.floor((count||0)/2))}
 const soulBaseRangePercent=28;
 const soulSecondaryDamage=.6;
 const soulAttackBonusPercent=[15,25,35,50];
@@ -225,8 +236,11 @@ function armySouls(army){
   return souls;
 }
 const troopEmblems=['⚔','♜','➶','⚒','⬟','➴','⚒','⚔','⚑','♞','✧'];
-const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,255*referenceScale],['斧兵',40,1.8,35],['盾兵',9,1.4,29],['弩兵',34,2,83],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.5,57],['医师',13,2.8,96]];
+const troops=[['剑士',18,.8,31.5],['长枪兵',27,1.25,50],['长弓手',16,1.1,320*referenceScale],['斧兵',40,1.8,35],['盾兵',11,1.4,29],['弩兵',30,2,78],['战锤兵',36,1.85,34],['双匕首兵',10,.65,28],['长戟兵',31,1.5,44],['轻骑兵',43,3.2,70],['医师',8,1.4,64]];
 const medicId=10;
+const medicTreatmentRange=112;
+const medicTreatmentInterval=4.2;
+function medicNeedlePower(count){return 1+.1*bondTier(count)}
 function medicPulseCount(rank){return rank+1}
 function medicPulseAmount(rank,hp,max){return rank===3&&hp<max*.4?4.4:2.6}
 const jadeNeedle=36,medicineBook=37;
@@ -280,7 +294,7 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
  ['旧皮护腕',0,'全队攻速 +5%，指挥官护甲 -1'],['军用干粮',0,'生命上限 +6，移速 -1%'],['铁制护肩',1,'指挥官减伤 +5%，移速 -3%'],['铁壁军令',2,'至少两名盾兵时护卫半径增至 70，护卫额外减伤 8%'],['破军重弩机',3,'每轮弩射追加 1 箭，装填间隔 +15%'],
  ['缠丝刀柄',2,'剑士、盾兵、双匕首兵攻速 +15%'],['雁翎枪箍',2,'长枪兵、长戟兵攻击距离 +18%'],
  ['配重铁芯',2,'斧兵、战锤兵伤害 +15%'],['鎏铜马镫',2,'轻骑兵冲锋间隔缩短 15%'],
- ['断锋宝刃',3,'剑士、盾兵、双匕首兵对半血及以下敌人伤害 +35%'],['破阵戟牙',3,'长枪兵、长戟兵一次攻击中对主目标以外的敌人伤害 +45%'],
+ ['断锋宝刃',3,'剑士、盾兵、双匕首兵对半血及以下敌人伤害 +25%'],['破阵戟牙',3,'长枪兵、长戟兵一次攻击中对主目标以外的敌人伤害 +45%'],
  ['破城玄铁',3,'斧兵、战锤兵对精英和主将伤害 +35%'],['骁骑冲阵旗',3,'轻骑兵冲锋命中时，波及半径 +50%'],
  ['黄芪散',1,'拾取杜康酒坛时额外恢复 5 生命'],['军饷钱串',1,'每波开始获得 3 银币'],
  ['鱼鳞甲',2,'指挥官护甲 +2'],['行医针囊',2,'击杀精英时恢复 8 生命'],
@@ -290,8 +304,8 @@ const items=[['粗磨刀石',0,'伤害 +8%'],['行军靴',0,'移速 +6%'],['斥�
 const satchel=7,bandage=8,salvagePermit=9,lastStand=10;
 const itemCap=id=>id>=bladeWrap&&id<=chargeStandard?1:({3:1,5:2,6:1,[satchel]:3,[bandage]:4,[salvagePermit]:3,[lastStand]:1,4:1,11:2,12:2,13:3,14:2,15:1,19:1,20:1,[herbPowder]:3,[coinPurse]:2,[scaleVest]:2,[fieldNeedles]:2,[tigerManual]:2,[heartMirror]:2,[guardSeal]:2,[jadeNeedle]:1,[medicineBook]:1}[id]??itemStackLimit);
 const equipmentCapacity=12;
-function equippedCount(bag){return Object.values(bag).reduce((total,count)=>total+count,0)}
-function canEquipItem(bag,id){return equippedCount(bag)<equipmentCapacity&&(bag[id]||0)<itemCap(id)}
+function equippedCount(bag){return Object.values(bag).filter(count=>count>0).length}
+function canEquipItem(bag,id){return (bag[id]||0)<itemCap(id)&&(bag[id]>0||equippedCount(bag)<equipmentCapacity)}
 const pick=a=>a[Math.floor(Math.random()*a.length)],distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const troopBasePrices=[10,12,13,15,11,15,16,12,14,18,14],itemBasePrices=[7,8,12,22,36,16,24,9,8,10,39,18,17,16,26,28,9,8,16,25,42,23,24,25,24,39,41,42,40,14,16,25,24,41,42,40,24,40];
 function refitPrice(merc,id,q,wave){
@@ -351,4 +365,4 @@ function recruitOffer(pool,army){
    let r=Math.random()*weights.reduce((a,b)=>a+b,0);
    return pool[weights.findIndex(w=>(r-=w)<0)]??pool[0];
  }
-if(typeof module!=='undefined'&&module.exports)module.exports={medicineGear,treatmentAmount,treatmentPulses,medicId,medicPulseCount,medicPulseAmount,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,startFinalGuards,stepFinalGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};
+if(typeof module!=='undefined'&&module.exports)module.exports={mountRoster,medicTreatmentRange,medicTreatmentInterval,medicNeedlePower,medicineGear,treatmentAmount,treatmentPulses,medicId,medicPulseCount,medicPulseAmount,equipmentSpeedFactor,itemSaleValue,equipmentCapacity,equippedCount,canEquipItem,wildBeasts,wildlifeArrivals,takeWildlife,eliteArrivalTimes,spawnDueElite,delayNextElite,armyCapacity,purchaseMergeTarget,recruitMercenary,campaigns,recruitOffer,villageEnemy,troops,commanders,items,finalWave,startFinalGuards,stepFinalGuards,waveDurationSeconds,tier,refitPrice,refreshPrice,pick,distance};

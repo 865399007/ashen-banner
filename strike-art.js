@@ -111,16 +111,33 @@ function drawSoulWeapon(g,form,color){
       break;
     }
     case 'spear':
-    case 'halberd':
       strikeShard(g,-31,0,36,0,3.4,color);
       strikeShard(g,-21,0,27,0,1.1,light);
-      if(form==='halberd'){
-        for(const side of [-1,1]){
-          g.fillStyle(color).fillPoints([{x:-14,y:0},{x:-8,y:side*7},{x:1,y:side*10},{x:-4,y:side*4}],true);
+      g.lineStyle(1.2,light).lineBetween(-24,-4,-10,-3).lineBetween(-29,4,-14,3);
+      break;
+    case 'halberd':
+      g.lineStyle(2.3,0x806146).lineBetween(-30,0,0,0);
+      g.save().translateCanvas(5.5,0).scaleCanvas(.71,.65);
+      strikeShard(g,-9,0,18,0,2,light);
+      for(const side of [-1,1]){
+        g.lineStyle(1.4,0xe7bc72).lineBetween(-7,0,-7,side*5).lineBetween(0,0,0,side*5);
+        const crescent=[];
+        for(let i=0;i<=12;i++){
+          const t=i/12;
+          crescent.push({x:-15+22*t,y:side*(9-12*t*(1-t))});
         }
-      }else{
-        g.lineStyle(1.2,light).lineBetween(-24,-4,-10,-3).lineBetween(-29,4,-14,3);
+        const rim=crescent.slice();
+        for(let i=11;i>0;i--){
+          const t=i/12;
+          crescent.push({x:-15+22*t,y:side*(9-23*t*(1-t))});
+        }
+        g.fillStyle(0xb7bab0).fillPoints(crescent,true);
+        g.lineStyle(1,light).strokePoints(rim,false);
       }
+      g.fillStyle(0xc34330).fillTriangle(-13,0,-17,4,-24,5);
+      g.lineStyle(2.6,0xb99053).lineBetween(-13,0,4,0);
+      g.lineStyle(1.6,0xe7bc72).lineBetween(-13,-2,-13,2).lineBetween(-9,-2,-9,2);
+      g.restore();
       break;
     case 'shield':
     case 'hammer':{
@@ -128,9 +145,11 @@ function drawSoulWeapon(g,form,color){
         g.lineStyle(2,color).strokePoints([{x:-9,y:-10},{x:2,y:-9},{x:6,y:-4},{x:5,y:4},{x:-1,y:10},{x:-8,y:5}],true);
         strikeShard(g,-10,0,14,0,2,light);
       }else{
-        g.lineStyle(2.4,color).lineBetween(-14,8,-2,-2);
-        g.fillStyle(color).fillPoints([{x:-9,y:-6},{x:-5,y:-10},{x:6,y:-4},{x:3,y:2}],true);
-        g.lineStyle(1.3,light).lineBetween(-5,-9,5,-4);
+        g.save().rotateCanvas(.46);
+        g.lineStyle(2.6,color).lineBetween(0,12,0,-4);
+        g.fillStyle(color).fillRect(-5,-7,10,6).fillRect(-8,-9,4,10).fillRect(4,-9,4,10);
+        g.lineStyle(1.3,light).lineBetween(-7,-8,-5,-8).lineBetween(7,-8,7,-1);
+        g.restore();
       }
       break;
     }

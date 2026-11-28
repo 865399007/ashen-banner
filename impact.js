@@ -1,9 +1,11 @@
 function showHealing(scene,sprite,amount){
   if(amount<=0)return;
   const torsoY=()=>sprite.y+(.55-sprite.originY)*sprite.displayHeight;
+  const camera=scene.cameras.main,labelScale=.8;
+  const resolution=Phaser.Math.Clamp(Math.ceil(Math.max(camera.zoomX,camera.zoomY)*labelScale),1,6);
   const label=scene.add.text(sprite.x,torsoY(),'+'+Number(amount.toFixed(1)),{
-    fontFamily:gameFontFamily,fontSize:'15px',fontStyle:'bold',color:'#85f79a',stroke:'#214a2c',strokeThickness:3
-  }).setOrigin(.5).setDepth(1101).setScale(.8);
+    fontFamily:gameFontFamily,fontSize:'15px',fontStyle:'bold',color:'#85f79a',stroke:'#214a2c',strokeThickness:3,resolution
+  }).setOrigin(.5).setDepth(1101).setScale(labelScale);
   scene.tweens.add({targets:label,alpha:0,duration:720,
     onUpdate:()=>{
       if(sprite.active)label.setPosition(sprite.x,torsoY());

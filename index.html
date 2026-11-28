@@ -3,7 +3,7 @@
   <div class="hud-bar"><i id="life"></i></div>
   <div class="hud-bar"><i id="experience"></i></div>
   <div class="coin-readout" aria-label="银币余额"><canvas id="silver-icon" width="32" height="26" aria-hidden="true"></canvas><b id="money">0</b></div>
-</div><nav hidden class="battle-debug" id="test-army" aria-label="调试召唤四级兵"><label class="debug-size"><input id="debug-three" type="checkbox">每组 3 名</label></nav><button type="button" class="battle-debug" id="debug-final-wave" hidden>最后一轮</button><div id="cover"><div class="camp-home">
+</div><nav hidden class="battle-debug" id="test-army" aria-label="调试召唤四级兵"><label class="debug-size"><input id="debug-three" type="checkbox">每组 3 名</label></nav><nav hidden class="battle-debug" id="test-mounts" aria-label="异兽召唤"><b>异兽召唤</b></nav><button type="button" class="battle-debug" id="debug-final-wave" hidden>最后一轮</button><div id="cover"><div class="camp-home">
   <div class="camp-heading"><h1>烽烟点将</h1><div id="camp-wallet" aria-label="营地资源"></div></div>
   <div class="camp-layout">
     <div class="camp-orders">
@@ -12,6 +12,7 @@
         <h2 id="commander-skills-title">灰旗指挥官技能</h2>
         <ul id="commander-passives" aria-live="polite"></ul>
       </div>
+      <button type="button" id="mount-entry">异兽坐骑</button>
     </div>
     <nav id="camp-actions" aria-label="整备功能">
       <button type="button" data-camp-section="训练强化"><i aria-hidden="true"><img src="assets/items/boots.svg" alt=""></i><strong>训练强化</strong><span>提升指挥官和佣兵属性</span></button>
@@ -31,7 +32,7 @@
     <div class="settings-volume"><label for="volume">音量</label><output id="volume-value" for="volume">35%</output></div>
     <input id="volume" type="range" min="0" max="100" value="35">
   </div>
-  <button type="button" id="toggle-debug" aria-controls="test-army debug-final-wave" aria-pressed="false">调试按钮：隐藏</button>
+  <button type="button" id="toggle-debug" aria-controls="test-army test-mounts debug-final-wave" aria-pressed="false">调试按钮：隐藏</button>
   <div class="settings-actions">
     <button type="button" id="restart">重新开始</button>
     <button type="button" id="return-lobby">返回首页</button>

@@ -130,7 +130,7 @@ function drawGeneralSoul(c,general,pose=0){
   const thrust=general==='zhaoyun';
   c.translate(48+(thrust?pose*4:0),43+(bow?0:pose));
   if(!bow&&!crossbow){
-    const readyAngle=rider?.88:thrust?.69:.48;
+    const readyAngle=rider?.88:thrust?.69:general==='lvbu'?.68:.48;
     c.rotate(readyAngle+pose*(rider||thrust?.71:.95));
   }
   switch(general){
@@ -149,18 +149,33 @@ function drawGeneralSoul(c,general,pose=0){
       oval(c,2,-17.6,.65,.65,ink);
       shape('M-2 -12.8 Q-5 -11 -6 -7 L-4.4 -8 Q-5 -5 -7 -3 Q-1.8 -5 -1.2 -12Z','#b96050',null);break;
     case 'lvbu':
-      haft('M0 20 L0 -29');metal('M-1.5 -24 L-1.8 -28 L0 -38 L2 -28 L1.4 -24Z');
-      metal('M0 -18 Q9 -20 8 -32 Q14 -20 6 -17 L1 -15Z M0 -20 Q-8 -22 -7 -31 Q-13 -21 -6 -18 L0 -16Z');
-      line('M-2 -15 L2 -15',brass,1.6);break;
+      haft('M0 20 L0 -28');
+      c.save();c.translate(0,-13);c.scale(.65,.71);
+      for(const side of [-1,1]){
+        c.save();c.scale(side,1);
+        line('M0 -23 L6 -23 M0 -16 L6 -16','#bdbaab',1.55);
+        shape('M10 -31 C6 -27 4.1 -18 5.8 -13 Q6.8 -10 10 -8 C7.3 -14 7.4 -23 10 -31Z','#b7bab0','#514d47',.55);
+        line('M10 -31 Q5 -19 10 -8','#fff0cc',.75);
+        c.restore();
+      }
+      shape('M0 -47 Q1 -42 1.8 -39 L1.5 -37 L2.5 -34 Q1.6 -32 1.6 -27 L-1.6 -27 Q-1.8 -32 -2.5 -34 L-1.5 -37 L-1.8 -39Z','#a6afaf',null);
+      shape('M0 -47 L0 -28 L1.6 -27 Q1.6 -32 2.5 -34 L1.5 -37 L1.8 -39Z',edge,null);
+      line('M0 -27 L0 -11','#815a2d',3.4);
+      for(const y of [-26,-22,-18,-14])line('M-1.3 '+y+' l2.6 1.5',brass,1);
+      shape('M1 -11 Q5 -9 5 -4 Q5 -1 8 2 Q4 1 3 -2 L3 0 Q1 -3 2 -6Z','#c34330',null);
+      line('M-1.5 -11 L1.6 -11','#d85435',1.8);
+      c.restore();
+      break;
     case 'xuhuang':
       haft('M0 13 L0 -24');
       metal('M-4 -24 L4 -23 Q7 -24 10 -29 Q17 -20 11 -13 Q6 -16 2 -18 L-3 -18Z');
       line('M10 -28 Q14 -21 11 -15',edge,1.4);break;
     case 'wuanguo':
       haft('M0 15 L0 -23');
-      metal('M-8 -27 L-5 -30 L7 -29 L10 -26 L9 -19 L6 -17 L-6 -18 L-9 -21Z');
-      shape('M-6 -26 L6 -25 L6 -20 L-6 -21Z','#718d98',null);
-      line('M-5 -28 L6 -27',edge,1.3);break;
+      metal('M-11 -28 L-8 -31 L-5 -31 L-4 -28 L4 -28 L5 -31 L8 -31 L11 -28 L11 -19 L8 -16 L5 -16 L4 -19 L-4 -19 L-5 -16 L-8 -16 L-11 -19Z');
+      shape('M-9 -27 L-7 -29 L-5 -28 L-5 -19 L-7 -18 L-9 -20Z','#899ba0',null);
+      shape('M6 -28 L8 -29 L10 -27 L10 -20 L7 -18 L6 -19Z',edge,null);
+      line('M0 -27 L0 -20',brass,2);break;
     case 'huangzhong':{
       c.rotate(-.13);
       const nock=-5-pose*9;
